@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Tayyor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: url('/images/bg.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+    }
+  
+    .glass {
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background-color: rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body class="font-sans bg-gray-900">
+
+  <!-- NAVBAR -->
+  <nav class="glass shadow-md px-6 py-4 fixed w-full top-0 z-50">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <img src="/images/logo.png" alt="Logo" class="h-8 w-8 rounded-full shadow" />
+            <span class="text-xl font-bold">Test Tayyor</span>
+          </div>
+      <button onclick="window.location.href='/auth/google'" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-xl text-white transition shadow">
+        Tizimga kirish
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="pt-32 px-4 pb-12 flex items-start justify-center">
+    <div class="glass max-w-2xl w-full p-10 text-center shadow-2xl">
+      <h1 class="text-4xl font-extrabold mb-4 leading-snug">
+        Test yaratish. <br>Ulashish. <br> Nazorat qilish.
+      </h1>
+      <p class="text-lg text-gray-200 mb-6">
+        Yuqori sifatli online test platformasi — talabalar uchun soddalik, o‘qituvchilar uchun qulaylik.
+      </p>
+      <button onclick="window.location.href='/auth/google'"
+        class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-500 px-6 py-3 rounded-full text-white font-medium text-lg shadow-md transition">
+        Testni boshlash
+      </button>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="py-20 px-6 max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-12">💡 Platforma imkoniyatlari</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <!-- Feature 1 -->
+      <div class="glass p-6 rounded-xl shadow-md hover:bg-white/10 transition">
+        <img src="https://img.icons8.com/clouds/100/upload.png" class="mx-auto mb-4" alt="Upload" />
+        <h3 class="text-xl font-semibold mb-2">Test yuklash</h3>
+        <p class="text-gray-200">.txt yoki .csv fayldan yuklang va vaqt belgilang</p>
+      </div>
+      <!-- Feature 2 -->
+      <div class="glass p-6 rounded-xl shadow-md hover:bg-white/10 transition">
+        <img src="https://img.icons8.com/clouds/100/link.png" class="mx-auto mb-4" alt="Link" />
+        <h3 class="text-xl font-semibold mb-2">Maxsus link</h3>
+        <p class="text-gray-200">Talabalar uchun avtomatik havola yarating</p>
+      </div>
+      <!-- Feature 3 -->
+      <div class="glass p-6 rounded-xl shadow-md hover:bg-white/10 transition">
+        <img src="https://img.icons8.com/clouds/100/combo-chart.png" class="mx-auto mb-4" alt="Stats" />
+        <h3 class="text-xl font-semibold mb-2">Natijalarni kuzatish</h3>
+        <p class="text-gray-200">Test javoblari, foizlar, F.I.SH va boshqalar</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="text-center py-16 px-4">
+    <div class="glass max-w-xl mx-auto p-10 shadow-xl">
+      <h2 class="text-3xl font-bold mb-4">Boshlashga tayyormisiz?</h2>
+      <p class="text-gray-200 mb-6">Tizimga kirib, testlaringizni yaratishni boshlang.</p>
+      <button onclick="window.location.href='/auth/google'" class="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-full text-white font-semibold shadow-md transition">
+        Tizimga kirish
+      </button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-sm text-gray-300 py-6">
+    © 2025 Test Tayyor | Ergashev Muhammadsodiq | +998 99 752 05 65
+  </footer>
+
+</body>
+</html>

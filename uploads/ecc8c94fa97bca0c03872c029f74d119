@@ -1,0 +1,603 @@
+1. Kompyuter dasturi – bu … ?
+*a) biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan buyruqlarning izchil to‘plami
+b) biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan ishlar
+c) biror masalani yechish jarayoni
+d) biror masalani yechish uchun mo‘ljallangan dastur
+
+2. Dasturlash – bu … ?
+*a) kompyuter uchun dastur tuzish jarayoni
+b) kodlar majmui
+c) dasturlarni o‘rnatish jarayoni
+d) hujjatlarni chop etish jarayoni
+
+3. Dasturlash tili – bu … ?
+*a) inson va kompyuter o‘rtasidagi rasmiy aloqa tili
+b) tabiiy til turi
+c) kompyuter tili
+d) ikkinchi pog‘onali til 
+ 
+4. Integrated Development Environment (IDE) bu - …?
+*a) integrallashgan dasturlash muhiti
+b) integrallashgan dastur muhiti
+c) integrallashgan platforma muhiti
+d) dasturlash muhiti
+
+5. IDE bu - … ?
+*a) dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan maxsus matn muharriri
+b) dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan qobiq dastur
+c) dasturiy ta’minot yaratish uchun dastur tili
+d) dasturiy ta’minot yaratish uchun fayl menedjiri
+
+6. IDLE (Integrated Development and Learning Environment) bu - … ?
+*a) integrallashgan dasturlash va o‘rganish muhiti
+b) integrallashgan dastur va o‘qish muhiti
+c) integral dasturlash va yozish muhiti
+d) integrallashgan matn va o‘rganish muhiti
+
+7. Python tili IDLE oynasi nechta muhitlarga ega … ?
+a) interfaol, dasturlash va grafik muhiti
+b) interfaol (konsol) va grafik muhiti
+*c) interfaol (konsol) va dasturlash muhiti
+d) grafik va dasturlash muhiti
+
+8. Python dasturlash tili tarkibi nimalardan iborat?
+a) katta va kichik lotin harflar, arab raqamlari 
+*b) katta va kichik lotin harflar, arab raqamlari, maxsus belgilar, xizmatchi so‘zlar
+c) lotin harflar, arab raqamlari, xizmatchi so‘zlar
+d) katta va kichik harflar, arab raqamlari, maxsus belgilar, xizmatchi so‘zlar
+
+9. Python o‘zgaruvchilari – bu … ?
+a) o‘z qiymatiga ega bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi
+b) o‘z qiymati va turiga ega, kompyuter xotirasidagi yacheyka nomi
+c) turiga ega, hamda o‘zida dastur davomida o‘zgarishi mumkin bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi
+*d) o‘z qiymati va turiga ega, hamda o‘zida dastur davomida o‘zgarishi mumkin bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi
+
+10. Python o‘zgarmaslari (doimiylari) – bu …?
+a) o‘z qiymati va turiga ega, hamda o‘zida dastur davomida o‘zgarishi mumkin bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi
+b) o‘z qiymati va turiga ega, o‘zgaruvchan qiymatlarni saqlovchi kompyuter xotirasidagi yacheykalar nomi
+*c) o‘z qiymati va turiga ega, hamda faqat o‘qish uchun mo‘ljallangan qiymatlarni saqlovchi kompyuter xotirasidagi yacheykalar nomi
+d) o‘z turiga ega, hamda faqat o‘qish uchun mo‘ljallangan qiymatlarni saqlovchi yacheykalar nomi
+
+11. Identifikator – bu … ?
+*a) o‘zgaruvchilar, o‘zgarmaslar, funksiyalar, protseduralar, modullarning dasturdagi umumiy turli nomlari.
+b) o‘zgaruvchilar, o‘zgarmaslarning umumiy ma’lumot nomlari.
+c) funksiyalar, protseduralar, modullarning dasturdagi umumiy tiplari nomlari.
+d) protseduralar, massivlar, modullarning dasturdagi umumiy turli shakllari nomlari.
+
+12. A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang: not ( (A and B) or (not C and D) ) and (A or B)
+a) False
+*b) True
+c) not
+d) True False
+
+13. A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:((A and not B) and (C and D)) and (A or B)
+*a) False
+b) True
+c) not
+d) True False
+
+14. A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:not(A or B) and (C or D) or (C and D) 
+*a) False
+b) True
+c) not
+d) True False
+
+15. A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:not((not A or not B) and (C or D)) or (A and B) 
+*a) False
+b) True
+c) not
+d) True False
+
+16. A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:((not A or not B) or not(not C and D)) and (not A or B) 
+*a) False
+b) True
+c) not
+d) True False
+
+17. a=45; b=49; c=87 bo‘lsa quyidagi mantiqiy ifodani hisoblang:((a+b)<c)or('a'== 'A')
+*a) False
+b) True
+c) not
+d) True False
+
+18. a=17; MAX=20; s=5; n=5 bo‘lsa quyidagi mantiqiy ifodani hisoblang:(not(not a==MAX))or(s==n)
+a) False
+*b) True
+c) not
+d) True False
+
+19. n=5; m=50; y=0;  bo‘lsa quyidagi mantiqiy ifodani hisoblang:((n*10)<m) and  not y 
+*a) False
+b) True
+c) not
+d) True False
+
+20. i=1; t=2; k='K';  bo‘lsa quyidagi mantiqiy ifodani hisoblang:(i>t) or (not k=='k' ) 
+a) False
+*b) True
+c) not
+d) True False
+
+21. x=1; y=0 bo‘lsa quyidagi mantiqiy ifodani hisoblang: (x>y) and not y
+a) False
+*b) True
+c) not
+d) True False
+
+22. a=3; b=5 bo‘lsa quyidagi ifodani hisoblang:  print(a if a==b else a if a>b else b)  
+a) 3
+*b) 5 
+c) 5>3  
+d) 8 
+
+23. a=99; b=105 bo‘lsa quyidagi ifodani hisoblang:  print(a+1 if a>b else b) 
+a) 99 
+b) 100 
+*c) 105 
+d) a+1 
+
+24. a=99; b=105 bo‘lsa quyidagi ifodani hisoblang:  print(a+1 if a<b else b)
+a) 99 
+*b) 100 
+c) 105 
+d) a+1
+
+25. for i in range(1,6): print('A') dasturida ‘A’ harfi nechi marta ekranga chiqariladi?
+a)  1 marta
+*b)  5 marta
+c) 6 marta  
+d)  7 marta
+
+26. for i in range(0,6): print('A') dasturida ‘A’ harfi nechi marta ekranga chiqariladi?
+a)  1 marta
+b)  5 marta
+*c) 6 marta  
+d)  7 marta
+
+27. for i in range(0,6,2): print('B') dasturida ‘B’ harfi nechi marta ekranga chiqariladi?
+*a) 3
+b) 5
+c) 6
+d) biror marta ham chiqarilmaydi
+
+28. for i in range(0,6,5): print('B') dasturida ‘B’ harfi nechi marta ekranga chiqariladi?
+*a) 2
+b) 3
+c) 5
+d) biror marta ham chiqarilmaydi
+
+
+29. for i in range(0,6,7): print('B') dasturida ‘B’ harfi nechi marta ekranga chiqariladi?
+*a) 1
+b) 2
+c) 3
+d) biror marta ham chiqarilmaydi
+
+30. O‘zgaruvchini e’lon qilish uchun qaysi belgidan foydalaniladi?
+a) o‘zgaruvchi qiymati => belgisi, o‘zgaruvchining nomi
+b) o‘zgaruvchi identifikatori (nomi), - belgisi, o‘zgaruvchining qiymati
+*c) o‘zgaruvchi identifikatori (nomi), = belgisi, o‘zgaruvchining qiymati
+d) o‘zgaruvchi qiymati, = belgisi, o‘zgaruvchining identifikatori(nomi)
+
+31. Operator – bu … ?
+*a) dasturlash tilining buyrug’i
+b) dasturlash tilining alifbosi
+c) dasturlash tilining muhiti
+d) dastur o‘zgaruvchisining qiymati
+
+32. Ma’lumotlar turlari bu …?
+a) kompyuter xotirasidagi sonlarning qiymati
+b) kompyuter xotirasida saqlanadigan dastur
+c) kompyuter xotirasidagi yacheykada saqlanadigan ma’lumot
+*d) kompyuter xotirasidagi yacheykada saqlanadigan ma’lumotlar shakli
+
+33. Quyidagi belgilardan qaysi biri Pythonda bir qatorli izohlar berish uchun ishlatiladi?
+a) //
+*b) #
+c) '''  '''  
+d) /*
+
+34. Quyidagi belgilardan qaysi biri Pythonda ko‘p qatorli izohlar berish uchun ishlatiladi?
+a) //
+b) #
+*c) '''  '''
+d) /*
+
+35. Quyidagi Python funktsiyasining chiqish natijasini toping.
+len ( [ "salom" , 2 ,  4 ,  6 ] )
+a) xato
+b) 6
+*c) 4
+d) 3 
+
+36. Pythonda a=[4,5,1,2,4,7] ro‘yhat berilgan bo‘lsa, quyidagi dastur natijasini aniqlang: 4 in a 
+*a) true
+b) false 
+c) not
+d) xor
+
+37. Pythonda qanday ma’lumotlar turi mavjud?
+*a) butun sonlar, haqiqiy sonlar, satrli, mantiqiy
+b) butun sonlar, haqiqiy sonlar, 
+c) sonlar, harflar, kalit so‘zlar
+d) butun sonlar, haqiqiy sonlar, simvolli, maxsus sonlar
+
+38. Python tilida butun sonlarga o‘zgartirish operatori?
+a) float ()
+*b) int ()
+c) str ()
+d) bool ()
+
+39. Python tilida haqiqiy sonlarga o‘zgartirish operatori?
+*a) float ()
+b) int ()
+c) str ()
+d) bool ()
+
+40. Python tilida satrli ma’lumotlarga o‘zgartirish operatori?
+a) float ()
+b) int ()
+*c) str ()
+d) bool ()
+
+41. Python tilida mantiqiy ma’lumotlarga o‘zgartirish operatori?
+a) float ()
+b) int ()
+c) str ()
+*d) bool ()
+
+42. Python tilida ma’lumotlar turini aniqlash operatori?
+a) float ()
+b) int ()
+c) str ()
+*d) type()
+
+43. Pythonda bo‘linmaning butun qiymatini aniqlash amal belgisi?
+a) /
+b) ++
+c) %
+*d) //
+
+44. Pythonda bo‘linmaning qoldiq qiymatini aniqlash amal belgisi?
+*a) %
+b) ++
+c) **
+d) //
+
+45. Pythonda darajaga ko‘tarish amal belgisi?
+a) pov(x, n)
+*b) **
+c) %
+d) //
+
+46. Pythonda qisqartirilgan qo‘shish amal belgisi?
+a) =+
+b) ++
+*c) +=
+d) -+
+
+47. Pythonda qisqartirilgan ayirish amal belgisi?
+a) =+
+*b) -=
+c) =-
+d) +-
+
+48. Pythonda qisqartirilgan ko‘paytirish amal belgisi?
+*a) *=
+b) +=
+c) -=
+d) =*
+
+49. Pythonda qisqartirilgan bo‘lish amal belgisi?
+a) =/
+b) ++
+*c) /=
+d) //=
+
+50. Pythonda qisqartirilgan bo‘linmaning butun qiymatini aniqlash amal belgisi?
+*a) //=
+b) /=
+c) =//
+d) =/
+
+51. Pythonda mantiqiy VA amali?
+a) or
+*b) and
+c) not
+d) xor
+
+52. Pythonda mantiqiy YOKI amali?
+*a) or
+b) and
+c) not
+d) xor
+
+53. Pythonda mantiqiy EMAS amali?
+a) or
+b) and
+*c) not
+d) xor
+
+54. Pythonda mantiqiy o‘xshashlikni inkor etish amali?
+a) or
+b) and
+c) not
+*d) xor
+
+55. Pythonda mantiqiy tarkibiga kirishi amali?
+a) or
+b) and
+*c) in
+d) xor
+
+56. Pythonda mantiqiy tarkibiga kirmasligi amali?
+a) or
+b) in
+c) not
+*d) not in
+
+57. Satrli ma’lumotlarni bir biriga ‘+’ qo‘shish natijasida .......
+a) satrli ma’lumotlarni qo‘shish mumki emas
+b) satrli ma’lumotlar ayriladi
+*c) satrli ma’lumotlar birlashtiriladi
+d) xatolik sodir bo‘ladi
+
+58. a[5] ning ma’nosi nima?
+*a) o‘zgaruvchining faqat 6-chi turgan belgisi chiqadi
+b) o‘zgaruvchining faqat 5-chi turgan belgisi chiqadi
+a) o‘zgaruvchining faqat 6-belgisigacha barcha belgilar chiqadi
+a) o‘zgaruvchining 6-chi turgan belgisidan keyingi barchasi chiqadi
+
+59. a[:5] ma’nosi?
+a) o‘zgaruvchining 5-chi turgan belgisigacha barcha belgilar ekranga chiqariladi
+b) o‘zgaruvchining faqat 5-chi turgan belgisi ekranga chiqariladi 
+*c) o‘zgaruvchining 6-chi turgan belgisigacha barcha belgilar ekranga chiqariladi 
+d) o‘zgaruvchining faqat 6-chi turgan belgisi ekranga chiqariladi 
+
+60. a[5:] ma’nosi?
+a) faqat 5-chi turgan belgisi ekranga chiqariladi 
+b) o‘zgaruvchining faqat 6-chi turgan belgisi ekranga chiqariladi
+С) o‘zgaruvchining 5-chi turgan belgisidan oxirigacha barcha belgilar ekranga chiqariladi
+*d) o‘zgaruvchining 6-chi turgan belgisidan oxirigacha barcha belgilar ekranga chiqariladi
+
+61. a[5:9] natijasida ekranga qanday belgilar chiqariladi?
+*a) o‘zgaruvchining 6-chi turgan belgisidan 9 belsigacha joylashgan belgilar 
+b) o‘zgaruvchining 5-chi turgan belgisidan 9 belsigacha joylashgan belgilar
+c) o‘zgaruvchining 6-chi turgan belgisidan 10 belsigacha joylashgan belgilar
+d) o‘zgaruvchining 5-chi turgan belgisidan 10 belsigacha joylashgan belgilar
+
+62. a[-5] ma’nosi?
+a) o‘zgaruvchining chap tomonida faqat 5-chi turgan belgi
+*b) o‘zgaruvchining o‘ng tomonida faqat 5-chi turgan belgi
+c) o‘zgaruvchining o‘ng tomonida 5-chidan keyin barcha belgilar
+d) o‘zgaruvchining chap tomonida 6-chidan keyin barcha belgilar
+
+63. a[-5:] ma’nosi?
+a) o‘zgaruvchining o‘ng tomonda 6-chi turgan belgisidan oxirigacha barcha belgilar
+b) o‘zgaruvchining chap tomonda 5-chi turgan belgisidan oxirigacha barcha belgilar
+*c) o‘zgaruvchining o‘ng tomonda 5-chi turgan belgisidan oxirigacha barcha belgilar
+d) o‘zgaruvchining chap tomonda 6-chi turgan belgisidan oxirigacha barcha belgilar
+
+64. a[:-5] ma’nosi?
+a) o‘zgaruvchining boshidan o‘ng tomondan 6-chi turgan belgisigacha bo’lgan belgilar
+b) o‘zgaruvchining boshidan chap tomondan 5-chi turgan belgisigacha barcha belgilar
+c) o‘zgaruvchining boshidan chap tomondan 6-chi turgan belgisigacha barcha belgilar
+*d) o‘zgaruvchining boshidan o‘ng tomondan 5-chi turgan belgisigacha barcha belgilar
+
+65. a[::-1] ekranga qanday belgilar chiqariladi? 
+*a) o‘zgaruvchining oxirgi belgisidan boshigacha barcha belgilar (teskari tartibda)
+b) o‘zgaruvchining boshidagi belgisidan oxirigacha barcha belgilar (to‘g‘ri tartibda)
+c) o‘zgaruvchining boshidagi belgisidan o‘rtasigacha barcha belgilar (teskari tartibda)
+d) o‘zgaruvchining oxirgi belgisidan o‘rtasigacha barcha belgilar (teskari tartibda)
+
+66. a=‘S’; a+a ning natijasini toping?
+a) aa
+b) Ss
+*c) SS
+d) xatolik sodir bo‘ladi
+
+67. a=“O‘zbekiston” bo‘lsa, a[5] ning qiymatini aniqlang.
+*a) k
+b) e
+a) i
+a) O‘zbek 
+
+68. a=“O‘zbekiston” bo‘lsa, a[:6] ning qiymatini aniqlang.
+a)  O‘z
+b)  O‘zbe
+*c) O‘zbek  
+d)  iston
+
+69. a=‘Iqtisodiyot’ bo‘lsa, a[6:] ning qiymatini aniqlang. 
+a) Iqtiso
+b) Iqtisot 
+С) odiyot
+*d) diyot
+
+70. a=‘Iqtisodiyot’ bo‘lsa, a[5:9] ning qiymatini aniqlang.
+*a) odiy
+b) odiyo
+c) odiyot
+d) sodiy
+
+71. a=‘Iqtisodiyot’ bo‘lsa, a[-5] ning qiymatini aniqlang.  
+a) a
+*b) d
+c) s
+d) o
+
+72. a=‘Iqtisodiyot’ bo‘lsa, a[-5:] ning qiymatini aniqlang  
+a) Iqtiso
+b) Iqtis   
+*c) diyot  
+d) odiyot  
+
+73. a=‘Iqtisodiyot’ bo‘lsa, a[:-5] ning qiymatini aniqlang.
+a) diyot 
+b) odiyot
+c) Iqtisod 
+*d) Iqtiso  
+
+74. a=‘Iqtisodiyot’ bo‘lsa, a[::-1] ning qiymatini aniqlang.
+*a) toyidositqI  
+b) Iqtisodiyo 
+c) Iqtisodiyot 
+d) toyidositq
+
+75. a=‘Iqtisod_va_turizm’ bo‘lsa, a[0:9:2] ning qiymatini aniqlang.
+a) Iqtisod_va
+b) Iiod_a
+*c) Itsdv 
+d) tadv_
+
+76. Satrli ma’lumotlarni uzunligini aniqlash funksiyasi?
+*a) len()
+b) type()
+c) print()
+d) int()
+
+77. Satrli ma’lumotlarning barcha harfini bosh harfga o‘tkazish usulini ko‘rsating.
+*a) o‘zgaruvchi.upper()
+b) o‘zgaruvchi.lower()
+c) o‘zgaruvchi.capitalize()
+d) o‘zgaruvchi.swapcase()
+
+78. Satrli ma’lumotlarni barcha harfini kichik harf qilish usuli?
+a) o‘zgaruvchi.upper()
+*b) o‘zgaruvchi.lower()
+c) o‘zgaruvchi.capitalize()
+d) o‘zgaruvchi.swapcase()
+
+79. Satrli ma’lumotlarni birinchi harfini bosh harf qilish usuli?
+a) o‘zgaruvchi.upper()
+b) o‘zgaruvchi.lower()
+*c) o‘zgaruvchi.capitalize()
+d) o‘zgaruvchi.swapcase()
+
+80. Satrli ma’lumotlarni harflarning registrini teskarisiga aylantirish usuli?
+a) o‘zgaruvchi.upper()
+b) o‘zgaruvchi.lower()
+c) o‘zgaruvchi.capitalize()
+*d) o‘zgaruvchi.swapcase()
+
+81. Python tilida o‘zgaruvchini klaviaturadan kiritish operatori?
+*a) input(o‘zgaruvchi)
+b) print(o‘zgaruvchi)
+c) o‘zgaruvchi(print)
+d) o‘zgaruvchi(input)
+
+82. Pythonda quyidagi kod natijasini aniqlang: print(type(3/ 2))
+a) <class ‘int’>
+*b) <class ‘float’>
+c) <class ‘str’>
+d) <class ‘bool’>
+
+83. Pythonda quyidagi kod natijasini aniqlang: print(type(5))
+*a) <class ‘int’>
+b) <class ‘float’>
+c) <class ‘str’>
+d) <class ‘bool’>
+
+84. Pythonda quyidagi kod natijasini aniqlang: print(type(‘salom’))
+a) <class ‘int’>
+b) <class ‘float’>
+*c) <class ‘str’>
+d) <class ‘bool’>
+
+85. Pythonda quyidagi kod natijasini aniqlang: 	print(type(x==1))
+a) <class ‘int’>
+b) <class ‘float’>
+c) <class ‘str’>
+*d) <class ‘bool’>
+
+86. Math modulining ceil(x) funksiyasi vazifasi?
+*a) eng yaqin katta butun songacha yaxlitlash
+b) x nidan keyingi belgi qolgunga qadar yaxlitlash
+c) eng yaqin kichik butun songacha yaxlitlash
+d) butun qismini chiqiarish
+
+87. Math modulining round(x,n) funksiya vazifasi?
+a) eng yaqin butun songacha yaxlitlash
+*b) x ni nuqtadan keyin n ta belgi qolgunga qadar yaxlitlash
+c) eng yaqin kichik butun songacha yaxlitlash
+d) x dan keyin n darajaga qadar yaxlitlash
+
+88. Math modulining floor(x) funksiya vazifasi?
+a) eng yaqin manfiy songacha yaxlitlash
+b) eng yaqin butun songacha yaxlitlash 
+*c) eng yaqin kichik butun songacha yaxlitlash
+d) eng yaqin haqiqiy manfiy songacha yaxlitlash
+
+89. Math modulining log(a,b) funksiya vazifasi?
+a) b asosli o‘nlik logarifmini aniqlash
+b) a asosli natural son logarifmini aniqlash
+c) a asosli b son logarifmini aniqlash
+*d) b asosli a son logarifmini aniqlash
+
+90. Math modulining log10(x) funksiya vazifasi?
+*a) 10 asosli x son logarifmini aniqlash
+b) 10 asosli natural son logarifmini aniqlash
+c) 1 asosli b son logarifmini aniqlash
+d) 10 asosli e son logarifmini aniqlash
+
+91. Math modulining sqrt(x) funksiya vazifasi?
+a) x sonning absolyut qiymatini modulini aniqlash 
+b) x sonning kubinchi darajali ildizini aniqlash
+*c) x sonning kvadrat ildizini aniqlash
+d) x sonning kvadratini aniqlash
+
+92. Math modulining pow(x,n) funksiya vazifasi?
+a) x sonning kvadratini aniqlash
+b) x sonning n- ildizini aniqlash
+c) x sonning kubinchi darajali ildizini aniqlash 
+*d) x sonning n darajasini aniqlash
+
+93. Math modulining factorial(x) funksiya vazifasi?
+a) x sonning darajasini aniqlash 
+*b) x faktorialini aniqlash
+c) x sonning kvadratini aniqlash 
+d) x sonning kvadrat ildizini aniqlash 
+
+94. Math modulining abs(x) funksiya vazifasi?
+*a) x sonning absolyut qiymatini modulini aniqlash
+b) x sonning kvadrat ildizini aniqlash
+c) x sonning kvadratini aniqlash
+d) x sonning n darajasini aniqlash
+
+95. Math modulining cos(x) funksiya vazifasi?
+a) x sonning sinusini aniqlash
+*b) x sonning kosinusini aniqlash
+c) x sonning teskari kosinusini aniqlash
+d) x sonning kosinusi kvadratini aniqlash
+
+96. Math modulining sin(x) funksiya vazifasi?
+*a) x sonning sinusini aniqlash
+b) x sonning teskari sinusini aniqlash
+c) x sonning tangensini aniqlash
+d) x sonning kosinusi kvadratini aniqlash
+
+97. Math modulining tan(x) funksiya vazifasi?
+a) x sonning teskari tangensini aniqlash
+b) x sonning kosinusini aniqlash
+*c) x sonning tangensini aniqlash
+d) x sonning kosinusi kvadratini aniqlash
+
+98. Math modulining acos(x) funksiya vazifasi?
+a) x sonning arksinusini aniqlash
+b) x sonning kosinusini aniqlash
+*c) x sonning arkkosinusini aniqlash
+d) x sonning kosinusi kvadratini aniqlash
+
+99. Math modulining asin(x) funksiya vazifasi?
+*a) x sonning arksinusini aniqlash
+b) x sonning kosinusini aniqlash
+c) x sonning arkkosinusini aniqlash
+d) x sonning kosinusi kvadratini aniqlash
+
+100. Math modulining atan(x) funksiya vazifasi?
+a) x sonning arksinusini aniqlash
+b) x sonning kosinusini aniqlash
+c) x sonning arkkosinusini aniqlash
+*d) x sonning arktangensini aniqlash
+
+

@@ -1,0 +1,33 @@
+1. Kompyuter dasturi – bu … ?
+*a) biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan buyruqlarning izchil to‘plami
+b) biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan ishlar
+c) biror masalani yechish jarayoni
+d) biror masalani yechish uchun mo‘ljallangan dastur
+
+2. Dasturlash – bu … ?
+*a) kompyuter uchun dastur tuzish jarayoni
+b) kodlar majmui
+c) dasturlarni o‘rnatish jarayoni
+d) hujjatlarni chop etish jarayoni
+
+3. Dasturlash tili – bu … ?
+*a) inson va kompyuter o‘rtasidagi rasmiy aloqa tili
+b) tabiiy til turi
+c) kompyuter tili
+d) ikkinchi pog‘onali til 
+ 
+4. Integrated Development Environment (IDE) bu - …?
+*a) integrallashgan dasturlash muhiti
+b) integrallashgan dastur muhiti
+c) integrallashgan platforma muhiti
+d) dasturlash muhiti
+
+5. IDE bu - … ?
+*a) dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan maxsus matn muharriri
+b) dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan qobiq dastur
+c) dasturiy ta’minot yaratish uchun dastur tili
+d) dasturiy ta’minot yaratish uchun fayl menedjiri
+
+
+
+

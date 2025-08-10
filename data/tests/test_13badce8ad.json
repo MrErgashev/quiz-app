@@ -1,0 +1,2110 @@
+{
+  "testTitle": "Fizika",
+  "testType": "Yangi yuklangan test",
+  "time": 15,
+  "questions": [
+    {
+      "question": "Kompyuter dasturi – bu … ?",
+      "options": [
+        {
+          "text": "biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan buyruqlarning izchil to‘plami",
+          "isCorrect": true
+        },
+        {
+          "text": "biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan ishlar",
+          "isCorrect": false
+        },
+        {
+          "text": "biror masalani yechish jarayoni",
+          "isCorrect": false
+        },
+        {
+          "text": "biror masalani yechish uchun mo‘ljallangan dastur",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Dasturlash – bu … ?",
+      "options": [
+        {
+          "text": "kompyuter uchun dastur tuzish jarayoni",
+          "isCorrect": true
+        },
+        {
+          "text": "kodlar majmui",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlarni o‘rnatish jarayoni",
+          "isCorrect": false
+        },
+        {
+          "text": "hujjatlarni chop etish jarayoni",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Dasturlash tili – bu … ?",
+      "options": [
+        {
+          "text": "inson va kompyuter o‘rtasidagi rasmiy aloqa tili",
+          "isCorrect": true
+        },
+        {
+          "text": "tabiiy til turi",
+          "isCorrect": false
+        },
+        {
+          "text": "kompyuter tili",
+          "isCorrect": false
+        },
+        {
+          "text": "ikkinchi pog‘onali til",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Integrated Development Environment (IDE) bu - …?",
+      "options": [
+        {
+          "text": "integrallashgan dasturlash muhiti",
+          "isCorrect": true
+        },
+        {
+          "text": "integrallashgan dastur muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "integrallashgan platforma muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlash muhiti",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "IDE bu - … ?",
+      "options": [
+        {
+          "text": "dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan maxsus matn muharriri",
+          "isCorrect": true
+        },
+        {
+          "text": "dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan qobiq dastur",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturiy ta’minot yaratish uchun dastur tili",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturiy ta’minot yaratish uchun fayl menedjiri",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "IDLE (Integrated Development and Learning Environment) bu - … ?",
+      "options": [
+        {
+          "text": "integrallashgan dasturlash va o‘rganish muhiti",
+          "isCorrect": true
+        },
+        {
+          "text": "integrallashgan dastur va o‘qish muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "integral dasturlash va yozish muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "integrallashgan matn va o‘rganish muhiti",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python tili IDLE oynasi nechta muhitlarga ega … ?",
+      "options": [
+        {
+          "text": "interfaol, dasturlash va grafik muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "interfaol (konsol) va grafik muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "interfaol (konsol) va dasturlash muhiti",
+          "isCorrect": true
+        },
+        {
+          "text": "grafik va dasturlash muhiti",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python dasturlash tili tarkibi nimalardan iborat?",
+      "options": [
+        {
+          "text": "katta va kichik lotin harflar, arab raqamlari",
+          "isCorrect": false
+        },
+        {
+          "text": "katta va kichik lotin harflar, arab raqamlari, maxsus belgilar, xizmatchi so‘zlar",
+          "isCorrect": true
+        },
+        {
+          "text": "lotin harflar, arab raqamlari, xizmatchi so‘zlar",
+          "isCorrect": false
+        },
+        {
+          "text": "katta va kichik harflar, arab raqamlari, maxsus belgilar, xizmatchi so‘zlar",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python o‘zgaruvchilari – bu … ?",
+      "options": [
+        {
+          "text": "o‘z qiymatiga ega bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘z qiymati va turiga ega, kompyuter xotirasidagi yacheyka nomi",
+          "isCorrect": false
+        },
+        {
+          "text": "turiga ega, hamda o‘zida dastur davomida o‘zgarishi mumkin bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘z qiymati va turiga ega, hamda o‘zida dastur davomida o‘zgarishi mumkin bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Python o‘zgarmaslari (doimiylari) – bu …?",
+      "options": [
+        {
+          "text": "o‘z qiymati va turiga ega, hamda o‘zida dastur davomida o‘zgarishi mumkin bo‘lgan qiymatlarni saqlaydigan kompyuter xotirasidagi yacheyka nomi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘z qiymati va turiga ega, o‘zgaruvchan qiymatlarni saqlovchi kompyuter xotirasidagi yacheykalar nomi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘z qiymati va turiga ega, hamda faqat o‘qish uchun mo‘ljallangan qiymatlarni saqlovchi kompyuter xotirasidagi yacheykalar nomi",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘z turiga ega, hamda faqat o‘qish uchun mo‘ljallangan qiymatlarni saqlovchi yacheykalar nomi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Identifikator – bu … ?",
+      "options": [
+        {
+          "text": "o‘zgaruvchilar, o‘zgarmaslar, funksiyalar, protseduralar, modullarning dasturdagi umumiy turli nomlari.",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchilar, o‘zgarmaslarning umumiy ma’lumot nomlari.",
+          "isCorrect": false
+        },
+        {
+          "text": "funksiyalar, protseduralar, modullarning dasturdagi umumiy tiplari nomlari.",
+          "isCorrect": false
+        },
+        {
+          "text": "protseduralar, massivlar, modullarning dasturdagi umumiy turli shakllari nomlari.",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang: not ( (A and B) or (not C and D) ) and (A or B)",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": false
+        },
+        {
+          "text": "True",
+          "isCorrect": true
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:((A and not B) and (C and D)) and (A or B)",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": true
+        },
+        {
+          "text": "True",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:not(A or B) and (C or D) or (C and D)",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": true
+        },
+        {
+          "text": "True",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:not((not A or not B) and (C or D)) or (A and B)",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": true
+        },
+        {
+          "text": "True",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "A=True; B=False; C=True; D=False bo‘lsa quyidagi mantiqiy ifodani hisoblang:((not A or not B) or not(not C and D)) and (not A or B)",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": true
+        },
+        {
+          "text": "True",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=45; b=49; c=87 bo‘lsa quyidagi mantiqiy ifodani hisoblang:((a+b)<c)or('a'== 'A')",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": true
+        },
+        {
+          "text": "True",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=17; MAX=20; s=5; n=5 bo‘lsa quyidagi mantiqiy ifodani hisoblang:(not(not a==MAX))or(s==n)",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": false
+        },
+        {
+          "text": "True",
+          "isCorrect": true
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "n=5; m=50; y=0;  bo‘lsa quyidagi mantiqiy ifodani hisoblang:((n*10)<m) and  not y",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": true
+        },
+        {
+          "text": "True",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "i=1; t=2; k='K';  bo‘lsa quyidagi mantiqiy ifodani hisoblang:(i>t) or (not k=='k' )",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": false
+        },
+        {
+          "text": "True",
+          "isCorrect": true
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "x=1; y=0 bo‘lsa quyidagi mantiqiy ifodani hisoblang: (x>y) and not y",
+      "options": [
+        {
+          "text": "False",
+          "isCorrect": false
+        },
+        {
+          "text": "True",
+          "isCorrect": true
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "True False",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=3; b=5 bo‘lsa quyidagi ifodani hisoblang:  print(a if a==b else a if a>b else b)",
+      "options": [
+        {
+          "text": "3",
+          "isCorrect": false
+        },
+        {
+          "text": "5",
+          "isCorrect": true
+        },
+        {
+          "text": "5>3",
+          "isCorrect": false
+        },
+        {
+          "text": "8",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=99; b=105 bo‘lsa quyidagi ifodani hisoblang:  print(a+1 if a>b else b)",
+      "options": [
+        {
+          "text": "99",
+          "isCorrect": false
+        },
+        {
+          "text": "100",
+          "isCorrect": false
+        },
+        {
+          "text": "105",
+          "isCorrect": true
+        },
+        {
+          "text": "a+1",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=99; b=105 bo‘lsa quyidagi ifodani hisoblang:  print(a+1 if a<b else b)",
+      "options": [
+        {
+          "text": "99",
+          "isCorrect": false
+        },
+        {
+          "text": "100",
+          "isCorrect": true
+        },
+        {
+          "text": "105",
+          "isCorrect": false
+        },
+        {
+          "text": "a+1",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "for i in range(1,6): print('A') dasturida ‘A’ harfi nechi marta ekranga chiqariladi?",
+      "options": [
+        {
+          "text": "1 marta",
+          "isCorrect": false
+        },
+        {
+          "text": "5 marta",
+          "isCorrect": true
+        },
+        {
+          "text": "6 marta",
+          "isCorrect": false
+        },
+        {
+          "text": "7 marta",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "for i in range(0,6): print('A') dasturida ‘A’ harfi nechi marta ekranga chiqariladi?",
+      "options": [
+        {
+          "text": "1 marta",
+          "isCorrect": false
+        },
+        {
+          "text": "5 marta",
+          "isCorrect": false
+        },
+        {
+          "text": "6 marta",
+          "isCorrect": true
+        },
+        {
+          "text": "7 marta",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "for i in range(0,6,2): print('B') dasturida ‘B’ harfi nechi marta ekranga chiqariladi?",
+      "options": [
+        {
+          "text": "3",
+          "isCorrect": true
+        },
+        {
+          "text": "5",
+          "isCorrect": false
+        },
+        {
+          "text": "6",
+          "isCorrect": false
+        },
+        {
+          "text": "biror marta ham chiqarilmaydi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "for i in range(0,6,5): print('B') dasturida ‘B’ harfi nechi marta ekranga chiqariladi?",
+      "options": [
+        {
+          "text": "2",
+          "isCorrect": true
+        },
+        {
+          "text": "3",
+          "isCorrect": false
+        },
+        {
+          "text": "5",
+          "isCorrect": false
+        },
+        {
+          "text": "biror marta ham chiqarilmaydi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "for i in range(0,6,7): print('B') dasturida ‘B’ harfi nechi marta ekranga chiqariladi?",
+      "options": [
+        {
+          "text": "1",
+          "isCorrect": true
+        },
+        {
+          "text": "2",
+          "isCorrect": false
+        },
+        {
+          "text": "3",
+          "isCorrect": false
+        },
+        {
+          "text": "biror marta ham chiqarilmaydi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "O‘zgaruvchini e’lon qilish uchun qaysi belgidan foydalaniladi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchi qiymati => belgisi, o‘zgaruvchining nomi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi identifikatori (nomi), - belgisi, o‘zgaruvchining qiymati",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi identifikatori (nomi), = belgisi, o‘zgaruvchining qiymati",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchi qiymati, = belgisi, o‘zgaruvchining identifikatori(nomi)",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Operator – bu … ?",
+      "options": [
+        {
+          "text": "dasturlash tilining buyrug’i",
+          "isCorrect": true
+        },
+        {
+          "text": "dasturlash tilining alifbosi",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlash tilining muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "dastur o‘zgaruvchisining qiymati",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Ma’lumotlar turlari bu …?",
+      "options": [
+        {
+          "text": "kompyuter xotirasidagi sonlarning qiymati",
+          "isCorrect": false
+        },
+        {
+          "text": "kompyuter xotirasida saqlanadigan dastur",
+          "isCorrect": false
+        },
+        {
+          "text": "kompyuter xotirasidagi yacheykada saqlanadigan ma’lumot",
+          "isCorrect": false
+        },
+        {
+          "text": "kompyuter xotirasidagi yacheykada saqlanadigan ma’lumotlar shakli",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Quyidagi belgilardan qaysi biri Pythonda bir qatorli izohlar berish uchun ishlatiladi?",
+      "options": [
+        {
+          "text": "//",
+          "isCorrect": false
+        },
+        {
+          "text": "#",
+          "isCorrect": true
+        },
+        {
+          "text": "'''  '''",
+          "isCorrect": false
+        },
+        {
+          "text": "/*",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Quyidagi belgilardan qaysi biri Pythonda ko‘p qatorli izohlar berish uchun ishlatiladi?",
+      "options": [
+        {
+          "text": "//",
+          "isCorrect": false
+        },
+        {
+          "text": "#",
+          "isCorrect": false
+        },
+        {
+          "text": "'''  '''",
+          "isCorrect": true
+        },
+        {
+          "text": "/*",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Quyidagi Python funktsiyasining chiqish natijasini toping.len ( [ \"salom\" , 2 ,  4 ,  6 ] )",
+      "options": [
+        {
+          "text": "xato",
+          "isCorrect": false
+        },
+        {
+          "text": "6",
+          "isCorrect": false
+        },
+        {
+          "text": "4",
+          "isCorrect": true
+        },
+        {
+          "text": "3",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda a=[4,5,1,2,4,7] ro‘yhat berilgan bo‘lsa, quyidagi dastur natijasini aniqlang: 4 in a",
+      "options": [
+        {
+          "text": "true",
+          "isCorrect": true
+        },
+        {
+          "text": "false",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "xor",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda qanday ma’lumotlar turi mavjud?",
+      "options": [
+        {
+          "text": "butun sonlar, haqiqiy sonlar, satrli, mantiqiy",
+          "isCorrect": true
+        },
+        {
+          "text": "butun sonlar, haqiqiy sonlar,",
+          "isCorrect": false
+        },
+        {
+          "text": "sonlar, harflar, kalit so‘zlar",
+          "isCorrect": false
+        },
+        {
+          "text": "butun sonlar, haqiqiy sonlar, simvolli, maxsus sonlar",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python tilida butun sonlarga o‘zgartirish operatori?",
+      "options": [
+        {
+          "text": "float ()",
+          "isCorrect": false
+        },
+        {
+          "text": "int ()",
+          "isCorrect": true
+        },
+        {
+          "text": "str ()",
+          "isCorrect": false
+        },
+        {
+          "text": "bool ()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python tilida haqiqiy sonlarga o‘zgartirish operatori?",
+      "options": [
+        {
+          "text": "float ()",
+          "isCorrect": true
+        },
+        {
+          "text": "int ()",
+          "isCorrect": false
+        },
+        {
+          "text": "str ()",
+          "isCorrect": false
+        },
+        {
+          "text": "bool ()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python tilida satrli ma’lumotlarga o‘zgartirish operatori?",
+      "options": [
+        {
+          "text": "float ()",
+          "isCorrect": false
+        },
+        {
+          "text": "int ()",
+          "isCorrect": false
+        },
+        {
+          "text": "str ()",
+          "isCorrect": true
+        },
+        {
+          "text": "bool ()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Python tilida mantiqiy ma’lumotlarga o‘zgartirish operatori?",
+      "options": [
+        {
+          "text": "float ()",
+          "isCorrect": false
+        },
+        {
+          "text": "int ()",
+          "isCorrect": false
+        },
+        {
+          "text": "str ()",
+          "isCorrect": false
+        },
+        {
+          "text": "bool ()",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Python tilida ma’lumotlar turini aniqlash operatori?",
+      "options": [
+        {
+          "text": "float ()",
+          "isCorrect": false
+        },
+        {
+          "text": "int ()",
+          "isCorrect": false
+        },
+        {
+          "text": "str ()",
+          "isCorrect": false
+        },
+        {
+          "text": "type()",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Pythonda bo‘linmaning butun qiymatini aniqlash amal belgisi?",
+      "options": [
+        {
+          "text": "/",
+          "isCorrect": false
+        },
+        {
+          "text": "++",
+          "isCorrect": false
+        },
+        {
+          "text": "%",
+          "isCorrect": false
+        },
+        {
+          "text": "//",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Pythonda bo‘linmaning qoldiq qiymatini aniqlash amal belgisi?",
+      "options": [
+        {
+          "text": "%",
+          "isCorrect": true
+        },
+        {
+          "text": "++",
+          "isCorrect": false
+        },
+        {
+          "text": "**",
+          "isCorrect": false
+        },
+        {
+          "text": "//",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda darajaga ko‘tarish amal belgisi?",
+      "options": [
+        {
+          "text": "pov(x, n)",
+          "isCorrect": false
+        },
+        {
+          "text": "**",
+          "isCorrect": true
+        },
+        {
+          "text": "%",
+          "isCorrect": false
+        },
+        {
+          "text": "//",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda qisqartirilgan qo‘shish amal belgisi?",
+      "options": [
+        {
+          "text": "=+",
+          "isCorrect": false
+        },
+        {
+          "text": "++",
+          "isCorrect": false
+        },
+        {
+          "text": "+=",
+          "isCorrect": true
+        },
+        {
+          "text": "-+",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda qisqartirilgan ayirish amal belgisi?",
+      "options": [
+        {
+          "text": "=+",
+          "isCorrect": false
+        },
+        {
+          "text": "-=",
+          "isCorrect": true
+        },
+        {
+          "text": "=-",
+          "isCorrect": false
+        },
+        {
+          "text": "+-",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda qisqartirilgan ko‘paytirish amal belgisi?",
+      "options": [
+        {
+          "text": "*=",
+          "isCorrect": true
+        },
+        {
+          "text": "+=",
+          "isCorrect": false
+        },
+        {
+          "text": "-=",
+          "isCorrect": false
+        },
+        {
+          "text": "=*",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda qisqartirilgan bo‘lish amal belgisi?",
+      "options": [
+        {
+          "text": "=/",
+          "isCorrect": false
+        },
+        {
+          "text": "++",
+          "isCorrect": false
+        },
+        {
+          "text": "/=",
+          "isCorrect": true
+        },
+        {
+          "text": "//=",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda qisqartirilgan bo‘linmaning butun qiymatini aniqlash amal belgisi?",
+      "options": [
+        {
+          "text": "//=",
+          "isCorrect": true
+        },
+        {
+          "text": "/=",
+          "isCorrect": false
+        },
+        {
+          "text": "=//",
+          "isCorrect": false
+        },
+        {
+          "text": "=/",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda mantiqiy VA amali?",
+      "options": [
+        {
+          "text": "or",
+          "isCorrect": false
+        },
+        {
+          "text": "and",
+          "isCorrect": true
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "xor",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda mantiqiy YOKI amali?",
+      "options": [
+        {
+          "text": "or",
+          "isCorrect": true
+        },
+        {
+          "text": "and",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "xor",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda mantiqiy EMAS amali?",
+      "options": [
+        {
+          "text": "or",
+          "isCorrect": false
+        },
+        {
+          "text": "and",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": true
+        },
+        {
+          "text": "xor",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda mantiqiy o‘xshashlikni inkor etish amali?",
+      "options": [
+        {
+          "text": "or",
+          "isCorrect": false
+        },
+        {
+          "text": "and",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "xor",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Pythonda mantiqiy tarkibiga kirishi amali?",
+      "options": [
+        {
+          "text": "or",
+          "isCorrect": false
+        },
+        {
+          "text": "and",
+          "isCorrect": false
+        },
+        {
+          "text": "in",
+          "isCorrect": true
+        },
+        {
+          "text": "xor",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda mantiqiy tarkibiga kirmasligi amali?",
+      "options": [
+        {
+          "text": "or",
+          "isCorrect": false
+        },
+        {
+          "text": "in",
+          "isCorrect": false
+        },
+        {
+          "text": "not",
+          "isCorrect": false
+        },
+        {
+          "text": "not in",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Satrli ma’lumotlarni bir biriga ‘+’ qo‘shish natijasida .......",
+      "options": [
+        {
+          "text": "satrli ma’lumotlarni qo‘shish mumki emas",
+          "isCorrect": false
+        },
+        {
+          "text": "satrli ma’lumotlar ayriladi",
+          "isCorrect": false
+        },
+        {
+          "text": "satrli ma’lumotlar birlashtiriladi",
+          "isCorrect": true
+        },
+        {
+          "text": "xatolik sodir bo‘ladi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a[5] ning ma’nosi nima?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining faqat 6-chi turgan belgisi chiqadi",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchining faqat 5-chi turgan belgisi chiqadi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining faqat 6-belgisigacha barcha belgilar chiqadi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining 6-chi turgan belgisidan keyingi barchasi chiqadi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a[:5] ma’nosi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining 5-chi turgan belgisigacha barcha belgilar ekranga chiqariladi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining faqat 5-chi turgan belgisi ekranga chiqariladi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining 6-chi turgan belgisigacha barcha belgilar ekranga chiqariladi",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchining faqat 6-chi turgan belgisi ekranga chiqariladi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a[5:] ma’nosi?",
+      "options": [
+        {
+          "text": "faqat 5-chi turgan belgisi ekranga chiqariladi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining faqat 6-chi turgan belgisi ekranga chiqariladi",
+          "isCorrect": false
+        },
+        {
+          "text": "С) o‘zgaruvchining 5-chi turgan belgisidan oxirigacha barcha belgilar ekranga chiqariladi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining 6-chi turgan belgisidan oxirigacha barcha belgilar ekranga chiqariladi",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "a[5:9] natijasida ekranga qanday belgilar chiqariladi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining 6-chi turgan belgisidan 9 belsigacha joylashgan belgilar",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchining 5-chi turgan belgisidan 9 belsigacha joylashgan belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining 6-chi turgan belgisidan 10 belsigacha joylashgan belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining 5-chi turgan belgisidan 10 belsigacha joylashgan belgilar",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a[-5] ma’nosi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining chap tomonida faqat 5-chi turgan belgi",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining o‘ng tomonida faqat 5-chi turgan belgi",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchining o‘ng tomonida 5-chidan keyin barcha belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining chap tomonida 6-chidan keyin barcha belgilar",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a[-5:] ma’nosi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining o‘ng tomonda 6-chi turgan belgisidan oxirigacha barcha belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining chap tomonda 5-chi turgan belgisidan oxirigacha barcha belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining o‘ng tomonda 5-chi turgan belgisidan oxirigacha barcha belgilar",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchining chap tomonda 6-chi turgan belgisidan oxirigacha barcha belgilar",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a[:-5] ma’nosi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining boshidan o‘ng tomondan 6-chi turgan belgisigacha bo’lgan belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining boshidan chap tomondan 5-chi turgan belgisigacha barcha belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining boshidan chap tomondan 6-chi turgan belgisigacha barcha belgilar",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining boshidan o‘ng tomondan 5-chi turgan belgisigacha barcha belgilar",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "a[::-1] ekranga qanday belgilar chiqariladi?",
+      "options": [
+        {
+          "text": "o‘zgaruvchining oxirgi belgisidan boshigacha barcha belgilar (teskari tartibda)",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchining boshidagi belgisidan oxirigacha barcha belgilar (to‘g‘ri tartibda)",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining boshidagi belgisidan o‘rtasigacha barcha belgilar (teskari tartibda)",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchining oxirgi belgisidan o‘rtasigacha barcha belgilar (teskari tartibda)",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=‘S’; a+a ning natijasini toping?",
+      "options": [
+        {
+          "text": "aa",
+          "isCorrect": false
+        },
+        {
+          "text": "Ss",
+          "isCorrect": false
+        },
+        {
+          "text": "SS",
+          "isCorrect": true
+        },
+        {
+          "text": "xatolik sodir bo‘ladi",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=“O‘zbekiston” bo‘lsa, a[5] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "k",
+          "isCorrect": true
+        },
+        {
+          "text": "e",
+          "isCorrect": false
+        },
+        {
+          "text": "i",
+          "isCorrect": false
+        },
+        {
+          "text": "O‘zbek",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=“O‘zbekiston” bo‘lsa, a[:6] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "O‘z",
+          "isCorrect": false
+        },
+        {
+          "text": "O‘zbe",
+          "isCorrect": false
+        },
+        {
+          "text": "O‘zbek",
+          "isCorrect": true
+        },
+        {
+          "text": "iston",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisodiyot’ bo‘lsa, a[6:] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "Iqtiso",
+          "isCorrect": false
+        },
+        {
+          "text": "Iqtisot",
+          "isCorrect": false
+        },
+        {
+          "text": "С) odiyot",
+          "isCorrect": false
+        },
+        {
+          "text": "diyot",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisodiyot’ bo‘lsa, a[5:9] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "odiy",
+          "isCorrect": true
+        },
+        {
+          "text": "odiyo",
+          "isCorrect": false
+        },
+        {
+          "text": "odiyot",
+          "isCorrect": false
+        },
+        {
+          "text": "sodiy",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisodiyot’ bo‘lsa, a[-5] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "a",
+          "isCorrect": false
+        },
+        {
+          "text": "d",
+          "isCorrect": true
+        },
+        {
+          "text": "s",
+          "isCorrect": false
+        },
+        {
+          "text": "o",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisodiyot’ bo‘lsa, a[-5:] ning qiymatini aniqlang",
+      "options": [
+        {
+          "text": "Iqtiso",
+          "isCorrect": false
+        },
+        {
+          "text": "Iqtis",
+          "isCorrect": false
+        },
+        {
+          "text": "diyot",
+          "isCorrect": true
+        },
+        {
+          "text": "odiyot",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisodiyot’ bo‘lsa, a[:-5] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "diyot",
+          "isCorrect": false
+        },
+        {
+          "text": "odiyot",
+          "isCorrect": false
+        },
+        {
+          "text": "Iqtisod",
+          "isCorrect": false
+        },
+        {
+          "text": "Iqtiso",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisodiyot’ bo‘lsa, a[::-1] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "toyidositqI",
+          "isCorrect": true
+        },
+        {
+          "text": "Iqtisodiyo",
+          "isCorrect": false
+        },
+        {
+          "text": "Iqtisodiyot",
+          "isCorrect": false
+        },
+        {
+          "text": "toyidositq",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "a=‘Iqtisod_va_turizm’ bo‘lsa, a[0:9:2] ning qiymatini aniqlang.",
+      "options": [
+        {
+          "text": "Iqtisod_va",
+          "isCorrect": false
+        },
+        {
+          "text": "Iiod_a",
+          "isCorrect": false
+        },
+        {
+          "text": "Itsdv",
+          "isCorrect": true
+        },
+        {
+          "text": "tadv_",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Satrli ma’lumotlarni uzunligini aniqlash funksiyasi?",
+      "options": [
+        {
+          "text": "len()",
+          "isCorrect": true
+        },
+        {
+          "text": "type()",
+          "isCorrect": false
+        },
+        {
+          "text": "print()",
+          "isCorrect": false
+        },
+        {
+          "text": "int()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Satrli ma’lumotlarning barcha harfini bosh harfga o‘tkazish usulini ko‘rsating.",
+      "options": [
+        {
+          "text": "o‘zgaruvchi.upper()",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchi.lower()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.capitalize()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.swapcase()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Satrli ma’lumotlarni barcha harfini kichik harf qilish usuli?",
+      "options": [
+        {
+          "text": "o‘zgaruvchi.upper()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.lower()",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchi.capitalize()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.swapcase()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Satrli ma’lumotlarni birinchi harfini bosh harf qilish usuli?",
+      "options": [
+        {
+          "text": "o‘zgaruvchi.upper()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.lower()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.capitalize()",
+          "isCorrect": true
+        },
+        {
+          "text": "o‘zgaruvchi.swapcase()",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Satrli ma’lumotlarni harflarning registrini teskarisiga aylantirish usuli?",
+      "options": [
+        {
+          "text": "o‘zgaruvchi.upper()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.lower()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.capitalize()",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi.swapcase()",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Python tilida o‘zgaruvchini klaviaturadan kiritish operatori?",
+      "options": [
+        {
+          "text": "input(o‘zgaruvchi)",
+          "isCorrect": true
+        },
+        {
+          "text": "print(o‘zgaruvchi)",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi(print)",
+          "isCorrect": false
+        },
+        {
+          "text": "o‘zgaruvchi(input)",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda quyidagi kod natijasini aniqlang: print(type(3/ 2))",
+      "options": [
+        {
+          "text": "<class ‘int’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘float’>",
+          "isCorrect": true
+        },
+        {
+          "text": "<class ‘str’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘bool’>",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda quyidagi kod natijasini aniqlang: print(type(5))",
+      "options": [
+        {
+          "text": "<class ‘int’>",
+          "isCorrect": true
+        },
+        {
+          "text": "<class ‘float’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘str’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘bool’>",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda quyidagi kod natijasini aniqlang: print(type(‘salom’))",
+      "options": [
+        {
+          "text": "<class ‘int’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘float’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘str’>",
+          "isCorrect": true
+        },
+        {
+          "text": "<class ‘bool’>",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Pythonda quyidagi kod natijasini aniqlang: \tprint(type(x==1))",
+      "options": [
+        {
+          "text": "<class ‘int’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘float’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘str’>",
+          "isCorrect": false
+        },
+        {
+          "text": "<class ‘bool’>",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Math modulining ceil(x) funksiyasi vazifasi?",
+      "options": [
+        {
+          "text": "eng yaqin katta butun songacha yaxlitlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x nidan keyingi belgi qolgunga qadar yaxlitlash",
+          "isCorrect": false
+        },
+        {
+          "text": "eng yaqin kichik butun songacha yaxlitlash",
+          "isCorrect": false
+        },
+        {
+          "text": "butun qismini chiqiarish",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining round(x,n) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "eng yaqin butun songacha yaxlitlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x ni nuqtadan keyin n ta belgi qolgunga qadar yaxlitlash",
+          "isCorrect": true
+        },
+        {
+          "text": "eng yaqin kichik butun songacha yaxlitlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x dan keyin n darajaga qadar yaxlitlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining floor(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "eng yaqin manfiy songacha yaxlitlash",
+          "isCorrect": false
+        },
+        {
+          "text": "eng yaqin butun songacha yaxlitlash",
+          "isCorrect": false
+        },
+        {
+          "text": "eng yaqin kichik butun songacha yaxlitlash",
+          "isCorrect": true
+        },
+        {
+          "text": "eng yaqin haqiqiy manfiy songacha yaxlitlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining log(a,b) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "b asosli o‘nlik logarifmini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "a asosli natural son logarifmini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "a asosli b son logarifmini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "b asosli a son logarifmini aniqlash",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Math modulining log10(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "10 asosli x son logarifmini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "10 asosli natural son logarifmini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "1 asosli b son logarifmini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "10 asosli e son logarifmini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining sqrt(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning absolyut qiymatini modulini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kubinchi darajali ildizini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kvadrat ildizini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning kvadratini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining pow(x,n) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning kvadratini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning n- ildizini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kubinchi darajali ildizini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning n darajasini aniqlash",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "Math modulining factorial(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning darajasini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x faktorialini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning kvadratini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kvadrat ildizini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining abs(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning absolyut qiymatini modulini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning kvadrat ildizini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kvadratini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning n darajasini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining cos(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning sinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning teskari kosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusi kvadratini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining sin(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning sinusini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning teskari sinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning tangensini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusi kvadratini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining tan(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning teskari tangensini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning tangensini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning kosinusi kvadratini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining acos(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning arksinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning arkkosinusini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning kosinusi kvadratini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining asin(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning arksinusini aniqlash",
+          "isCorrect": true
+        },
+        {
+          "text": "x sonning kosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning arkkosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusi kvadratini aniqlash",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Math modulining atan(x) funksiya vazifasi?",
+      "options": [
+        {
+          "text": "x sonning arksinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning kosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning arkkosinusini aniqlash",
+          "isCorrect": false
+        },
+        {
+          "text": "x sonning arktangensini aniqlash",
+          "isCorrect": true
+        }
+      ]
+    }
+  ],
+  "createdBy": {
+    "name": "Muhammadsodiq Ergashev"
+  }
+}

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>O‘qituvchi Paneli | Test Tayyor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-blue-900 text-white min-h-screen p-6 font-sans">
+
+  <!-- HEADER -->
+  <header class="max-w-4xl mx-auto mb-10 text-center">
+    <h1 class="text-3xl font-bold mb-2">👩‍🏫 O‘qituvchi Paneli</h1>
+    <p id="teacherName" class="text-lg text-green-300 font-semibold mb-1">Assalomu alaykum!</p>
+    <p class="text-gray-300">Test yarating va uni talabalarga ulashish uchun link oling</p>
+    <p class="mt-1 text-sm text-gray-400">Google hisobingiz orqali tizimga kirgansiz</p>
+  </header>
+
+  <!-- FORM -->
+  <main class="max-w-2xl mx-auto bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-xl space-y-6">
+    <h2 class="text-xl font-semibold mb-4">🧾 Yangi test yaratish</h2>
+
+    <form id="testForm" enctype="multipart/form-data" class="space-y-4">
+      <div>
+        <label for="testName" class="block text-sm font-medium">Test nomi</label>
+        <input type="text" id="testName" name="testName" class="w-full p-2 rounded text-black" required>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="duration" class="block text-sm font-medium">Test vaqti (daqiqa)</label>
+          <input type="number" id="duration" name="duration" min="1" class="w-full p-2 rounded text-black" required>
+        </div>
+        <div>
+          <label for="questionCount" class="block text-sm font-medium">Savollar soni (tasodifiy)</label>
+          <input type="number" id="questionCount" name="questionCount" min="1" class="w-full p-2 rounded text-black" required>
+        </div>
+      </div>
+
+      <div>
+        <label for="file" class="block text-sm font-medium">📁 Test fayli (.txt)</label>
+        <input type="file" id="file" name="file" accept=".txt" class="w-full p-2 bg-white rounded text-black" required>
+      </div>
+
+      <!-- 📷 Rasm -->
+      <div>
+        <label for="image" class="block text-sm font-medium">🖼 Test rasmi (jpg/png)</label>
+        <input type="file" id="image" name="image" accept="image/*" class="w-full p-2 bg-white rounded text-black">
+      </div>
+
+      <div class="flex justify-between items-center">
+        <a href="/samples/namuna.txt" download class="text-blue-300 underline text-sm hover:text-blue-200">
+          📥 Namuna faylni yuklab olish
+        </a>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow">
+          Testni yaratish
+        </button>
+      </div>
+    </form>
+
+    <div id="uploadStatus" class="mt-4 text-sm hidden"></div>
+  </main>
+
+  <!-- 📋 Testlar Ro‘yxati -->
+  <section class="max-w-3xl mx-auto mt-12 bg-white/10 backdrop-blur p-6 rounded-xl shadow">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold">📚 Yaratilgan testlar</h2>
+      <button id="deleteAllBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+        🗑️ Hammasini o‘chirish
+      </button>
+    </div>
+    <ul id="testList" class="space-y-3"></ul>
+  </section>
+
+  <!-- SCRIPT -->
+  <script>
+    const form = document.getElementById('testForm');
+    const statusMsg = document.getElementById('uploadStatus');
+    const testList = document.getElementById("testList");
+    const teacherName = document.getElementById("teacherName");
+    const deleteAllBtn = document.getElementById("deleteAllBtn");
+
+    // 👤 O‘qituvchi ismini chiqarish
+    async function loadTeacherInfo() {
+      try {
+        const res = await fetch("/api/user", { credentials: "include" });
+        if (!res.ok) return;
+        const user = await res.json();
+        teacherName.textContent = `👋 Assalomu alaykum, ${user.name}`;
+      } catch {
+        teacherName.textContent = "👋 Assalomu alaykum, O‘qituvchi!";
+      }
+    }
+
+    // 📤 Testni yuklash
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.className = "mt-4 text-sm";
+      statusMsg.classList.add("text-blue-300");
+      statusMsg.classList.remove("hidden");
+      statusMsg.textContent = "⏳ Yuklanmoqda...";
+
+      const formData = new FormData(form);
+      try {
+        const res = await fetch('/api/upload-test', {
+          method: 'POST',
+          body: formData,
+          credentials: "include"
+        });
+        if (!res.ok) throw new Error("Upload failed");
+        const data = await res.json();
+        statusMsg.classList.remove('text-red-400', 'text-blue-300');
+        statusMsg.classList.add('text-green-400');
+        statusMsg.innerHTML = `
+          ✅ Test muvaffaqiyatli yuklandi va yaratildi!<br>
+          🔗 <strong>Talabalarga ulashish uchun link:</strong>
+          <a href="${data.testLink}" target="_blank" class="underline text-blue-300">${location.origin}${data.testLink}</a>
+        `;
+        form.reset();
+        await loadTests(); // ro‘yxatni yangilash
+      } catch (err) {
+        statusMsg.classList.remove('text-green-400', 'text-blue-300');
+        statusMsg.classList.add('text-red-400');
+        statusMsg.textContent = "❌ Yuklashda xatolik. Qaytadan urinib ko‘ring.";
+      }
+    });
+
+    // 🗑️ Hammasini o‘chirish
+    deleteAllBtn.addEventListener("click", async () => {
+      if (!confirm("Haqiqatan ham BARCHA testlaringizni o‘chirilsinmi?")) return;
+      try {
+        const resp = await fetch("/api/tests", { method: "DELETE", credentials: "include" });
+        if (!resp.ok) throw new Error();
+        await loadTests();
+      } catch {
+        alert("❌ O‘chirishda xatolik!");
+      }
+    });
+
+    // 📋 Testlar ro‘yxatini yuklash
+    async function loadTests() {
+      testList.innerHTML = "<li class='text-sm text-gray-300'>⏳ Yuklanmoqda...</li>";
+      try {
+        const res = await fetch("/api/teacher/tests", { credentials: "include" });
+        const tests = await res.json();
+
+        if (!Array.isArray(tests) || tests.length === 0) {
+          testList.innerHTML = "<li>🟡 Hozircha testlar mavjud emas</li>";
+          return;
+        }
+
+        testList.innerHTML = "";
+        tests.forEach(test => {
+          const li = document.createElement("li");
+          li.className = "bg-white/20 p-4 rounded-lg shadow flex justify-between items-center";
+          li.innerHTML = `
+            <div>
+              <div class="font-semibold text-white">📘 ${test.title}</div>
+              <div class="text-sm text-blue-300 break-all">
+                <a href="${test.link}" target="_blank">${location.origin}${test.link}</a>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="/api/export/${test.id}"
+                 class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded shadow text-sm">
+                ⬇ Statistika (.xlsx)
+              </a>
+              <button data-id="${test.id}"
+                class="delete-one bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                🗑️ O‘chirish
+              </button>
+            </div>
+          `;
+          testList.appendChild(li);
+
+          // 🗑️ Bitta testni o‘chirish
+          li.querySelector(".delete-one").addEventListener("click", async (e) => {
+            const id = e.currentTarget.getAttribute("data-id");
+            if (!confirm("Haqiqatan ham ushbu testni o‘chirmoqchimisiz?")) return;
+            try {
+              const resp = await fetch(`/api/tests/${id}`, {
+                method: "DELETE",
+                credentials: "include"
+              });
+              const txt = await resp.text();
+              if (!resp.ok) {
+                alert(`❌ O‘chirishda xatolik (${resp.status}): ${txt}`);
+                return;
+              }
+              await loadTests();
+            } catch (err) {
+              alert("❌ Tarmoq xatosi. Qayta urinib ko‘ring.");
+              console.error(err);
+            }
+          });
+        });
+      } catch (err) {
+        console.error("Xatolik:", err);
+        testList.innerHTML = "<li class='text-red-400'>❌ Yuklashda xatolik</li>";
+      }
+    }
+
+    // Sahifa yuklanganda...
+    loadTeacherInfo();
+    loadTests();
+  </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+{
+  "testTitle": "Fizka",
+  "testType": "Yangi yuklangan test",
+  "time": 15,
+  "questionCount": 5,
+  "testImage": "/uploads/1fa38d9094.png",
+  "questions": [
+    {
+      "question": "Integrated Development Environment (IDE) bu - …?",
+      "options": [
+        {
+          "text": "integrallashgan dasturlash muhiti",
+          "isCorrect": true
+        },
+        {
+          "text": "integrallashgan dastur muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "integrallashgan platforma muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlash muhiti",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Dasturlash tili – bu … ?",
+      "options": [
+        {
+          "text": "inson va kompyuter o‘rtasidagi rasmiy aloqa tili",
+          "isCorrect": true
+        },
+        {
+          "text": "tabiiy til turi",
+          "isCorrect": false
+        },
+        {
+          "text": "kompyuter tili",
+          "isCorrect": false
+        },
+        {
+          "text": "ikkinchi pog‘onali til",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Dasturlash – bu … ?",
+      "options": [
+        {
+          "text": "kompyuter uchun dastur tuzish jarayoni",
+          "isCorrect": true
+        },
+        {
+          "text": "kodlar majmui",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlarni o‘rnatish jarayoni",
+          "isCorrect": false
+        },
+        {
+          "text": "hujjatlarni chop etish jarayoni",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "IDE bu - … ?",
+      "options": [
+        {
+          "text": "dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan maxsus matn muharriri",
+          "isCorrect": true
+        },
+        {
+          "text": "dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan qobiq dastur",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturiy ta’minot yaratish uchun dastur tili",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturiy ta’minot yaratish uchun fayl menedjiri",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Kompyuter dasturi – bu … ?",
+      "options": [
+        {
+          "text": "biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan buyruqlarning izchil to‘plami",
+          "isCorrect": true
+        },
+        {
+          "text": "biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan ishlar",
+          "isCorrect": false
+        },
+        {
+          "text": "biror masalani yechish jarayoni",
+          "isCorrect": false
+        },
+        {
+          "text": "biror masalani yechish uchun mo‘ljallangan dastur",
+          "isCorrect": false
+        }
+      ]
+    }
+  ],
+  "allQuestions": [
+    {
+      "question": "Kompyuter dasturi – bu … ?",
+      "options": [
+        {
+          "text": "biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan buyruqlarning izchil to‘plami",
+          "isCorrect": true
+        },
+        {
+          "text": "biror masalani yechish uchun kompyuter tomonidan ijro etilishi lozim bo‘lgan ishlar",
+          "isCorrect": false
+        },
+        {
+          "text": "biror masalani yechish jarayoni",
+          "isCorrect": false
+        },
+        {
+          "text": "biror masalani yechish uchun mo‘ljallangan dastur",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Dasturlash – bu … ?",
+      "options": [
+        {
+          "text": "kompyuter uchun dastur tuzish jarayoni",
+          "isCorrect": true
+        },
+        {
+          "text": "kodlar majmui",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlarni o‘rnatish jarayoni",
+          "isCorrect": false
+        },
+        {
+          "text": "hujjatlarni chop etish jarayoni",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Dasturlash tili – bu … ?",
+      "options": [
+        {
+          "text": "inson va kompyuter o‘rtasidagi rasmiy aloqa tili",
+          "isCorrect": true
+        },
+        {
+          "text": "tabiiy til turi",
+          "isCorrect": false
+        },
+        {
+          "text": "kompyuter tili",
+          "isCorrect": false
+        },
+        {
+          "text": "ikkinchi pog‘onali til",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "Integrated Development Environment (IDE) bu - …?",
+      "options": [
+        {
+          "text": "integrallashgan dasturlash muhiti",
+          "isCorrect": true
+        },
+        {
+          "text": "integrallashgan dastur muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "integrallashgan platforma muhiti",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturlash muhiti",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "question": "IDE bu - … ?",
+      "options": [
+        {
+          "text": "dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan maxsus matn muharriri",
+          "isCorrect": true
+        },
+        {
+          "text": "dasturchilar uchun qo‘shimcha funksiyalarga ega bo‘lgan dasturiy ta’minot yaratish uchun dasturiy vositalarga ega bo‘lgan qobiq dastur",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturiy ta’minot yaratish uchun dastur tili",
+          "isCorrect": false
+        },
+        {
+          "text": "dasturiy ta’minot yaratish uchun fayl menedjiri",
+          "isCorrect": false
+        }
+      ]
+    }
+  ],
+  "createdAt": 1754856493842,
+  "createdBy": {
+    "email": "iqtisodiyotvaturizmfakuleti@gmail.com",
+    "name": "Iqtisodiyot va turizm fakulteti"
+  }
+}
