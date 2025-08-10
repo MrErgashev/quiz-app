@@ -1,10 +1,13 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
+// 🌍 Bazaviy URL ni ENV dan olamiz
+const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+
 passport.use(new GoogleStrategy({
-  clientID: "170161856775-8cr820keuhqni4917pjf8839ep2ur1me.apps.googleusercontent.com",
-  clientSecret: "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",
-  callbackURL: "/auth/google/callback"
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: `${BASE_URL}/auth/google/callback`
 },
 (accessToken, refreshToken, profile, done) => {
   // ✅ access_token va refresh_token ni profile ga biriktiramiz
@@ -24,4 +27,5 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((obj, done) => {
   done(null, obj);
 });
+
 
