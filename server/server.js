@@ -9,6 +9,7 @@ const crypto = require("crypto");
 const { google } = require("googleapis");
 const XLSX = require("xlsx");
 const parser = require("./parser");
+require('dotenv').config();
 
 require("./auth/passport");
 
