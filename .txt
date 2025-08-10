@@ -1,0 +1,16 @@
+# Dockerfile
+FROM node:18-slim
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+# Doimiy saqlash uchun papkalar
+RUN mkdir -p /app/data/tests /app/data/results /app/public/uploads
+
+EXPOSE 3000
+
+# Agar server.js `server/` ichida bo'lsa shu; bo'lmasa ["node","server.js"] qiling
+CMD ["node", "server/server.js"]
