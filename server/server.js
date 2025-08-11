@@ -503,7 +503,9 @@ app.get("/api/questions", (req, res) => {
     res.status(500).send("Savollarni yuklab bo‘lmadi.");
   }
 });
+// HTTPS orqasida cookie uchun foydali
+app.set('trust proxy', 1);
 
-app.listen(PORT, () => {
-  console.log(`✅ Server ishga tushdi: http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server ishga tushdi: http://0.0.0.0:${PORT}`);
 });
