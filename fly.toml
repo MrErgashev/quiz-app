@@ -21,3 +21,8 @@ primary_region = 'hkg'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 2048
+  
+[mounts]
+  source="test_storage"
+  destination="/data"
+
