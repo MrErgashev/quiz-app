@@ -1,25 +1,17 @@
-# Node.js bazasi
-FROM node:20.18.0-slim AS base
+FROM node:20.18.0-slim
 WORKDIR /app
 
-# package.json va lock faylini ko‘chirish
+# package.json(lar)ni ko'chirish
 COPY package*.json ./
 
-# Production dependency o‘rnatish
-RUN if [ -f package-lock.json ]; then \
-      npm ci --omit=dev; \
-    else \
-      npm install --omit=dev; \
-    fi
+# Agar lock bor bo'lsa ci ishlaydi, bo'lmasa avtomatik install'ga tushsin
+RUN npm ci --omit=dev || npm install --omit=dev
 
-# Barcha kodlarni ko‘chirish
+# Boshqa hamma fayllar
 COPY . .
 
-# Muhit sozlamalari
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
-
-# Server ishga tushirish
 CMD ["node", "server/server.js"]
