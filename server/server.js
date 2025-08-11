@@ -14,7 +14,7 @@ require('dotenv').config();
 require("./auth/passport");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // ⬅️ FLY.IO uchun PORT muhit o'zgaruvchisi
 
 // --- Helpers ---
 const ensureDir = (p) => { if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true }); };
@@ -41,7 +41,8 @@ app.use(passport.session());
 // public/ (shu jumladan /uploads) fayllarni statik berish
 app.use(express.static(path.join(__dirname, "../public")));
 
-const upload = multer({ dest: "uploads/" });
+// ⬇️ Multer temporar papkani public/uploads ga yo'naltirdik
+const upload = multer({ dest: UPLOADS_DIR });
 
 function getDriveClient(tokens = {}) {
   const auth = new google.auth.OAuth2();
