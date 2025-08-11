@@ -23,10 +23,21 @@ const safeUnlink = (p) => { try { if (p && fs.existsSync(p)) fs.unlinkSync(p); }
 // Urinishlar cheklovi (bitta device uchun) — HOZIRCHA FOYDLANILMAYDI
 const MAX_ATTEMPTS_PER_DEVICE = 1; // xohlasangiz 2 qiling (hozir /api/save-result da ishlatilmaydi)
 
-const DATA_DIR = path.join(__dirname, "../data");
+/**
+ * MUHIM: Doimiy saqlash uchun Fly Volumes (/data) dan foydalanamiz.
+ * Local dev: ./data; Production (Fly): /data  (FLY_APP_NAME mavjud bo'ladi)
+ */
+const BASE_DATA_DIR =
+  process.env.DATA_DIR || (process.env.FLY_APP_NAME ? "/data" : path.join(__dirname, "../data"));
+
+const DATA_DIR = BASE_DATA_DIR;
 const TESTS_DIR = path.join(DATA_DIR, "tests");
 const RESULTS_DIR = path.join(DATA_DIR, "results");
-const UPLOADS_DIR = path.join(__dirname, "../public/uploads");
+
+// Upload rasmlarini ham doimiy saqlaymiz (URL /uploads/... o'zgarmaydi)
+const UPLOADS_DIR =
+  process.env.UPLOADS_DIR || path.join(DATA_DIR, "uploads");
+
 ensureDir(DATA_DIR); ensureDir(TESTS_DIR); ensureDir(RESULTS_DIR); ensureDir(UPLOADS_DIR);
 
 app.use(express.json());
@@ -38,10 +49,14 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-// public/ (shu jumladan /uploads) fayllarni statik berish
+
+// public/ (statik) fayllar
 app.use(express.static(path.join(__dirname, "../public")));
 
-// ⬇️ Multer temporar papkani public/uploads ga yo'naltirdik
+// /uploads URL'ini doimiy diskdan servis qilamiz
+app.use("/uploads", express.static(UPLOADS_DIR));
+
+// ⬇️ Multer temporar papkani doimiy UPLOADS_DIR ga yo'naltirdik
 const upload = multer({ dest: UPLOADS_DIR });
 
 function getDriveClient(tokens = {}) {
@@ -114,14 +129,14 @@ app.post(
       );
       const questions = [...allQuestions].sort(() => Math.random() - 0.5).slice(0, desired);
 
-      // 3) Rasmni /public/uploads ga ko‘chirish
+      // 3) Rasmni doimiy uploads ga ko‘chirish
       const id = crypto.randomBytes(5).toString("hex");
       let imagePath = null;
       if (imageFile) {
         const ext = path.extname(imageFile.originalname) || ".jpg";
         const newName = `${id}${ext}`;
         fs.renameSync(imageFile.path, path.join(UPLOADS_DIR, newName));
-        imagePath = `/uploads/${newName}`; // public orqali beriladi
+        imagePath = `/uploads/${newName}`; // URL o'zgarmadi
       }
 
       // 4) JSONni saqlash (createdAt qo‘shildi, va ENG MUHIMI: allQuestions ham qo‘shildi)
@@ -373,9 +388,9 @@ app.delete("/api/tests/:id", (req, res) => {
     const me = req.user.emails?.[0]?.value || req.user.email;
     if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
 
-    // Rasmni o‘chir
+    // Rasmni o‘chir (endi doimiy uploads dan)
     if (data.testImage && data.testImage.startsWith("/uploads/")) {
-      const imgAbs = path.join(__dirname, "../public", data.testImage);
+      const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
       safeUnlink(imgAbs);
     }
 
@@ -421,7 +436,7 @@ app.delete("/api/tests", (req, res) => {
 
       // rasm
       if (data.testImage && data.testImage.startsWith("/uploads/")) {
-        const imgAbs = path.join(__dirname, "../public", data.testImage);
+        const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
         safeUnlink(imgAbs);
       }
 
