@@ -1,39 +1,26 @@
-# syntax = docker/dockerfile:1
-
-# Adjust NODE_VERSION as desired
-ARG NODE_VERSION=20.18.0
-FROM node:${NODE_VERSION}-slim AS base
-
-LABEL fly_launch_runtime="Node.js"
-
-# Node.js app lives here
+# --- runtime bazasi
+FROM node:20.18.0-slim AS base
 WORKDIR /app
 
-# Set production environment
-ENV NODE_ENV="production"
+# --- deps o'rnatish
+# Agar lock-fayling bo'lsa npm ci ishlaydi; bo'lmasa npm install'ga tushamiz
+# (Fly builder uchun qulay bo'lgan pattern)
+COPY server/package*.json ./
+RUN if [ -f package-lock.json ]; then \
+      npm ci --omit=dev; \
+    else \
+      npm install --omit=dev; \
+    fi
 
+# --- app fayllari
+# backend
+COPY server/. .
+# statik fayllar (public) va data
+COPY public ./public
+COPY data ./data
 
-# Throw-away build stage to reduce size of final image
-FROM base AS build
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
-
-# Install node modules
-COPY package-lock.json package.json ./
-RUN npm ci
-
-# Copy application code
-COPY . .
-
-
-# Final stage for app image
-FROM base
-
-# Copy built application
-COPY --from=build /app /app
-
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "node", "index.js" ]
+CMD ["node", "server.js"]
