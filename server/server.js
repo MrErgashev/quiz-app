@@ -139,6 +139,10 @@ app.post(
         imagePath = `/uploads/${newName}`; // URL o'zgarmadi
       }
 
+      // ⬇️ duration ni normalize: raqam bo'lmasa yoki <=0 bo'lsa => null (cheklanmagan)
+      const parsedDuration = Number.isFinite(Number(duration)) ? parseInt(duration, 10) : null;
+      const normalizedDuration = parsedDuration > 0 ? parsedDuration : null;
+
       // 4) JSONni saqlash (createdAt qo‘shildi, va ENG MUHIMI: allQuestions ham qo‘shildi)
       const userEmail = user.emails?.[0]?.value || user.email;
       const saveJsonPath = path.join(TESTS_DIR, `test_${id}.json`);
@@ -148,7 +152,7 @@ app.post(
           {
             testTitle: testName,
             testType: "Yangi yuklangan test",
-            time: parseInt(duration, 10), // daqiqa
+            time: normalizedDuration, // daqiqa yoki null (cheklanmagan)
             questionCount: desired,
             testImage: imagePath,
             questions,                    // eski maydon — qoldirildi
@@ -230,7 +234,7 @@ app.get("/api/tests/:id", (req, res) => {
     res.json({
       testName: data.testTitle,
       testType: data.testType || "Test",
-      duration: data.time,                    // daqiqa
+      duration: (data.time ?? null),        // null => cheklanmagan
       questionCount: shuffled.length,
       testImage: data.testImage || null,
       questions: shuffled
@@ -238,6 +242,53 @@ app.get("/api/tests/:id", (req, res) => {
   } catch (e) {
     console.error("GET /api/tests/:id error:", e);
     res.status(500).json({ error: "Xatolik" });
+  }
+});
+
+// ✏️ Test sozlamalarini yangilash (faqat egasi)
+// Body misol: { duration: 40, questionCount: 25 }  // duration=null => cheklanmagan
+app.patch("/api/tests/:id", (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
+
+  const testId = req.params.id;
+  const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
+  if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
+
+  try {
+    const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    const ownerEmail = data?.createdBy?.email || "";
+    const me = req.user.emails?.[0]?.value || req.user.email;
+    if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+
+    let { duration, questionCount } = req.body ?? {};
+
+    // duration: raqam >0 bo'lsa qabul qilamiz, aks holda null => cheklanmagan
+    if (duration !== undefined) {
+      const d = Number.isFinite(Number(duration)) ? parseInt(duration, 10) : null;
+      data.time = d > 0 ? d : null;
+    }
+
+    // questionCount: ijobiy raqam bo'lsa, pool uzunligidan oshirmaymiz
+    if (questionCount !== undefined) {
+      const pool = Array.isArray(data.allQuestions) && data.allQuestions.length
+        ? data.allQuestions
+        : (Array.isArray(data.questions) ? data.questions : []);
+      const qc = Number.isFinite(Number(questionCount)) ? parseInt(questionCount, 10) : null;
+      if (qc && qc > 0) {
+        data.questionCount = Math.min(qc, pool.length || qc);
+      }
+    }
+
+    fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+    res.json({
+      ok: true,
+      testId,
+      time: data.time,                 // daqiqa yoki null (cheklanmagan)
+      questionCount: data.questionCount
+    });
+  } catch (e) {
+    console.error("PATCH /api/tests/:id xatolik:", e);
+    res.status(500).send("Xatolik");
   }
 });
 
