@@ -129,6 +129,15 @@ app.post(
       );
       const questions = [...allQuestions].sort(() => Math.random() - 0.5).slice(0, desired);
 
+      // ⬇️ Vaqtni (duration) cheksiz qo'llab-quvvatlash
+      const normalizeTime = (val) => {
+        if (val === undefined || val === null) return null;
+        if (val === "" || val === "null") return null;
+        const n = parseInt(val, 10);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      };
+      const timeVal = normalizeTime(duration);
+
       // 3) Rasmni doimiy uploads ga ko‘chirish
       const id = crypto.randomBytes(5).toString("hex");
       let imagePath = null;
@@ -148,7 +157,7 @@ app.post(
           {
             testTitle: testName,
             testType: "Yangi yuklangan test",
-            time: parseInt(duration, 10), // daqiqa
+            time: timeVal,                // daqiqa yoki null (cheksiz)
             questionCount: desired,
             testImage: imagePath,
             questions,                    // eski maydon — qoldirildi
@@ -230,7 +239,7 @@ app.get("/api/tests/:id", (req, res) => {
     res.json({
       testName: data.testTitle,
       testType: data.testType || "Test",
-      duration: data.time,                    // daqiqa
+      duration: (data.time ?? null),   // daqiqa yoki null (cheksiz)
       questionCount: shuffled.length,
       testImage: data.testImage || null,
       questions: shuffled
@@ -497,6 +506,87 @@ app.get("/api/teacher/tests", (req, res) => {
     .sort((a, b) => b.createdAt - a.createdAt);      // eng oxirgi tepada
 
   res.json(mine);
+});
+
+// 🔧 Test sozlamalari: ko'rish (faqat egasi)
+app.get("/api/tests/:id/settings", (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
+
+  const testId = req.params.id;
+  const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
+  if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
+
+  try {
+    const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    const ownerEmail = data?.createdBy?.email || "";
+    const me = req.user.emails?.[0]?.value || req.user.email;
+    if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+
+    res.json({
+      testId,
+      time: data.time ?? null,               // null => vaqt cheklanmagan
+      questionCount: data.questionCount || (Array.isArray(data.allQuestions) ? data.allQuestions.length : (Array.isArray(data.questions) ? data.questions.length : 0)),
+      totalQuestions: (Array.isArray(data.allQuestions) ? data.allQuestions.length : (Array.isArray(data.questions) ? data.questions.length : 0))
+    });
+  } catch (e) {
+    console.error("GET /api/tests/:id/settings xatolik:", e);
+    res.status(500).send("Xatolik");
+  }
+});
+
+// 🔧 Test sozlamalari: yangilash (faqat egasi)
+// Body: { time: number|null|"" , questionCount: number }
+app.patch("/api/tests/:id/settings", (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
+
+  const testId = req.params.id;
+  const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
+  if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
+
+  const normalizeTime = (val) => {
+    if (val === undefined) return undefined; // yuborilmagan bo'lsa o'zgartirmaymiz
+    if (val === null || val === "" || val === "null") return null;
+    const n = parseInt(val, 10);
+    return Number.isFinite(n) && n > 0 ? n : null; // <=0 yoki NaN => cheksiz
+  };
+
+  try {
+    const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+    const ownerEmail = data?.createdBy?.email || "";
+    const me = req.user.emails?.[0]?.value || req.user.email;
+    if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+
+    const poolLen = Array.isArray(data.allQuestions) ? data.allQuestions.length
+                   : Array.isArray(data.questions) ? data.questions.length
+                   : 0;
+
+    // 🕒 time (cheksiz uchun null)
+    const t = normalizeTime(req.body.time);
+    if (t !== undefined) {
+      data.time = t; // number yoki null
+    }
+
+    // 🔢 questionCount (1..poolLen oralig'ida clamp)
+    if (req.body.questionCount !== undefined) {
+      const q = parseInt(req.body.questionCount, 10);
+      if (Number.isFinite(q)) {
+        data.questionCount = Math.max(1, Math.min(q, poolLen || q)); // pool 0 bo'lsa ham q saqlansin
+      }
+    }
+
+    fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+    return res.json({
+      ok: true,
+      settings: {
+        time: data.time ?? null,
+        questionCount: data.questionCount,
+        totalQuestions: poolLen
+      }
+    });
+  } catch (e) {
+    console.error("PATCH /api/tests/:id/settings xatolik:", e);
+    res.status(500).send("Xatolik");
+  }
 });
 
 // 🧪 Default test (demo)
