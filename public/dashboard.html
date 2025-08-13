@@ -137,11 +137,63 @@
       }
     });
 
+    // ⚙️ Sozlash modal/prompt orqali — PATCH /api/tests/:id/settings
+    async function editTestSettings(testId) {
+      try {
+        // joriy sozlamalarni olib kelamiz (prefill uchun)
+        const cur = await fetch(`/api/tests/${testId}/settings`, { credentials: "include", cache: "no-store" });
+        if (!cur.ok) {
+          const t = await cur.text();
+          alert(`❌ Sozlamalarni olishda xatolik: ${cur.status} ${t}`);
+          return;
+        }
+        const settings = await cur.json();
+
+        // Vaqt (daq) — 0 yoki bo'sh => cheksiz
+        const timeInput = prompt(
+          `⏱ Vaqt (daqiqa) kiriting.\n0 yoki bo'sh qoldirsangiz — cheksiz bo'ladi.\nJoriy qiymat: ${settings.time === null ? "cheksiz" : settings.time + " daq"}`,
+          settings.time === null ? "" : String(settings.time)
+        );
+        if (timeInput === null) return; // bekor qilish
+
+        // Savollar soni
+        const qInput = prompt(
+          `❓ Savollar soni kiriting (1..${settings.totalQuestions}).\nJoriy qiymat: ${settings.questionCount}`,
+          String(settings.questionCount || "")
+        );
+        if (qInput === null) return;
+
+        const body = {};
+        if (timeInput !== "") body.time = (timeInput === "0") ? null : parseInt(timeInput, 10);
+        else body.time = null; // bo'sh => cheksiz
+
+        if (qInput !== "") body.questionCount = parseInt(qInput, 10);
+
+        const resp = await fetch(`/api/tests/${testId}/settings`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const j = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          alert(`❌ Saqlanmadi: ${resp.status} ${j?.error || ""}`);
+          return;
+        }
+        alert("✅ Sozlamalar yangilandi");
+        await loadTests();
+      } catch (e) {
+        console.error(e);
+        alert("❌ Xatolik. Internetni tekshirib, qayta urinib ko‘ring.");
+      }
+    }
+
     // 📋 Testlar ro‘yxatini yuklash
     async function loadTests() {
       testList.innerHTML = "<li class='text-sm text-gray-300'>⏳ Yuklanmoqda...</li>";
       try {
-        const res = await fetch("/api/teacher/tests", { credentials: "include" });
+        const res = await fetch("/api/teacher/tests", { credentials: "include", cache: "no-store" });
         const tests = await res.json();
 
         if (!Array.isArray(tests) || tests.length === 0) {
@@ -161,6 +213,10 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
+              <button data-id="${test.id}"
+                class="edit-one bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm">
+                ⚙️ Sozlash
+              </button>
               <a href="/api/export/${test.id}"
                  class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded shadow text-sm">
                 ⬇ Statistika (.xlsx)
@@ -172,6 +228,12 @@
             </div>
           `;
           testList.appendChild(li);
+
+          // ⚙️ Sozlash
+          li.querySelector(".edit-one").addEventListener("click", (e) => {
+            const id = e.currentTarget.getAttribute("data-id");
+            editTestSettings(id);
+          });
 
           // 🗑️ Bitta testni o‘chirish
           li.querySelector(".delete-one").addEventListener("click", async (e) => {
