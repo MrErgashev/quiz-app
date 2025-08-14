@@ -13,6 +13,19 @@ require('dotenv').config();
 
 require("./auth/passport");
 
+// ⬇️ Supabase client
+const { createClient } = require("@supabase/supabase-js");
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || "tests";
+const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false }})
+  : null;
+
+if (!supabase) {
+  console.warn("⚠️ Supabase ENV topilmadi. Local faylga yozish rejimi ishlatiladi (production uchun tavsiya etilmaydi).");
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000; // ⬅️ FLY.IO uchun PORT muhit o'zgaruvchisi
 
@@ -53,7 +66,7 @@ app.use(passport.session());
 // public/ (statik) fayllar
 app.use(express.static(path.join(__dirname, "../public")));
 
-// /uploads URL'ini doimiy diskdan servis qilamiz
+// /uploads URL'ini doimiy diskdan servis qilamiz (Supabase bo'lsa ham multer temp uchun ishlatiladi)
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 // ⬇️ Multer temporar papkani doimiy UPLOADS_DIR ga yo'naltirdik
@@ -138,41 +151,89 @@ app.post(
       };
       const timeVal = normalizeTime(duration);
 
-      // 3) Rasmni doimiy uploads ga ko‘chirish
+      // 3) Rasmni Supabase Storage'ga yoki localga saqlash
       const id = crypto.randomBytes(5).toString("hex");
-      let imagePath = null;
+      let imagePath = null;     // local URL (agar Supabase bo'lmasa)
+      let imageUrl = null;      // Supabase public URL (agar Supabase bo'lsa)
+
       if (imageFile) {
         const ext = path.extname(imageFile.originalname) || ".jpg";
-        const newName = `${id}${ext}`;
-        fs.renameSync(imageFile.path, path.join(UPLOADS_DIR, newName));
-        imagePath = `/uploads/${newName}`; // URL o'zgarmadi
+        if (supabase) {
+          // Supabase Storage
+          const storagePath = `images/${id}${ext}`;
+          const fileBuffer = fs.readFileSync(imageFile.path);
+          const { error: upErr } = await supabase
+            .storage
+            .from(SUPABASE_BUCKET)
+            .upload(storagePath, fileBuffer, {
+              contentType: imageFile.mimetype || "image/jpeg",
+              upsert: true
+            });
+          if (upErr) {
+            console.warn("Storage upload error:", upErr.message, "→ Localga saqlanyapti.");
+          } else {
+            const { data: pub } = supabase
+              .storage
+              .from(SUPABASE_BUCKET)
+              .getPublicUrl(storagePath);
+            imageUrl = pub?.publicUrl || null;
+          }
+          // tempni tozalash
+          safeUnlink(imageFile.path);
+        } else {
+          // Local uploads (fallback)
+          const newName = `${id}${ext}`;
+          fs.renameSync(imageFile.path, path.join(UPLOADS_DIR, newName));
+          imagePath = `/uploads/${newName}`;
+        }
       }
 
-      // 4) JSONni saqlash (createdAt qo‘shildi, va ENG MUHIMI: allQuestions ham qo‘shildi)
+      // 4) Testni saqlash
       const userEmail = user.emails?.[0]?.value || user.email;
-      const saveJsonPath = path.join(TESTS_DIR, `test_${id}.json`);
-      fs.writeFileSync(
-        saveJsonPath,
-        JSON.stringify(
-          {
-            testTitle: testName,
-            testType: "Yangi yuklangan test",
-            time: timeVal,                // daqiqa yoki null (cheksiz)
-            questionCount: desired,
-            testImage: imagePath,
-            questions,                    // eski maydon — qoldirildi
-            allQuestions,                 // yangi: to‘liq bank — clientga randomlab beramiz
-            createdAt: Date.now(),        // tartiblash uchun
-            createdBy: { email: userEmail, name: user.displayName }
-          },
-          null,
-          2
-        )
-      );
+
+      if (supabase) {
+        // DB: tests jadvaliga INSERT
+        const { error: insErr } = await supabase.from("tests").insert({
+          test_id: id,
+          title: testName,
+          test_type: "Yangi yuklangan test",
+          time_minutes: timeVal,           // daqiqa yoki null
+          question_count: desired,
+          image_url: imageUrl,             // public URL
+          all_questions: allQuestions,     // JSONB
+          created_by_email: userEmail,
+          created_by_name: user.displayName
+        });
+        if (insErr) {
+          console.error("DB insert error:", insErr.message);
+          return res.status(500).json({ error: "DB saqlashda xatolik" });
+        }
+      } else {
+        // LOCAL: JSON faylga yozish (fallback)
+        const saveJsonPath = path.join(TESTS_DIR, `test_${id}.json`);
+        fs.writeFileSync(
+          saveJsonPath,
+          JSON.stringify(
+            {
+              testTitle: testName,
+              testType: "Yangi yuklangan test",
+              time: timeVal,                // daqiqa yoki null (cheksiz)
+              questionCount: desired,
+              testImage: imagePath,
+              questions,                    // eski maydon — qoldirildi
+              allQuestions,                 // yangi: to‘liq bank — clientga randomlab beramiz
+              createdAt: Date.now(),        // tartiblash uchun
+              createdBy: { email: userEmail, name: user.displayName }
+            },
+            null,
+            2
+          )
+        );
+      }
 
       // 5) .txt faylni Google Drive’ga yuklash (best-effort)
       try {
-        const drive = getDriveClient(user.tokens);
+        const drive = getDriveClient(user.tokens || {});
         await drive.files.create({
           requestBody: { name: `${testName}_${Date.now()}.txt`, parents: ['root'] },
           media: { mimeType: "text/plain", body: fs.createReadStream(file.path) }
@@ -180,7 +241,7 @@ app.post(
       } catch (e) {
         console.warn("Drive yuklash ogohlantirish:", e.message);
       } finally {
-        try { fs.unlinkSync(file.path); } catch {}
+        safeUnlink(file.path);
       }
 
       res.json({ message: "✅ Test yuklandi!", testId: id, testLink: `/test/${id}` });
@@ -196,7 +257,7 @@ app.get("/test/:id", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/test.html"));
 });
 
-// 📚 AJAX test (eski)
+// 📚 AJAX test (eski) — LOCAL fallback uchun qoldirildi
 app.get("/api/test/:id", (req, res) => {
   const id = req.params.id;
   const filePath = path.join(TESTS_DIR, `test_${id}.json`);
@@ -206,11 +267,9 @@ app.get("/api/test/:id", (req, res) => {
   res.json(JSON.parse(data));
 });
 
-// 🆕 Talaba uchun test ma’lumotlari — HAR CHAQIRILGANDA TASODIFIY TANLAB QAYTARAMIZ
-app.get("/api/tests/:id", (req, res) => {
+// 🆕 Talaba uchun test ma’lumotlari — har chaqiriqda tasodifiy tanlab qaytaramiz
+app.get("/api/tests/:id", async (req, res) => {
   const id = req.params.id;
-  const filePath = path.join(TESTS_DIR, `test_${id}.json`);
-  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "❌ Test topilmadi" });
 
   try {
     // 🔒 Brauzer keshlamasligi uchun kuchli headerlar
@@ -219,105 +278,198 @@ app.get("/api/tests/:id", (req, res) => {
     res.set("Expires", "0");
     res.set("Surrogate-Control", "no-store");
 
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const data = JSON.parse(raw);
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("tests")
+        .select("*")
+        .eq("test_id", id)
+        .single();
 
-    // Pool: agar allQuestions bo'lsa — o'shandan, bo'lmasa — questions dan
-    const pool = Array.isArray(data.allQuestions) && data.allQuestions.length
-      ? data.allQuestions
-      : (Array.isArray(data.questions) ? data.questions : []);
+      if (error || !data) return res.status(404).json({ error: "❌ Test topilmadi" });
 
-    const desired = Math.max(1, Math.min(data.questionCount || pool.length, pool.length));
+      const pool = Array.isArray(data.all_questions) ? data.all_questions : [];
+      const desired = Math.max(1, Math.min(data.question_count || pool.length, pool.length));
 
-    // Har chaqiriqda tasodifiy N tanlash (deterministik bo‘lmasin)
-    const shuffled = pool
-      .map(v => ({ v, r: Math.random() }))
-      .sort((a, b) => a.r - b.r)
-      .slice(0, desired)
-      .map(({ v }) => v);
+      const shuffled = pool
+        .map(v => ({ v, r: Math.random() }))
+        .sort((a, b) => a.r - b.r)
+        .slice(0, desired)
+        .map(({ v }) => v);
 
-    res.json({
-      testName: data.testTitle,
-      testType: data.testType || "Test",
-      duration: (data.time ?? null),   // daqiqa yoki null (cheksiz)
-      questionCount: shuffled.length,
-      testImage: data.testImage || null,
-      questions: shuffled
-    });
+      return res.json({
+        testName: data.title,
+        testType: data.test_type || "Test",
+        duration: (data.time_minutes ?? null),   // daqiqa yoki null (cheksiz)
+        questionCount: shuffled.length,
+        testImage: data.image_url || null,
+        questions: shuffled
+      });
+    } else {
+      // LOCAL fallback
+      const filePath = path.join(TESTS_DIR, `test_${id}.json`);
+      if (!fs.existsSync(filePath)) return res.status(404).json({ error: "❌ Test topilmadi" });
+
+      const raw = fs.readFileSync(filePath, "utf-8");
+      const data = JSON.parse(raw);
+      const pool = Array.isArray(data.allQuestions) && data.allQuestions.length
+        ? data.allQuestions
+        : (Array.isArray(data.questions) ? data.questions : []);
+
+      const desired = Math.max(1, Math.min(data.questionCount || pool.length, pool.length));
+
+      const shuffled = pool
+        .map(v => ({ v, r: Math.random() }))
+        .sort((a, b) => a.r - b.r)
+        .slice(0, desired)
+        .map(({ v }) => v);
+
+      return res.json({
+        testName: data.testTitle,
+        testType: data.testType || "Test",
+        duration: (data.time ?? null),
+        questionCount: shuffled.length,
+        testImage: data.testImage || null,
+        questions: shuffled
+      });
+    }
   } catch (e) {
     console.error("GET /api/tests/:id error:", e);
     res.status(500).json({ error: "Xatolik" });
   }
 });
 
-// 📊 Natijani saqlash (+ Excel + Drive) — startedAt/finishedAt bilan
-// DIQQAT: device limit tekshiruvi olib tashlandi (talab bo‘yicha)
+// 📊 Natijani saqlash — Supabase DB (JSON/XLSX faylga bog'liq emas)
 app.post("/api/save-result", async (req, res) => {
-  const result = req.body; // { deviceId?, startedAt, finishedAt, ... }
-  const fileName = `result_${result.testId}_${Date.now()}.json`;
-  const savePath = path.join(RESULTS_DIR, fileName);
+  const result = req.body; // { testId, fullname, group, university, faculty, correct, total, score, startedAt, finishedAt, timeSpent }
 
   try {
-    // JSON saqlash
-    fs.writeFileSync(savePath, JSON.stringify(result, null, 2));
-
-    // Excel (drivega ham yuboramiz)
-    const toDate = (ts) => {
-      if (!ts) return "";
-      const d = new Date(ts);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd}`;
-    };
-    const toTime = (ts) => {
-      if (!ts) return "";
-      const d = new Date(ts);
-      const HH = String(d.getHours()).padStart(2, "0");
-      const MM = String(d.getMinutes()).padStart(2, "0");
-      const SS = String(d.getSeconds()).padStart(2, "0");
-      return `${HH}:${MM}:${SS}`;
-    };
-
-    const xlsName = fileName.replace(".json", ".xlsx");
-    const ws = XLSX.utils.json_to_sheet([{
-      FISH: result.fullname,
-      Guruh: result.group,
-      Universitet: result.university,
-      Yonalish: result.faculty,
-      Togri: result.correct,
-      Umumiy: result.total,
-      Foiz: (result.score ?? 0) + "%",
-      BoshlaganSana: toDate(result.startedAt),
-      BoshlaganVaqt: toTime(result.startedAt),
-      TugatganSana: toDate(result.finishedAt),
-      TugatganVaqt: toTime(result.finishedAt),
-      Vaqt_sarfi: Math.floor((result.timeSpent ?? 0) / 60) + " daq " + ((result.timeSpent ?? 0) % 60) + " sek"
-    }]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Natija");
-    const xlsBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-
-    const xlsPath = path.join(RESULTS_DIR, xlsName);
-    fs.writeFileSync(xlsPath, xlsBuffer);
-
-    // Drive (agar login bo'lsa) — best-effort
-    if (req.isAuthenticated()) {
-      try {
-        const drive = getDriveClient(req.user.tokens);
-        await drive.files.create({
-          requestBody: { name: xlsName, parents: ['root'] },
-          media: {
-            mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            body: fs.createReadStream(xlsPath)
-          }
-        });
-      } catch (e) {
-        console.warn("Drive ga natija yuborishda ogohlantirish:", e.message);
+    if (supabase) {
+      const { error } = await supabase.from("results").insert({
+        test_id: result.testId,
+        fullname: result.fullname,
+        group: result.group,
+        university: result.university,
+        faculty: result.faculty,
+        correct: result.correct,
+        total: result.total,
+        score: result.score,
+        started_at: result.startedAt ? new Date(result.startedAt).toISOString() : null,
+        finished_at: result.finishedAt ? new Date(result.finishedAt).toISOString() : null,
+        time_spent_seconds: result.timeSpent ?? null
+      });
+      if (error) {
+        console.error("❌ Supabase save-result error:", error.message);
+        return res.status(500).send("Xatolik");
       }
-    }
 
-    res.status(200).json({ message: "✅ Natija saqlandi", fileName });
+      // (ixtiyoriy) — Google Drive'ga XLSX yuborish (bufferdan)
+      try {
+        const toDate = (ts) => ts ? new Date(ts) : null;
+        const fmtDate = (d) => !d ? "" : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const fmtTime = (d) => !d ? "" : `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}:${String(d.getSeconds()).padStart(2,"0")}`;
+
+        const st = toDate(result.startedAt);
+        const fn = toDate(result.finishedAt);
+        const ws = XLSX.utils.json_to_sheet([{
+          FISH: result.fullname,
+          Guruh: result.group,
+          Universitet: result.university,
+          Yonalish: result.faculty,
+          Togri: result.correct,
+          Umumiy: result.total,
+          Foiz: (result.score ?? 0) + "%",
+          BoshlaganSana: fmtDate(st),
+          BoshlaganVaqt: fmtTime(st),
+          TugatganSana: fmtDate(fn),
+          TugatganVaqt: fmtTime(fn),
+          Vaqt_sarfi: Math.floor((result.timeSpent ?? 0)/60) + " daq " + ((result.timeSpent ?? 0)%60) + " sek"
+        }]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Natija");
+        const xlsBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        if (req.isAuthenticated()) {
+          try {
+            const drive = getDriveClient(req.user.tokens || {});
+            await drive.files.create({
+              requestBody: { name: `result_${result.testId}_${Date.now()}.xlsx`, parents: ['root'] },
+              media: {
+                mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                body: Buffer.from(xlsBuffer)
+              }
+            });
+          } catch (e) {
+            console.warn("Drive ga natija yuborishda ogohlantirish:", e.message);
+          }
+        }
+      } catch (e) {
+        console.warn("XLSX yaratishda ogohlantirish:", e.message);
+      }
+
+      return res.status(200).json({ message: "✅ Natija saqlandi" });
+    } else {
+      // LOCAL fallback — eski faylga yozish
+      const fileName = `result_${result.testId}_${Date.now()}.json`;
+      const savePath = path.join(RESULTS_DIR, fileName);
+      fs.writeFileSync(savePath, JSON.stringify(result, null, 2));
+
+      // Excel yaratib (localga) va Drive'ga yuborish (eski xulq)
+      const toDate = (ts) => {
+        if (!ts) return "";
+        const d = new Date(ts);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      };
+      const toTime = (ts) => {
+        if (!ts) return "";
+        const d = new Date(ts);
+        const HH = String(d.getHours()).padStart(2, "0");
+        const MM = String(d.getMinutes()).padStart(2, "0");
+        const SS = String(d.getSeconds()).padStart(2, "0");
+        return `${HH}:${MM}:${SS}`;
+      };
+
+      const xlsName = fileName.replace(".json", ".xlsx");
+      const ws = XLSX.utils.json_to_sheet([{
+        FISH: result.fullname,
+        Guruh: result.group,
+        Universitet: result.university,
+        Yonalish: result.faculty,
+        Togri: result.correct,
+        Umumiy: result.total,
+        Foiz: (result.score ?? 0) + "%",
+        BoshlaganSana: toDate(result.startedAt),
+        BoshlaganVaqt: toTime(result.startedAt),
+        TugatganSana: toDate(result.finishedAt),
+        TugatganVaqt: toTime(result.finishedAt),
+        Vaqt_sarfi: Math.floor((result.timeSpent ?? 0) / 60) + " daq " + ((result.timeSpent ?? 0) % 60) + " sek"
+      }]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Natija");
+      const xlsBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+      const xlsPath = path.join(RESULTS_DIR, xlsName);
+      fs.writeFileSync(xlsPath, xlsBuffer);
+
+      if (req.isAuthenticated()) {
+        try {
+          const drive = getDriveClient(req.user.tokens || {});
+          await drive.files.create({
+            requestBody: { name: xlsName, parents: ['root'] },
+            media: {
+              mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              body: fs.createReadStream(xlsPath)
+            }
+          });
+        } catch (e) {
+          console.warn("Drive ga natija yuborishda ogohlantirish:", e.message);
+        }
+      }
+
+      return res.status(200).json({ message: "✅ Natija saqlandi", fileName });
+    }
   } catch (err) {
     console.error("❌ Natijani saqlashda xatolik:", err);
     res.status(500).send("Xatolik");
@@ -325,102 +477,186 @@ app.post("/api/save-result", async (req, res) => {
 });
 
 // 📥 TEST STATISTIKASINI YUKLAB BERISH (o‘qituvchi uchun, umumiy xlsx)
-app.get("/api/export/:id", (req, res) => {
+app.get("/api/export/:id", async (req, res) => {
   const testId = req.params.id;
-  if (!fs.existsSync(RESULTS_DIR)) return res.status(404).send("Natijalar topilmadi");
 
-  const files = fs.readdirSync(RESULTS_DIR).filter(f => f.endsWith(".json"));
-  const rows = [];
+  try {
+    if (supabase) {
+      const { data: rows, error } = await supabase
+        .from("results")
+        .select("*")
+        .eq("test_id", testId)
+        .order("created_at", { ascending: true });
 
-  const splitDateTime = (ts) => {
-    if (!ts) return { date: "", time: "" };
-    const d = new Date(ts);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const HH = String(d.getHours()).padStart(2, "0");
-    const MM = String(d.getMinutes()).padStart(2, "0");
-    const SS = String(d.getSeconds()).padStart(2, "0");
-    return { date: `${yyyy}-${mm}-${dd}`, time: `${HH}:${MM}:${SS}` };
-  };
+      if (error) {
+        console.error("export select error:", error.message);
+        return res.status(500).send("Xatolik");
+      }
+      if (!rows || rows.length === 0) return res.status(404).send("Ushbu test uchun natijalar topilmadi.");
 
-  for (const f of files) {
-    try {
-      const data = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, f), "utf-8"));
-      if (data.testId !== testId) continue;
+      const toDate = (d) => d ? new Date(d) : null;
+      const fmtDate = (dt) => !dt ? "" : `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+      const fmtTime = (dt) => !dt ? "" : `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}:${String(dt.getSeconds()).padStart(2,"0")}`;
 
-      const start = splitDateTime(data.startedAt);
-      const end   = splitDateTime(data.finishedAt);
-
-      rows.push({
-        FISH: data.fullname || "",
-        Guruh: data.group || "",
-        Universitet: data.university || "",
-        Yonalish: data.faculty || "",
-        Togri: data.correct ?? 0,
-        Umumiy: data.total ?? 0,
-        Foiz: (data.score ?? 0) + "%",
-        BoshlaganSana: start.date,
-        BoshlaganVaqt: start.time,
-        TugatganSana: end.date,
-        TugatganVaqt: end.time,
-        Vaqt_sarfi: Math.floor((data.timeSpent ?? 0) / 60) + " daq " + ((data.timeSpent ?? 0) % 60) + " sek"
+      const sheetRows = rows.map(r => {
+        const st = toDate(r.started_at);
+        const fn = toDate(r.finished_at);
+        const spent = r.time_spent_seconds ?? 0;
+        return {
+          FISH: r.fullname || "",
+          Guruh: r.group || "",
+          Universitet: r.university || "",
+          Yonalish: r.faculty || "",
+          Togri: r.correct ?? 0,
+          Umumiy: r.total ?? 0,
+          Foiz: (r.score ?? 0) + "%",
+          BoshlaganSana: fmtDate(st),
+          BoshlaganVaqt: fmtTime(st),
+          TugatganSana: fmtDate(fn),
+          TugatganVaqt: fmtTime(fn),
+          Vaqt_sarfi: Math.floor(spent/60) + " daq " + (spent%60) + " sek"
+        };
       });
-    } catch (e) {
-      console.warn("⚠️ Natija fayli o‘qilmadi:", f, e.message);
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(sheetRows);
+      XLSX.utils.book_append_sheet(wb, ws, "Statistika");
+      const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="stats_${testId}.xlsx"`);
+      return res.send(buffer);
+    } else {
+      // LOCAL fallback — eski fayllardan yig'ish
+      if (!fs.existsSync(RESULTS_DIR)) return res.status(404).send("Natijalar topilmadi");
+      const files = fs.readdirSync(RESULTS_DIR).filter(f => f.endsWith(".json"));
+      const rows = [];
+
+      const splitDateTime = (ts) => {
+        if (!ts) return { date: "", time: "" };
+        const d = new Date(ts);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const HH = String(d.getHours()).padStart(2, "0");
+        const MM = String(d.getMinutes()).padStart(2, "0");
+        const SS = String(d.getSeconds()).padStart(2, "0");
+        return { date: `${yyyy}-${mm}-${dd}`, time: `${HH}:${MM}:${SS}` };
+      };
+
+      for (const f of files) {
+        try {
+          const data = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, f), "utf-8"));
+          if (data.testId !== testId) continue;
+
+          const start = splitDateTime(data.startedAt);
+          const end   = splitDateTime(data.finishedAt);
+
+          rows.push({
+            FISH: data.fullname || "",
+            Guruh: data.group || "",
+            Universitet: data.university || "",
+            Yonalish: data.faculty || "",
+            Togri: data.correct ?? 0,
+            Umumiy: data.total ?? 0,
+            Foiz: (data.score ?? 0) + "%",
+            BoshlaganSana: start.date,
+            BoshlaganVaqt: start.time,
+            TugatganSana: end.date,
+            TugatganVaqt: end.time,
+            Vaqt_sarfi: Math.floor((data.timeSpent ?? 0) / 60) + " daq " + ((data.timeSpent ?? 0) % 60) + " sek"
+          });
+        } catch (e) {
+          console.warn("⚠️ Natija fayli o‘qilmadi:", f, e.message);
+        }
+      }
+
+      if (rows.length === 0) return res.status(404).send("Ushbu test uchun natijalar topilmadi.");
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, "Statistika");
+      const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="stats_${testId}.xlsx"`);
+      return res.send(buffer);
     }
+  } catch (e) {
+    console.error("export xatolik:", e);
+    res.status(500).send("Xatolik");
   }
-
-  if (rows.length === 0) return res.status(404).send("Ushbu test uchun natijalar topilmadi.");
-
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, "Statistika");
-  const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
-
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", `attachment; filename="stats_${testId}.xlsx"`);
-  res.send(buffer);
 });
 
 // 🗑️ Bitta testni o‘chirish (faqat egasi)
-app.delete("/api/tests/:id", (req, res) => {
+app.delete("/api/tests/:id", async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
 
   const testId = req.params.id;
-  const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
-  if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
 
   try {
-    const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-    const ownerEmail = data?.createdBy?.email || "";
-    const me = req.user.emails?.[0]?.value || req.user.email;
-    if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+    if (supabase) {
+      // testni topamiz
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      const { data: row, error: e1 } = await supabase
+        .from("tests").select("*").eq("test_id", testId).single();
+      if (e1 || !row) return res.status(404).send("Test topilmadi");
+      if (row.created_by_email !== me) return res.status(403).send("Ruxsat yo‘q");
 
-    // Rasmni o‘chir (endi doimiy uploads dan)
-    if (data.testImage && data.testImage.startsWith("/uploads/")) {
-      const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
-      safeUnlink(imgAbs);
-    }
-
-    // Natijalarni o‘chir (shu testga tegishli)
-    if (fs.existsSync(RESULTS_DIR)) {
-      const files = fs.readdirSync(RESULTS_DIR).filter(f => f.endsWith(".json"));
-      files.forEach(f => {
+      // storage'dan rasmni o'chirish (agar bor bo'lsa, va path'ni chiqarib olsa bo'lsa)
+      if (row.image_url) {
         try {
-          const r = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, f), "utf-8"));
-          if (r.testId === testId) {
-            safeUnlink(path.join(RESULTS_DIR, f));
-            const xlsx = f.replace(".json", ".xlsx");
-            safeUnlink(path.join(RESULTS_DIR, xlsx));
+          const marker = `/object/public/${SUPABASE_BUCKET}/`;
+          const idx = row.image_url.indexOf(marker);
+          if (idx >= 0) {
+            const pathInBucket = row.image_url.substring(idx + marker.length);
+            await supabase.storage.from(SUPABASE_BUCKET).remove([pathInBucket]);
           }
         } catch {}
-      });
-    }
+      }
 
-    // Test JSON’ini o‘chir
-    safeUnlink(jsonPath);
-    res.json({ ok: true, message: "Test o‘chirildi" });
+      // avval shu testga tegishli natijalarni o'chirish
+      await supabase.from("results").delete().eq("test_id", testId);
+      // so'ng testning o'zini o'chirish
+      const { error: e2 } = await supabase.from("tests").delete().eq("test_id", testId);
+      if (e2) return res.status(500).send("Xatolik");
+
+      return res.json({ ok: true, message: "Test o‘chirildi" });
+    } else {
+      // LOCAL fallback
+      const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
+      if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
+
+      const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+      const ownerEmail = data?.createdBy?.email || "";
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+
+      // Rasmni o‘chir (endi doimiy uploads dan)
+      if (data.testImage && data.testImage.startsWith("/uploads/")) {
+        const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
+        safeUnlink(imgAbs);
+      }
+
+      // Natijalarni o‘chir (shu testga tegishli)
+      if (fs.existsSync(RESULTS_DIR)) {
+        const files = fs.readdirSync(RESULTS_DIR).filter(f => f.endsWith(".json"));
+        files.forEach(f => {
+          try {
+            const r = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, f), "utf-8"));
+            if (r.testId === testId) {
+              safeUnlink(path.join(RESULTS_DIR, f));
+              const xlsx = f.replace(".json", ".xlsx");
+              safeUnlink(path.join(RESULTS_DIR, xlsx));
+            }
+          } catch {}
+        });
+      }
+
+      // Test JSON’ini o‘chir
+      safeUnlink(jsonPath);
+      return res.json({ ok: true, message: "Test o‘chirildi" });
+    }
   } catch (e) {
     console.error("DELETE /api/tests/:id xatolik:", e);
     res.status(500).send("Xatolik");
@@ -428,106 +664,178 @@ app.delete("/api/tests/:id", (req, res) => {
 });
 
 // 🗑️ O‘qituvchining hamma testlarini o‘chirish (faqat o‘ziga tegishli)
-app.delete("/api/tests", (req, res) => {
+app.delete("/api/tests", async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
 
-  const me = req.user.emails?.[0]?.value || req.user.email;
-  if (!fs.existsSync(TESTS_DIR)) return res.json({ ok: true, deleted: 0 });
+  try {
+    if (supabase) {
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      const { data: tests, error } = await supabase
+        .from("tests")
+        .select("test_id,image_url,created_by_email")
+        .eq("created_by_email", me);
+      if (error) return res.status(500).json({ ok: false });
 
-  let count = 0;
-
-  fs.readdirSync(TESTS_DIR).forEach(f => {
-    if (!f.endsWith(".json")) return;
-    try {
-      const p = path.join(TESTS_DIR, f);
-      const data = JSON.parse(fs.readFileSync(p, "utf-8"));
-      if (data?.createdBy?.email !== me) return;
-
-      // rasm
-      if (data.testImage && data.testImage.startsWith("/uploads/")) {
-        const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
-        safeUnlink(imgAbs);
-      }
-
-      // natijalar
-      const testId = f.split("_")[1].split(".")[0];
-      if (fs.existsSync(RESULTS_DIR)) {
-        fs.readdirSync(RESULTS_DIR).forEach(rf => {
-          if (!rf.endsWith(".json")) return;
+      // rasm storage tozalash
+      for (const t of (tests || [])) {
+        if (t.image_url) {
           try {
-            const r = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, rf), "utf-8"));
-            if (r.testId === testId) {
-              safeUnlink(path.join(RESULTS_DIR, rf));
-              safeUnlink(path.join(RESULTS_DIR, rf.replace(".json", ".xlsx")));
+            const marker = `/object/public/${SUPABASE_BUCKET}/`;
+            const idx = t.image_url.indexOf(marker);
+            if (idx >= 0) {
+              const pathInBucket = t.image_url.substring(idx + marker.length);
+              await supabase.storage.from(SUPABASE_BUCKET).remove([pathInBucket]);
             }
           } catch {}
-        });
+        }
+        await supabase.from("results").delete().eq("test_id", t.test_id);
       }
+      await supabase.from("tests").delete().eq("created_by_email", me);
 
-      // test json
-      safeUnlink(p);
-      count++;
-    } catch {}
-  });
+      return res.json({ ok: true, deleted: (tests || []).length });
+    } else {
+      // LOCAL fallback (eski)
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      if (!fs.existsSync(TESTS_DIR)) return res.json({ ok: true, deleted: 0 });
 
-  res.json({ ok: true, deleted: count });
+      let count = 0;
+
+      fs.readdirSync(TESTS_DIR).forEach(f => {
+        if (!f.endsWith(".json")) return;
+        try {
+          const p = path.join(TESTS_DIR, f);
+          const data = JSON.parse(fs.readFileSync(p, "utf-8"));
+          if (data?.createdBy?.email !== me) return;
+
+          if (data.testImage && data.testImage.startsWith("/uploads/")) {
+            const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
+            safeUnlink(imgAbs);
+          }
+
+          const testId = f.split("_")[1].split(".")[0];
+          if (fs.existsSync(RESULTS_DIR)) {
+            fs.readdirSync(RESULTS_DIR).forEach(rf => {
+              if (!rf.endsWith(".json")) return;
+              try {
+                const r = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, rf), "utf-8"));
+                if (r.testId === testId) {
+                  safeUnlink(path.join(RESULTS_DIR, rf));
+                  safeUnlink(path.join(RESULTS_DIR, rf.replace(".json", ".xlsx")));
+                }
+              } catch {}
+            });
+          }
+
+          safeUnlink(p);
+          count++;
+        } catch {}
+      });
+
+      return res.json({ ok: true, deleted: count });
+    }
+  } catch (e) {
+    console.error("DELETE /api/tests xatolik:", e);
+    res.status(500).json({ ok: false });
+  }
 });
 
 // 📋 O‘qituvchining testlari (tartib: eng oxirgisi tepada)
-app.get("/api/teacher/tests", (req, res) => {
+app.get("/api/teacher/tests", async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
-  if (!fs.existsSync(TESTS_DIR)) return res.json([]);
 
-  const files = fs.readdirSync(TESTS_DIR).filter(f => f.endsWith(".json"));
+  try {
+    if (supabase) {
+      const userEmail = req.user.emails?.[0]?.value || req.user.email;
+      const { data, error } = await supabase
+        .from("tests")
+        .select("test_id,title,created_at,created_by_email")
+        .eq("created_by_email", userEmail)
+        .order("created_at", { ascending: false });
+      if (error) return res.json([]);
 
-  const tests = files.map(f => {
-    try {
-      const full = path.join(TESTS_DIR, f);
-      const raw  = fs.readFileSync(full, "utf-8");
-      if (!raw.trim()) throw new Error("Bo'sh fayl");
-      const data = JSON.parse(raw);
-      const id   = f.split("_")[1].split(".")[0];
-      const stat = fs.statSync(full);
+      const items = (data || []).map(row => ({
+        id: row.test_id,
+        title: row.title,
+        link: `/test/${row.test_id}`,
+        createdAt: new Date(row.created_at).getTime(),
+        createdBy: { email: row.created_by_email }
+      }));
+      return res.json(items);
+    } else {
+      // LOCAL fallback — eski usul
+      if (!fs.existsSync(TESTS_DIR)) return res.json([]);
 
-      return {
-        id,
-        title: data.testTitle,
-        link: `/test/${id}`,
-        createdAt: data.createdAt ?? stat.mtimeMs,   // vaqt
-        createdBy: { email: data.createdBy?.email || "" }
-      };
-    } catch (err) { return null; }
-  }).filter(Boolean);
+      const files = fs.readdirSync(TESTS_DIR).filter(f => f.endsWith(".json"));
 
-  const userEmail = req.user.emails?.[0]?.value || req.user.email;
+      const tests = files.map(f => {
+        try {
+          const full = path.join(TESTS_DIR, f);
+          const raw  = fs.readFileSync(full, "utf-8");
+          if (!raw.trim()) throw new Error("Bo'sh fayl");
+          const data = JSON.parse(raw);
+          const id   = f.split("_")[1].split(".")[0];
+          const stat = fs.statSync(full);
 
-  const mine = tests
-    .filter(t => t.createdBy?.email === userEmail)
-    .sort((a, b) => b.createdAt - a.createdAt);      // eng oxirgi tepada
+          return {
+            id,
+            title: data.testTitle,
+            link: `/test/${id}`,
+            createdAt: data.createdAt ?? stat.mtimeMs,
+            createdBy: { email: data.createdBy?.email || "" }
+          };
+        } catch (err) { return null; }
+      }).filter(Boolean);
 
-  res.json(mine);
+      const userEmail = req.user.emails?.[0]?.value || req.user.email;
+
+      const mine = tests
+        .filter(t => t.createdBy?.email === userEmail)
+        .sort((a, b) => b.createdAt - a.createdAt);
+
+      return res.json(mine);
+    }
+  } catch (e) {
+    console.error("teacher/tests xatolik:", e);
+    res.json([]);
+  }
 });
 
 // 🔧 Test sozlamalari: ko'rish (faqat egasi)
-app.get("/api/tests/:id/settings", (req, res) => {
+app.get("/api/tests/:id/settings", async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
 
   const testId = req.params.id;
-  const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
-  if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
 
   try {
-    const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-    const ownerEmail = data?.createdBy?.email || "";
-    const me = req.user.emails?.[0]?.value || req.user.email;
-    if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+    if (supabase) {
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      const { data, error } = await supabase.from("tests").select("*").eq("test_id", testId).single();
+      if (error || !data) return res.status(404).send("Test topilmadi");
+      if (data.created_by_email !== me) return res.status(403).send("Ruxsat yo‘q");
 
-    res.json({
-      testId,
-      time: data.time ?? null,               // null => vaqt cheklanmagan
-      questionCount: data.questionCount || (Array.isArray(data.allQuestions) ? data.allQuestions.length : (Array.isArray(data.questions) ? data.questions.length : 0)),
-      totalQuestions: (Array.isArray(data.allQuestions) ? data.allQuestions.length : (Array.isArray(data.questions) ? data.questions.length : 0))
-    });
+      return res.json({
+        testId,
+        time: data.time_minutes ?? null,               // null => vaqt cheklanmagan
+        questionCount: data.question_count,
+        totalQuestions: Array.isArray(data.all_questions) ? data.all_questions.length : 0
+      });
+    } else {
+      // LOCAL fallback
+      const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
+      if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
+
+      const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+      const ownerEmail = data?.createdBy?.email || "";
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+
+      return res.json({
+        testId,
+        time: data.time ?? null,
+        questionCount: data.questionCount || (Array.isArray(data.allQuestions) ? data.allQuestions.length : (Array.isArray(data.questions) ? data.questions.length : 0)),
+        totalQuestions: (Array.isArray(data.allQuestions) ? data.allQuestions.length : (Array.isArray(data.questions) ? data.questions.length : 0))
+      });
+    }
   } catch (e) {
     console.error("GET /api/tests/:id/settings xatolik:", e);
     res.status(500).send("Xatolik");
@@ -536,12 +844,10 @@ app.get("/api/tests/:id/settings", (req, res) => {
 
 // 🔧 Test sozlamalari: yangilash (faqat egasi)
 // Body: { time: number|null|"" , questionCount: number }
-app.patch("/api/tests/:id/settings", (req, res) => {
+app.patch("/api/tests/:id/settings", async (req, res) => {
   if (!req.isAuthenticated()) return res.status(401).send("Tizimga kiring");
 
   const testId = req.params.id;
-  const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
-  if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
 
   const normalizeTime = (val) => {
     if (val === undefined) return undefined; // yuborilmagan bo'lsa o'zgartirmaymiz
@@ -551,38 +857,73 @@ app.patch("/api/tests/:id/settings", (req, res) => {
   };
 
   try {
-    const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-    const ownerEmail = data?.createdBy?.email || "";
-    const me = req.user.emails?.[0]?.value || req.user.email;
-    if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+    if (supabase) {
+      const me = req.user.emails?.[0]?.value || req.user.email;
 
-    const poolLen = Array.isArray(data.allQuestions) ? data.allQuestions.length
-                   : Array.isArray(data.questions) ? data.questions.length
-                   : 0;
+      const { data: row, error: e1 } = await supabase.from("tests").select("*").eq("test_id", testId).single();
+      if (e1 || !row) return res.status(404).send("Test topilmadi");
+      if (row.created_by_email !== me) return res.status(403).send("Ruxsat yo‘q");
 
-    // 🕒 time (cheksiz uchun null)
-    const t = normalizeTime(req.body.time);
-    if (t !== undefined) {
-      data.time = t; // number yoki null
-    }
+      const poolLen = Array.isArray(row.all_questions) ? row.all_questions.length : 0;
 
-    // 🔢 questionCount (1..poolLen oralig'ida clamp)
-    if (req.body.questionCount !== undefined) {
-      const q = parseInt(req.body.questionCount, 10);
-      if (Number.isFinite(q)) {
-        data.questionCount = Math.max(1, Math.min(q, poolLen || q)); // pool 0 bo'lsa ham q saqlansin
+      const update = {};
+      const t = normalizeTime(req.body.time);
+      if (t !== undefined) update.time_minutes = t;
+
+      if (req.body.questionCount !== undefined) {
+        const q = parseInt(req.body.questionCount, 10);
+        if (Number.isFinite(q)) update.question_count = Math.max(1, Math.min(q, poolLen || q));
       }
-    }
 
-    fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
-    return res.json({
-      ok: true,
-      settings: {
-        time: data.time ?? null,
-        questionCount: data.questionCount,
-        totalQuestions: poolLen
+      const { error: e2 } = await supabase.from("tests").update(update).eq("test_id", testId);
+      if (e2) return res.status(500).send("Xatolik");
+
+      return res.json({
+        ok: true,
+        settings: {
+          time: update.time_minutes ?? row.time_minutes ?? null,
+          questionCount: update.question_count ?? row.question_count,
+          totalQuestions: poolLen
+        }
+      });
+    } else {
+      // LOCAL fallback
+      const jsonPath = path.join(TESTS_DIR, `test_${testId}.json`);
+      if (!fs.existsSync(jsonPath)) return res.status(404).send("Test topilmadi");
+
+      const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+      const ownerEmail = data?.createdBy?.email || "";
+      const me = req.user.emails?.[0]?.value || req.user.email;
+      if (ownerEmail !== me) return res.status(403).send("Ruxsat yo‘q");
+
+      const poolLen = Array.isArray(data.allQuestions) ? data.allQuestions.length
+                    : Array.isArray(data.questions) ? data.questions.length
+                    : 0;
+
+      // 🕒 time (cheksiz uchun null)
+      const t = normalizeTime(req.body.time);
+      if (t !== undefined) {
+        data.time = t; // number yoki null
       }
-    });
+
+      // 🔢 questionCount (1..poolLen oralig'ida clamp)
+      if (req.body.questionCount !== undefined) {
+        const q = parseInt(req.body.questionCount, 10);
+        if (Number.isFinite(q)) {
+          data.questionCount = Math.max(1, Math.min(q, poolLen || q)); // pool 0 bo'lsa ham q saqlansin
+        }
+      }
+
+      fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+      return res.json({
+        ok: true,
+        settings: {
+          time: data.time ?? null,
+          questionCount: data.questionCount,
+          totalQuestions: poolLen
+        }
+      });
+    }
   } catch (e) {
     console.error("PATCH /api/tests/:id/settings xatolik:", e);
     res.status(500).send("Xatolik");
