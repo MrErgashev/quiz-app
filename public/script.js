@@ -29,6 +29,7 @@ let durationSec = null;
 let interval = null;
 let userInfo = {};
 let dataLoaded = false;
+let started = false; // ⬅️ test faqat Start bosilganda boshlansin
 const testId = window.location.pathname.split("/").pop();
 
 // --- LocalStorage helpers ---
@@ -114,13 +115,12 @@ async function loadTest(forceFresh = false) {
 // === Dastlab yuklash ===
 loadTest(false)
   .then(() => {
+    // ⬇️ Avtostart YO‘Q. Session bo‘lsa ham faqat formani to‘ldirib Start bosilganda boshlanadi.
     if (loadSession()) {
-      paintStudent();
       prefillForm();
-      startTest(true); // resume
-    } else {
-      startBtn.disabled = !formFilled();
+      paintStudent();
     }
+    startBtn.disabled = !formFilled();
     addDecorations();
   })
   .catch(err => {
@@ -139,6 +139,7 @@ userForm.addEventListener("input", () => {
 
 // Start test
 startBtn.addEventListener("click", () => {
+  if (!formFilled()) return; // ⬅️ forma to‘liq to‘lmaguncha boshlanmasin
   userInfo = {
     fullname: document.getElementById("fullname").value.trim(),
     group: document.getElementById("group").value.trim(),
@@ -157,6 +158,7 @@ startBtn.addEventListener("click", () => {
 });
 
 function startTest(resume = false) {
+  started = true; // ⬅️ endi test boshlandi
   startScreen.classList.add("hidden");
   quizScreen.classList.remove("hidden");
   paintStudent();
@@ -196,6 +198,7 @@ function renderNavigation() {
     const answered = userAnswers[i] !== null;
     btn.className = `w-10 h-10 rounded-full font-bold ${answered ? "bg-green-500" : "bg-red-400"} text-white`;
     btn.addEventListener("click", () => {
+      if (!started) return; // ⬅️ startdan oldin ishlar blok
       currentIndex = i;
       showQuestion(i);
       saveSession();
@@ -235,6 +238,7 @@ function checkCompletion() {
 }
 
 prevBtn.addEventListener("click", () => {
+  if (!started) return; // ⬅️
   if (currentIndex > 0) {
     currentIndex--;
     showQuestion(currentIndex);
@@ -242,6 +246,7 @@ prevBtn.addEventListener("click", () => {
   }
 });
 nextBtn.addEventListener("click", () => {
+  if (!started) return; // ⬅️
   if (currentIndex < questions.length - 1) {
     currentIndex++;
     showQuestion(currentIndex);
@@ -250,7 +255,10 @@ nextBtn.addEventListener("click", () => {
 });
 
 // Submit
-submitBtn.addEventListener("click", submitQuiz);
+submitBtn.addEventListener("click", () => {
+  if (!started) return; // ⬅️
+  submitQuiz();
+});
 
 function submitQuiz() {
   clearInterval(interval);
@@ -296,6 +304,7 @@ if (restartBtn) {
       // start tugmasi faollashadi, foydalanuvchi bosadi — toza test boshlanadi
       if (userInfo?.fullname) startBtn.disabled = false;
 
+      started = false; // ⬅️ qayta blok holatiga qaytamiz
       modal.classList.add("hidden");
       startScreen.classList.remove("hidden");
       quizScreen.classList.add("hidden");
@@ -322,7 +331,10 @@ async function sendResultToServer(resultObj) {
   }
 }
 
-window.addEventListener("beforeunload", saveSession);
+// ⬇️ Faqat boshlanganda sessiyani saqlaymiz — aks holda "active" belgilanib, avtostart bo‘lib qolardi
+window.addEventListener("beforeunload", () => {
+  if (started) saveSession();
+});
 
 // Decorations
 function createProgressBar() {
