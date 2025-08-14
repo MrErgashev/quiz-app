@@ -796,7 +796,7 @@ app.get("/api/teacher/tests", async (req, res) => {
     }
   } catch (e) {
     console.error("teacher/tests xatolik:", e);
-    res.json([]);
+    res.json([]); 
   }
 });
 
