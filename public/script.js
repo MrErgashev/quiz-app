@@ -115,12 +115,18 @@ async function loadTest(forceFresh = false) {
 // === Dastlab yuklash ===
 loadTest(false)
   .then(() => {
-    // ⬇️ Avtostart YO‘Q. Session bo‘lsa ham faqat formani to‘ldirib Start bosilganda boshlanadi.
+    // ⬇️ Agar sessiya bor bo‘lsa — avtomatik davom ettiramiz (F5 uchun)
     if (loadSession()) {
       prefillForm();
       paintStudent();
+      startTest(true); // resume
+    } else {
+      // yangi kirgan foydalanuvchi — Start bosmaguncha test boshlanmaydi
+      started = false;
+      startBtn.disabled = !formFilled();
+      startScreen.classList.remove("hidden");
+      quizScreen.classList.add("hidden");
     }
-    startBtn.disabled = !formFilled();
     addDecorations();
   })
   .catch(err => {
