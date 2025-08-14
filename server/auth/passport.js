@@ -2,7 +2,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 // 🌍 Bazaviy URL ni ENV dan olamiz (trailing slashni olib tashlaymiz)
-const RAW_BASE = process.env.BASE_URL || "https://testtayyor.fly.dev";
+const RAW_BASE = process.env.BASE_URL || "https://testtayyor.onrender.com/";
 const BASE_URL = RAW_BASE.replace(/\/+$/, "");
 
 // ✅ Production’da to‘g‘ridan-to‘g‘ri callback URL bo‘lsa, o‘shani ishlatamiz
