@@ -26,6 +26,24 @@ if (!supabase) {
   console.warn("⚠️ Supabase ENV topilmadi. Local faylga yozish rejimi ishlatiladi (production uchun tavsiya etilmaydi).");
 }
 
+/* =========================
+   SESSION STORE qo‘shish
+   Postgres pool — configlar yoniga
+========================= */
+const { Pool } = require("pg");
+const PGSession = require("connect-pg-simple")(session);
+
+// Render/Supabase uchun tavsiya: Transaction pooler URI (port 6543) ni qo‘ying.
+// SUPABASE_DB_URL bo‘lmasa, DATABASE_URL ni o‘qiydi.
+const DATABASE_URL = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || "";
+const pgPool = DATABASE_URL
+  ? new Pool({
+      connectionString: DATABASE_URL,
+      // Supabase SSL talab qiladi
+      ssl: { rejectUnauthorized: false }
+    })
+  : null;
+
 const app = express();
 const PORT = process.env.PORT || 3000; // ⬅️ FLY.IO uchun PORT muhit o'zgaruvchisi
 
@@ -55,11 +73,39 @@ ensureDir(DATA_DIR); ensureDir(TESTS_DIR); ensureDir(RESULTS_DIR); ensureDir(UPL
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(session({
-  secret: "super-secret-key",
+
+/* =========================
+   trust proxy ni sessiondan OLDIN qo‘ying
+========================= */
+app.set("trust proxy", 1);
+
+/* =========================
+   Session middleware ni ALMASHTIRING
+   (connect-pg-simple + Postgres)
+========================= */
+const SESSION_SECRET = process.env.SESSION_SECRET || "super-secret-key";
+const sessionOptions = {
+  // pgPool bor bo‘lsa, Postgres’da sessiyalar saqlanadi
+  store: pgPool
+    ? new PGSession({
+        pool: pgPool,
+        tableName: "user_sessions",
+        createTableIfMissing: true,      // jadval bo‘lmasa, avtomatik yaratadi
+        // pruneSessionInterval: 60 * 60 // (ixtiyoriy) eski sessiyalarni tozalash (sekundda)
+      })
+    : undefined,
+  secret: SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
-}));
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true,            // Render HTTPS orqasida ishlaydi
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 kun
+  }
+};
+app.use(session(sessionOptions));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -949,7 +995,7 @@ app.get("/api/questions", (req, res) => {
     res.status(500).send("Savollarni yuklab bo‘lmadi.");
   }
 });
-// HTTPS orqasida cookie uchun foydali
+// HTTPS orqasida cookie uchun foydali (oldinda ham qo‘yilgan)
 app.set('trust proxy', 1);
 
 app.listen(PORT, '0.0.0.0', () => {
