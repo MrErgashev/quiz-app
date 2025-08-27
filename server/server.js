@@ -10,6 +10,8 @@ const { google } = require("googleapis");
 const XLSX = require("xlsx");
 const parser = require("./parser");
 require('dotenv').config();
+// 🔧 Supabase/Render TLS: self-signed sertifikatni inkor qilish
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 require("./auth/passport");
 
