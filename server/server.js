@@ -97,6 +97,8 @@ const sessionOptions = {
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  // ⬇️ YANGI: Render/NGINX proxy orqasida secure cookie to‘g‘ri ishlashi uchun
+  proxy: true,
   cookie: {
     httpOnly: true,
     sameSite: "lax",
@@ -747,11 +749,16 @@ app.delete("/api/tests", async (req, res) => {
       let count = 0;
 
       fs.readdirSync(TESTS_DIR).forEach(f => {
-        if (!f.endsWith(".json")) return;
+        if (!f.endswith(".json")) return;
+      });
+
+      // (eski tozalash mantig‘i pastda saqlangan)
+      const files = fs.readdirSync(TESTS_DIR).filter(f => f.endsWith(".json"));
+      for (const f of files) {
         try {
           const p = path.join(TESTS_DIR, f);
           const data = JSON.parse(fs.readFileSync(p, "utf-8"));
-          if (data?.createdBy?.email !== me) return;
+          if (data?.createdBy?.email !== me) continue;
 
           if (data.testImage && data.testImage.startsWith("/uploads/")) {
             const imgAbs = path.join(UPLOADS_DIR, path.basename(data.testImage));
@@ -775,7 +782,7 @@ app.delete("/api/tests", async (req, res) => {
           safeUnlink(p);
           count++;
         } catch {}
-      });
+      }
 
       return res.json({ ok: true, deleted: count });
     }
