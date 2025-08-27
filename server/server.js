@@ -35,14 +35,45 @@ const PGSession = require("connect-pg-simple")(session);
 
 // Render/Supabase uchun tavsiya: Transaction pooler URI (port 6543) ni qo‘ying.
 // SUPABASE_DB_URL bo‘lmasa, DATABASE_URL ni o‘qiydi.
-const DATABASE_URL = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || "";
+// ❗️ SSL/sertifikat xatosini oldini olish uchun kerakli query paramlarni majburan qo‘shamiz.
+const RAW_DB_URL = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || "";
+
+// URL'ga query qo‘shuvchi kichik helper
+function addParam(url, key, value) {
+  if (!url) return url;
+  const hasQ = url.includes("?");
+  return `${url}${hasQ ? "&" : "?"}${key}=${value}`;
+}
+
+let DATABASE_URL = RAW_DB_URL;
+if (DATABASE_URL) {
+  // Pooler bo‘lsa (6543), pgbouncer=true bo‘lsin
+  if (DATABASE_URL.includes("pooler.supabase.com:6543") && !/pgbouncer=true/i.test(DATABASE_URL)) {
+    DATABASE_URL = addParam(DATABASE_URL, "pgbouncer", "true");
+  }
+  // sslmode berilmagan bo‘lsa — no-verify (self-signed cert chain xatosini bossa)
+  if (!/sslmode=/i.test(DATABASE_URL)) {
+    DATABASE_URL = addParam(DATABASE_URL, "sslmode", "no-verify");
+  }
+}
+
 const pgPool = DATABASE_URL
   ? new Pool({
       connectionString: DATABASE_URL,
-      // Supabase SSL talab qiladi
-      ssl: { rejectUnauthorized: false }
+      // Supabase SSL talab qiladi; sertifikatni tekshirishni o‘chirib qo‘yamiz
+      ssl: { require: true, rejectUnauthorized: false },
+      max: +(process.env.PG_MAX || 5),
+      idleTimeoutMillis: +(process.env.PG_IDLE_TIMEOUT || 30000),
+      connectionTimeoutMillis: +(process.env.PG_CONN_TIMEOUT || 10000),
     })
   : null;
+
+// (ixtiyoriy) Ulanishni sinab ko‘rib log chiqaramiz
+if (pgPool) {
+  pgPool.connect()
+    .then(c => c.release())
+    .catch(err => console.error("❌ Postgres ulanish xatosi:", err.message));
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000; // ⬅️ FLY.IO uchun PORT muhit o'zgaruvchisi
