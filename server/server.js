@@ -113,29 +113,42 @@ app.use(express.urlencoded({ extended: true }));
 app.set("trust proxy", 1);
 
 /* =========================
-   Session middleware ni ALMASHTIRING
-   (connect-pg-simple + Postgres)
+   Session middleware (PG store + fallback MemoryStore)
+   — MUSTAHKAM VARIANT
 ========================= */
 const SESSION_SECRET = process.env.SESSION_SECRET || "super-secret-key";
+// Render’da vaqtincha memory store ishlatish uchun (ixtiyoriy)
+const FORCE_MEMORY_SESSION = process.env.FORCE_MEMORY_SESSION === "1";
+const MemoryStore = session.MemoryStore;
+const isProd =
+  process.env.NODE_ENV === "production" ||
+  !!process.env.RENDER ||
+  !!process.env.FLY_APP_NAME;
+
+let sessionStore;
+if (!FORCE_MEMORY_SESSION && pgPool) {
+  sessionStore = new PGSession({
+    pool: pgPool,
+    tableName: "user_sessions",
+    createTableIfMissing: true,
+    // pruneSessionInterval: 60 * 60, // ixtiyoriy
+  });
+} else {
+  console.warn("⚠️ PG session o‘rniga MemoryStore ishlayapti (FORCE_MEMORY_SESSION yoki PG mavjud emas).");
+  sessionStore = new MemoryStore();
+}
+
 const sessionOptions = {
-  // pgPool bor bo‘lsa, Postgres’da sessiyalar saqlanadi
-  store: pgPool
-    ? new PGSession({
-        pool: pgPool,
-        tableName: "user_sessions",
-        createTableIfMissing: true,      // jadval bo‘lmasa, avtomatik yaratadi
-        // pruneSessionInterval: 60 * 60 // (ixtiyoriy) eski sessiyalarni tozalash (sekundda)
-      })
-    : undefined,
+  store: sessionStore,
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  // ⬇️ YANGI: Render/NGINX proxy orqasida secure cookie to‘g‘ri ishlashi uchun
+  // ⬇️ Render/NGINX proxy orqasida secure cookie to‘g‘ri ishlashi uchun
   proxy: true,
   cookie: {
     httpOnly: true,
     sameSite: "lax",
-    secure: true,            // Render HTTPS orqasida ishlaydi
+    secure: !!isProd,              // prod-da true, local dev-da false
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7 kun
   }
 };
@@ -169,10 +182,29 @@ app.get("/auth/google",
   })
 );
 
-app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  (req, res) => res.redirect("/dashboard.html")
-);
+// *** ESKI CALLBACK ROUTE O‘RNIGA — KUCHLI XATO-HANDLERLI VARIANT ***
+app.get("/auth/google/callback", (req, res, next) => {
+  passport.authenticate("google", (err, user, info) => {
+    if (err) {
+      console.error("❌ OAuth callback error:", err);
+      return res.status(500).send("OAuth xatosi: " + (err.message || "Noma'lum xato"));
+    }
+    if (!user) {
+      console.warn("⚠️ OAuth foydalanuvchi qaytmadi:", info);
+      return res.redirect("/");
+    }
+
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
+        console.error("❌ Session saqlash (req.logIn) xatosi:", loginErr);
+        return res
+          .status(500)
+          .send("Sessiyani saqlashda xatolik: " + (loginErr.message || "Noma'lum xato"));
+      }
+      return res.redirect("/dashboard.html");
+    });
+  })(req, res, next);
+});
 
 app.get("/logout", (req, res) => {
   req.logout(() => res.redirect("/logout.html"));
@@ -1037,6 +1069,12 @@ app.get("/api/questions", (req, res) => {
 });
 // HTTPS orqasida cookie uchun foydali (oldinda ham qo‘yilgan)
 app.set('trust proxy', 1);
+
+// (Ixtiyoriy) Global error handler — kutilmagan xatolarni chiroyli ko‘rsatadi
+app.use((err, req, res, next) => {
+  console.error("🔥 Kutilmagan xato:", err);
+  res.status(500).send(err?.message || "Internal Server Error");
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server ishga tushdi: http://0.0.0.0:${PORT}`);
