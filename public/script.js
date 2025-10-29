@@ -66,6 +66,16 @@ function shuffleArray(arr) {
     .map(({ v }) => v);
 }
 
+// Har bir savoldagi javob variantlarini (options) yangi test boshlanganda bir marta aralashtiradi
+function shuffleQuestionOptions() {
+  if (!Array.isArray(questions)) return;
+  questions.forEach(q => {
+    if (Array.isArray(q?.options) && q.options.length > 1) {
+      q.options = shuffleArray(q.options);
+    }
+  });
+}
+
 // Talaba panelini yangilash
 function paintStudent() {
   const name = (userInfo?.fullname || "").trim() || "Talaba";
@@ -157,6 +167,9 @@ startBtn.addEventListener("click", () => {
   localStorage.setItem(K("start"), String(Date.now()));
 
   // Server allaqachon random subset bergani uchun yana shuffle shart emas.
+  // Talabga binoan: har bir savoldagi javoblar (options) tartibini tasodifiylashtiramiz.
+  // Eslatma: bu faqat yangi start paytida (resume emas) bajariladi.
+  shuffleQuestionOptions();
   userAnswers = Array(questions.length).fill(null);
   currentIndex = 0;
 
