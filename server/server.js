@@ -607,9 +607,18 @@ app.get("/api/export/:id", async (req, res) => {
       }
       if (!rows || rows.length === 0) return res.status(404).send("Ushbu test uchun natijalar topilmadi.");
 
+      // Toshkent vaqti (UTC+5) bilan ko'rsatish
+      const TZ_OFFSET_MIN = +(process.env.TZ_OFFSET_MINUTES || 300); // 300 = UTC+5
       const toDate = (d) => d ? new Date(d) : null;
-      const fmtDate = (dt) => !dt ? "" : `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
-      const fmtTime = (dt) => !dt ? "" : `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}:${String(dt.getSeconds()).padStart(2,"0")}`;
+      const toTashkent = (dt) => !dt ? null : new Date(dt.getTime() + TZ_OFFSET_MIN * 60 * 1000);
+      const fmtDate = (dt) => {
+        const t = toTashkent(dt);
+        return !t ? "" : `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+      };
+      const fmtTime = (dt) => {
+        const t = toTashkent(dt);
+        return !t ? "" : `${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}:${String(t.getSeconds()).padStart(2,"0")}`;
+      };
 
       const sheetRows = rows.map(r => {
         const st = toDate(r.started_at);
@@ -645,9 +654,12 @@ app.get("/api/export/:id", async (req, res) => {
       const files = fs.readdirSync(RESULTS_DIR).filter(f => f.endsWith(".json"));
       const rows = [];
 
+      // Toshkent vaqti (UTC+5) bilan ko'rsatish
+      const TZ_OFFSET_MIN_LOCAL = +(process.env.TZ_OFFSET_MINUTES || 300);
       const splitDateTime = (ts) => {
         if (!ts) return { date: "", time: "" };
-        const d = new Date(ts);
+        const base = new Date(ts);
+        const d = new Date(base.getTime() + TZ_OFFSET_MIN_LOCAL * 60 * 1000);
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, "0");
         const dd = String(d.getDate()).padStart(2, "0");
