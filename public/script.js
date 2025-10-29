@@ -478,7 +478,35 @@ function escapeHTML(s) {
     }).join("\n");
 
     const head = `<div class="mb-4"><div class="text-xl font-bold">Natija: ${summary.correct}/${summary.total} (${summary.percent}%) — Training rejimi</div></div>`;
-    if (questionCard) questionCard.innerHTML = head + blocks;
+    const actions = `
+      <div class="mt-6 flex items-center gap-3">
+        <button id="trainingRestartBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">Yana boshlash</button>
+        <a id="trainingHomeBtn" href="/" class="inline-block bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded">Bosh sahifaga qaytish</a>
+      </div>`;
+    if (questionCard) questionCard.innerHTML = head + blocks + actions;
+
+    const restartEl = document.getElementById('trainingRestartBtn');
+    if (restartEl) {
+      restartEl.addEventListener('click', async () => {
+        try {
+          // Modal tugmasidagi kabi toza qayta boshlash oqimi
+          clearSession();
+          await loadTest(true);
+          prefillForm();
+          if (userInfo?.fullname) startBtn.disabled = false;
+          started = false;
+          if (modal) modal.classList.add('hidden');
+          startScreen.classList.remove('hidden');
+          quizScreen.classList.add('hidden');
+          updateProgressBar(0);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (e) {
+          console.error(e);
+          localStorage.clear();
+          location.reload();
+        }
+      });
+    }
   }
 
   // Original funksiyani bekor qilib, yangisini e'lon qilamiz
