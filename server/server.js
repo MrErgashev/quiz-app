@@ -231,6 +231,9 @@ app.post(
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
 
     const { testName, duration, questionCount } = req.body;
+    // rejim: training | real (default real)
+    const rawMode = (req.body.mode || "real").toString().toLowerCase();
+    const mode = rawMode === "training" ? "training" : "real";
     const file = req.files.file?.[0];
     const imageFile = req.files.image?.[0];
     const user = req.user;
@@ -309,7 +312,8 @@ app.post(
         const { error: insErr } = await supabase.from("tests").insert({
           test_id: id,
           title: testName,
-          test_type: "Yangi yuklangan test",
+          // test_type maydonidan rejimni ko'rsatish uchun foydalanamiz (schema o'zgartirmasdan)
+          test_type: mode === "training" ? "Training" : "Real test",
           time_minutes: timeVal,           // daqiqa yoki null
           question_count: desired,
           image_url: imageUrl,             // public URL
@@ -329,12 +333,13 @@ app.post(
           JSON.stringify(
             {
               testTitle: testName,
-              testType: "Yangi yuklangan test",
+              testType: mode === "training" ? "Training" : "Real test",
+              mode,
               time: timeVal,                // daqiqa yoki null (cheksiz)
               questionCount: desired,
               testImage: imagePath,
-              questions,                    // eski maydon — qoldirildi
-              allQuestions,                 // yangi: to‘liq bank — clientga randomlab beramiz
+              questions,                    // eski maydon - qoldirildi
+              allQuestions,                 // yangi: to'liq bank - clientga randomlab beramiz
               createdAt: Date.now(),        // tartiblash uchun
               createdBy: { email: userEmail, name: user.displayName }
             },
@@ -412,6 +417,7 @@ app.get("/api/tests/:id", async (req, res) => {
       return res.json({
         testName: data.title,
         testType: data.test_type || "Test",
+        mode: /training/i.test(data.test_type || "") ? "training" : "real",
         duration: (data.time_minutes ?? null),   // daqiqa yoki null (cheksiz)
         questionCount: shuffled.length,
         testImage: data.image_url || null,
@@ -439,6 +445,7 @@ app.get("/api/tests/:id", async (req, res) => {
       return res.json({
         testName: data.testTitle,
         testType: data.testType || "Test",
+        mode: data.mode || (/training/i.test(data.testType || "") ? "training" : "real"),
         duration: (data.time ?? null),
         questionCount: shuffled.length,
         testImage: data.testImage || null,

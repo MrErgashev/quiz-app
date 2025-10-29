@@ -37,6 +37,19 @@
         </div>
       </div>
 
+      <!-- Rejim tanlash -->
+      <div>
+        <span class="block text-sm font-medium mb-1">Rejim</span>
+        <label class="mr-4 inline-flex items-center gap-2">
+          <input type="radio" name="mode" value="real" checked>
+          <span>Real test</span>
+        </label>
+        <label class="inline-flex items-center gap-2">
+          <input type="radio" name="mode" value="training">
+          <span>Training (o‘rganish) rejimi</span>
+        </label>
+      </div>
+
       <div>
         <label for="file" class="block text-sm font-medium">📁 Test fayli (.txt)</label>
         <input type="file" id="file" name="file" accept=".txt" class="w-full p-2 bg-white rounded text-black" required>

@@ -111,6 +111,12 @@ async function loadTest(forceFresh = false) {
   if (testImageEl) testImageEl.src = data.testImage || "/images/default.png";
 
   durationSec = data.duration ? Number(data.duration) * 60 : null;
+  // Rejimni serverdan olamiz: training | real (default real)
+  try { window._lastTestMode = data.mode; } catch {}
+  if (typeof data.mode === 'string' && data.mode.toLowerCase() === 'training') {
+    // eslint-disable-next-line no-var
+    var __tmp; // placeholder to avoid empty patch context
+  }
 
   // Server HAR SAFAR random subset beradi — shuni olamiz
   questions = Array.isArray(data.questions) ? data.questions : [];
@@ -441,3 +447,81 @@ function escapeHTML(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+// ==== Training rejimi qo'shimcha logika (platformani buzmasdan) ====
+// Serverdan loadTest() vaqtida window._lastTestMode ga yozildi.
+// Bu yerda submitQuiz ni qayta ta'riflab, training rejimida batafsil sharh ko'rsatamiz.
+(function () {
+  const getMode = () => (typeof window._lastTestMode === 'string' && window._lastTestMode.toLowerCase() === 'training') ? 'training' : 'real';
+
+  function renderTrainingReview(summary) {
+    if (navButtons) navButtons.innerHTML = "";
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    if (submitBtn) submitBtn.disabled = true;
+
+    const blocks = (questions || []).map((q, qi) => {
+      const chosen = userAnswers[qi];
+      const title = `${qi + 1}. ${escapeHTML(q.question || q.text || "")}`;
+      const optsHtml = (q.options || []).map((opt, oi) => {
+        const isChosen = chosen === oi;
+        const isCorrect = !!opt?.isCorrect;
+        let cls = "border rounded p-2";
+        if (isCorrect) cls += " border-green-500 bg-green-50";
+        if (isChosen && !isCorrect) cls += " border-red-500 bg-red-50";
+        if (isChosen && isCorrect) cls += " ring-2 ring-green-400";
+        const tag = isCorrect ? "✅" : (isChosen ? "❌" : "•");
+        const text = escapeHTML(opt?.text ?? String(opt));
+        return `<div class="${cls}">${tag} ${text}</div>`;
+      }).join("\n");
+      return `<div class="mb-4"><div class="font-semibold mb-2">${title}</div><div class="space-y-2">${optsHtml}</div></div>`;
+    }).join("\n");
+
+    const head = `<div class="mb-4"><div class="text-xl font-bold">Natija: ${summary.correct}/${summary.total} (${summary.percent}%) — Training rejimi</div></div>`;
+    if (questionCard) questionCard.innerHTML = head + blocks;
+  }
+
+  // Original funksiyani bekor qilib, yangisini e'lon qilamiz
+  window.submitQuiz = function submitQuiz() {
+    clearInterval(interval);
+    let correct = 0;
+    (questions || []).forEach((q, i) => {
+      if (q?.options?.[userAnswers[i]]?.isCorrect) correct++;
+    });
+    const percent = Math.round((correct / (questions?.length || 1)) * 100);
+    const startedAt = parseInt(localStorage.getItem(K("start")) || String(Date.now()), 10);
+    const finishedAt = Date.now();
+    const timeSpent = Math.floor((finishedAt - startedAt) / 1000);
+
+    const mode = getMode();
+    if (mode === 'training') {
+      renderTrainingReview({ correct, total: questions.length, percent });
+    } else {
+      if (modalMessage) {
+        modalMessage.innerHTML = `
+          <strong>${escapeHTML(userInfo.fullname || "")}</strong><br>
+          Siz <strong>${correct} / ${questions.length}</strong> to'g'ri javob berdingiz.<br>
+          Umumiy natija: <strong>${percent}%</strong>
+        `;
+      }
+      if (modal) modal.classList.remove("hidden");
+    }
+
+    const payload = {
+      testId,
+      fullname: userInfo.fullname || "",
+      group: userInfo.group || "",
+      university: userInfo.university || "",
+      faculty: userInfo.faculty || "",
+      score: percent,
+      correct,
+      total: (questions || []).length,
+      timeSpent,
+      startedAt,
+      finishedAt,
+      mode
+    };
+    clearSession();
+    sendResultToServer(payload);
+  };
+})();

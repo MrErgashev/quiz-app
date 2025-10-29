@@ -1,0 +1,40 @@
+// === Elements ===
+const startBtn = document.getElementById("startBtn");
+const userForm = document.getElementById("userForm");
+const startScreen = document.getElementById("startScreen");
+const quizScreen = document.getElementById("quizScreen");
+const questionCard = document.getElementById("questionCard");
+const navButtons = document.getElementById("navButtons");
+const timerEl = document.getElementById("timer");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const submitBtn = document.getElementById("submitBtn");
+const modal = document.getElementById("modal");
+const modalMessage = document.getElementById("modalMessage");
+const testTitleEl = document.getElementById("testTitle");
+const testTypeEl = document.getElementById("testType");
+const testImageEl = document.getElementById("testImage");
+const liveTitleEl = document.getElementById("liveTestTitle");
+const studentNameEl = document.getElementById("studentName");
+const studentInitialEl = document.getElementById("studentInitial");
+const restartBtn = document.getElementById("restartBtn"); // Yangi
+
+let progressBarEl = null;
+
+// === State ===
+let questions = [];
+let userAnswers = [];
+let currentIndex = 0;
+let durationSec = null;
+let interval = null;
+let userInfo = {};
+let dataLoaded = false;
+let started = false; // ⬅️ test faqat Start bosilganda boshlansin
+const testId = window.location.pathname.split("/").pop();
+
+// --- LocalStorage helpers ---
+const K = (k) => `qz:${testId}:${k}`;
+function saveSession() {
+  localStorage.setItem(K("active"), "1");
+  localStorage.setItem(K("answers"), JSON.stringify(userAnswers));
+  localStorage.setItem(K("index"), String(currentIndex));
