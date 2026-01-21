@@ -154,9 +154,9 @@
       btn.className = [
         "text-sm px-2 py-1 rounded-lg border transition",
         isCurrent
-          ? "bg-blue-600 text-white border-blue-400/40"
-          : "bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20",
-        answered ? "ring-2 ring-green-400/60" : "hover:border-blue-400/40"
+          ? "bg-green-600 text-white border-green-700/30"
+          : "bg-white border-red-200 hover:bg-red-50",
+        answered ? "ring-2 ring-green-400/60 border-green-200" : "text-slate-900"
       ].join(" ");
       btn.textContent = String(i + 1);
       btn.addEventListener("click", () => {
@@ -187,15 +187,15 @@
       row.className = [
         "w-full text-left p-3 rounded-xl border flex gap-3 items-start transition",
         active
-          ? "bg-green-600/25 border-green-400/50"
-          : "bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-400/40"
+          ? "bg-green-50 border-green-300"
+          : "bg-red-50 border-red-200 hover:bg-red-100"
       ].join(" ");
       row.innerHTML = `
         <div class="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold border
-          ${active ? "bg-green-600/20 border-green-400/40 text-green-200" : "bg-blue-600/20 border-blue-400/30 text-blue-100"}">
+          ${active ? "bg-green-600/10 border-green-200 text-green-700" : "bg-red-600/10 border-red-200 text-red-600"}">
           ${labels[idx] || (idx + 1)}
         </div>
-        <div class="text-slate-100 leading-relaxed">${o.text || ""}</div>
+        <div class="text-slate-900 leading-relaxed">${o.text || ""}</div>
       `;
       row.addEventListener("click", async () => {
         try {
