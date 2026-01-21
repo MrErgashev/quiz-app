@@ -36,6 +36,10 @@
   const backToCheckinBtn = el("backToCheckinBtn");
   const retryContainer = el("retryContainer");
   const retryHint = el("retryHint");
+  const participantName = el("participantName");
+  const examInfo = el("examInfo");
+  const timeSpentCard = el("timeSpentCard");
+  const timeSpentText = el("timeSpentText");
 
   const LS_ATTEMPT_ID = "dak_attempt_id";
   let maxAttemptsConfig = 1; // o'qituvchi tomonidan belgilangan urinishlar soni
@@ -367,12 +371,37 @@
     const correct = res.correct_count ?? 0;
     const total = res.total_questions ?? questions.length ?? 0;
 
-    scoreText.textContent = String(score);
-    correctText.textContent = String(correct);
-    totalText.textContent = String(total);
+    // Score va statistika
+    if (scoreText) scoreText.textContent = String(score);
+    if (correctText) correctText.textContent = String(correct);
+    if (totalText) totalText.textContent = String(total);
+
+    // Tabriklov xabari
+    const fish = attemptMeta?.student_fullname || "";
     if (congratsText) {
-      const fish = attemptMeta?.student_fullname || "";
-      congratsText.textContent = `Tabriklaymiz ${fish} siz ${score} ball to'pladingiz`;
+      const emoji = score >= 80 ? "🎉" : score >= 60 ? "👍" : "💪";
+      congratsText.textContent = `${emoji} Tabriklaymiz, ${fish}! Siz ${score} ball to'pladingiz.`;
+    }
+
+    // Ishtirokchi nomi
+    if (participantName) {
+      participantName.textContent = fish;
+    }
+
+    // Imtihon ma'lumotlari
+    if (examInfo) {
+      const examDate = attemptMeta?.exam_date || "";
+      examInfo.textContent = `DAK | Sana: ${examDate}`;
+    }
+
+    // Sarflangan vaqt (agar ma'lumot bo'lsa)
+    if (timeSpentCard && timeSpentText && attemptMeta?.started_at) {
+      const startedAt = new Date(attemptMeta.started_at).getTime();
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
+      const ss = String(elapsed % 60).padStart(2, "0");
+      timeSpentText.textContent = `${mm}:${ss}`;
+      timeSpentCard.classList.remove("hidden");
     }
 
     // Qaytadan topshirish tugmasini faqat max_attempts > 1 bo'lganda ko'rsatish
