@@ -9,6 +9,8 @@ const crypto = require("crypto");
 const { google } = require("googleapis");
 const XLSX = require("xlsx");
 const parser = require("./parser");
+const createDakRouter = require("./dak/routes");
+const { createDakStore } = require("./dak/store");
 require('dotenv').config();
 // 🔧 Supabase/Render TLS: self-signed sertifikatni inkor qilish
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -103,6 +105,7 @@ const UPLOADS_DIR =
   process.env.UPLOADS_DIR || path.join(DATA_DIR, "uploads");
 
 ensureDir(DATA_DIR); ensureDir(TESTS_DIR); ensureDir(RESULTS_DIR); ensureDir(UPLOADS_DIR);
+const dakStore = createDakStore({ dataDir: DATA_DIR, supabase });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -157,6 +160,15 @@ app.use(session(sessionOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// ?? Exam mode ON bo'lsa: "/" -> "/dak" (oddiy test oqimi o'zgarmaydi)
+app.get("/", async (req, res, next) => {
+  try {
+    const { enabled } = await dakStore.getExamMode();
+    if (enabled) return res.redirect("/dak");
+  } catch {}
+  return next();
+});
+
 // public/ (statik) fayllar
 app.use(express.static(path.join(__dirname, "../public")));
 
@@ -165,6 +177,20 @@ app.use("/uploads", express.static(UPLOADS_DIR));
 
 // ⬇️ Multer temporar papkani doimiy UPLOADS_DIR ga yo'naltirdik
 const upload = multer({ dest: UPLOADS_DIR });
+
+// =========================
+// DAK (Exam mode) router
+// =========================
+app.use(
+  "/api",
+  createDakRouter({
+    dataDir: DATA_DIR,
+    supabase,
+    upload,
+    parser,
+    resultsDir: RESULTS_DIR,
+  })
+);
 
 function getDriveClient(tokens = {}) {
   const auth = new google.auth.OAuth2();
@@ -373,6 +399,11 @@ app.post(
 // 📄 Test sahifasi
 app.get("/test/:id", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/test.html"));
+});
+
+// ?? DAK (Exam) sahifasi
+app.get("/dak", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/dak.html"));
 });
 
 // 📚 AJAX test (eski) — LOCAL fallback uchun qoldirildi
@@ -599,6 +630,9 @@ app.post("/api/save-result", async (req, res) => {
 // 📥 TEST STATISTIKASINI YUKLAB BERISH (o‘qituvchi uchun, umumiy xlsx)
 app.get("/api/export/:id", async (req, res) => {
   const testId = req.params.id;
+  const dakMatch = /^DAK_(\d{4}-\d{2}-\d{2})_(.+)$/.exec(testId || "");
+  const isDak = !!dakMatch;
+  const dakExamDate = dakMatch ? dakMatch[1] : "";
 
   try {
     if (supabase) {
@@ -627,25 +661,50 @@ app.get("/api/export/:id", async (req, res) => {
         return !t ? "" : `${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}:${String(t.getSeconds()).padStart(2,"0")}`;
       };
 
-      const sheetRows = rows.map(r => {
-        const st = toDate(r.started_at);
-        const fn = toDate(r.finished_at);
-        const spent = r.time_spent_seconds ?? 0;
-        return {
-          FISH: r.fullname || "",
-          Guruh: r.group || "",
-          Universitet: r.university || "",
-          Yonalish: r.faculty || "",
-          Togri: r.correct ?? 0,
-          Umumiy: r.total ?? 0,
-          Foiz: (r.score ?? 0) + "%",
-          BoshlaganSana: fmtDate(st),
-          BoshlaganVaqt: fmtTime(st),
-          TugatganSana: fmtDate(fn),
-          TugatganVaqt: fmtTime(fn),
-          Vaqt_sarfi: Math.floor(spent/60) + " daq " + (spent%60) + " sek"
-        };
-      });
+      const fmtDateTime = (dt) => {
+        const d = fmtDate(dt);
+        const t = fmtTime(dt);
+        if (!d && !t) return "";
+        if (d && t) return `${d} ${t}`;
+        return d || t;
+      };
+
+      const sheetRows = isDak
+        ? rows.map(r => {
+            const st = toDate(r.started_at);
+            const fn = toDate(r.finished_at);
+            return {
+              University: r.university || "Oriental Universiteti",
+              Program: r.faculty || "",
+              Group: r.group || "",
+              "Full name": r.fullname || "",
+              "Exam date": dakExamDate,
+              "Started at": fmtDateTime(st),
+              "Finished at": fmtDateTime(fn),
+              "Correct count": r.correct ?? 0,
+              "Total questions": r.total ?? 0,
+              SCORE: r.score ?? 0
+            };
+          })
+        : rows.map(r => {
+            const st = toDate(r.started_at);
+            const fn = toDate(r.finished_at);
+            const spent = r.time_spent_seconds ?? 0;
+            return {
+              FISH: r.fullname || "",
+              Guruh: r.group || "",
+              Universitet: r.university || "",
+              Yonalish: r.faculty || "",
+              Togri: r.correct ?? 0,
+              Umumiy: r.total ?? 0,
+              Foiz: (r.score ?? 0) + "%",
+              BoshlaganSana: fmtDate(st),
+              BoshlaganVaqt: fmtTime(st),
+              TugatganSana: fmtDate(fn),
+              TugatganVaqt: fmtTime(fn),
+              Vaqt_sarfi: Math.floor(spent/60) + " daq " + (spent%60) + " sek"
+            };
+          });
 
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(sheetRows);
@@ -676,6 +735,15 @@ app.get("/api/export/:id", async (req, res) => {
         return { date: `${yyyy}-${mm}-${dd}`, time: `${HH}:${MM}:${SS}` };
       };
 
+      const fmtDateTimeLocal = (x) => {
+        if (!x) return "";
+        const d = x.date || "";
+        const t = x.time || "";
+        if (!d && !t) return "";
+        if (d && t) return `${d} ${t}`;
+        return d || t;
+      };
+
       for (const f of files) {
         try {
           const data = JSON.parse(fs.readFileSync(path.join(RESULTS_DIR, f), "utf-8"));
@@ -684,20 +752,35 @@ app.get("/api/export/:id", async (req, res) => {
           const start = splitDateTime(data.startedAt);
           const end   = splitDateTime(data.finishedAt);
 
-          rows.push({
-            FISH: data.fullname || "",
-            Guruh: data.group || "",
-            Universitet: data.university || "",
-            Yonalish: data.faculty || "",
-            Togri: data.correct ?? 0,
-            Umumiy: data.total ?? 0,
-            Foiz: (data.score ?? 0) + "%",
-            BoshlaganSana: start.date,
-            BoshlaganVaqt: start.time,
-            TugatganSana: end.date,
-            TugatganVaqt: end.time,
-            Vaqt_sarfi: Math.floor((data.timeSpent ?? 0) / 60) + " daq " + ((data.timeSpent ?? 0) % 60) + " sek"
-          });
+          if (isDak) {
+            rows.push({
+              University: data.university || "Oriental Universiteti",
+              Program: data.faculty || "",
+              Group: data.group || "",
+              "Full name": data.fullname || "",
+              "Exam date": dakExamDate,
+              "Started at": fmtDateTimeLocal(start),
+              "Finished at": fmtDateTimeLocal(end),
+              "Correct count": data.correct ?? 0,
+              "Total questions": data.total ?? 0,
+              SCORE: data.score ?? 0
+            });
+          } else {
+            rows.push({
+              FISH: data.fullname || "",
+              Guruh: data.group || "",
+              Universitet: data.university || "",
+              Yonalish: data.faculty || "",
+              Togri: data.correct ?? 0,
+              Umumiy: data.total ?? 0,
+              Foiz: (data.score ?? 0) + "%",
+              BoshlaganSana: start.date,
+              BoshlaganVaqt: start.time,
+              TugatganSana: end.date,
+              TugatganVaqt: end.time,
+              Vaqt_sarfi: Math.floor((data.timeSpent ?? 0) / 60) + " daq " + ((data.timeSpent ?? 0) % 60) + " sek"
+            });
+          }
         } catch (e) {
           console.warn("⚠️ Natija fayli o‘qilmadi:", f, e.message);
         }

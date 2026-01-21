@@ -85,6 +85,116 @@
     <ul id="testList" class="space-y-3"></ul>
   </section>
 
+  <!-- DAK (Exam mode) -->
+  <section class="max-w-3xl mx-auto mt-12 bg-white/10 backdrop-blur p-6 rounded-xl shadow">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold">DAK</h2>
+      <a href="/dak" target="_blank" class="text-blue-300 underline text-sm hover:text-blue-200">/dak</a>
+    </div>
+
+    <div class="space-y-6">
+      <!-- Exam mode toggle -->
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <div class="font-semibold">Exam mode</div>
+          <div id="examModeStatus" class="text-sm text-gray-300">Yuklanmoqda...</div>
+        </div>
+        <label class="inline-flex items-center gap-2 select-none">
+          <input id="examModeToggle" type="checkbox" class="scale-125">
+          <span>ON/OFF</span>
+        </label>
+      </div>
+
+      <!-- Roster editor -->
+      <div class="border-t border-white/10 pt-4">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div class="font-semibold">Roster (JSON)</div>
+          <div class="text-xs text-gray-400">data/dak_roster.json</div>
+        </div>
+        <textarea id="dakRosterTextarea" class="w-full h-64 p-2 rounded text-black font-mono text-xs"
+          placeholder="{ ... }"></textarea>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button id="dakRosterLoadBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
+            Load
+          </button>
+          <button id="dakRosterSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+            Save
+          </button>
+        </div>
+        <div id="dakRosterMsg" class="mt-2 text-sm text-gray-300"></div>
+      </div>
+
+      <!-- Bank upload -->
+      <div class="border-t border-white/10 pt-4">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div class="font-semibold">Savol banklari</div>
+          <div class="text-xs text-gray-400">data/dak_banks.json</div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium mb-1">subject_name</label>
+            <input id="dakSubjectName" type="text" class="w-full p-2 rounded text-black" placeholder="Fan-1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">file (.txt)</label>
+            <input id="dakBankFile" type="file" accept=".txt" class="w-full p-2 bg-white rounded text-black">
+          </div>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button id="dakUploadBankBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm">
+            Upload
+          </button>
+          <button id="dakRefreshBanksBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
+            Refresh
+          </button>
+        </div>
+        <div id="dakBanksList" class="mt-3 space-y-2"></div>
+        <div id="dakBanksMsg" class="mt-2 text-sm text-gray-300"></div>
+      </div>
+
+      <!-- Config -->
+      <div class="border-t border-white/10 pt-4">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div class="font-semibold">Config</div>
+          <div class="text-xs text-gray-400">data/dak_config.json (yoki app_settings)</div>
+        </div>
+        <div class="text-sm text-gray-300">Duration: <span id="dakCfgDuration">80</span> min • Total: <span id="dakCfgTotal">50</span> • Points/Q: <span id="dakCfgPoints">2</span></div>
+        <div class="mt-3">
+          <label class="block text-sm font-medium mb-1">questions_per_bank</label>
+          <input id="dakQuestionsPerBank" type="number" min="1" class="w-full p-2 rounded text-black" value="10">
+        </div>
+        <div class="mt-3">
+          <div class="text-sm font-medium mb-1">Banklar (tanlang)</div>
+          <div id="dakConfigBanks" class="space-y-1"></div>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button id="dakConfigLoadBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
+            Load
+          </button>
+          <button id="dakConfigSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+            Save
+          </button>
+        </div>
+        <div id="dakConfigMsg" class="mt-2 text-sm text-gray-300"></div>
+      </div>
+
+      <!-- Export -->
+      <div class="border-t border-white/10 pt-4">
+        <div class="font-semibold mb-2">Export</div>
+        <div class="flex flex-col md:flex-row gap-2">
+          <a href="/api/export/DAK_2026-01-22_iqt" target="_blank"
+             class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded shadow text-sm text-center">
+            DAK Iqtisodiyot (2026-01-22) Export
+          </a>
+          <a href="/api/export/DAK_2026-01-23_tur" target="_blank"
+             class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded shadow text-sm text-center">
+            DAK Turizm (2026-01-23) Export
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- SCRIPT -->
   <script>
     const form = document.getElementById('testForm');
@@ -92,6 +202,31 @@
     const testList = document.getElementById("testList");
     const teacherName = document.getElementById("teacherName");
     const deleteAllBtn = document.getElementById("deleteAllBtn");
+
+    // --- DAK elements ---
+    const examModeToggle = document.getElementById("examModeToggle");
+    const examModeStatus = document.getElementById("examModeStatus");
+
+    const dakRosterTextarea = document.getElementById("dakRosterTextarea");
+    const dakRosterLoadBtn = document.getElementById("dakRosterLoadBtn");
+    const dakRosterSaveBtn = document.getElementById("dakRosterSaveBtn");
+    const dakRosterMsg = document.getElementById("dakRosterMsg");
+
+    const dakSubjectName = document.getElementById("dakSubjectName");
+    const dakBankFile = document.getElementById("dakBankFile");
+    const dakUploadBankBtn = document.getElementById("dakUploadBankBtn");
+    const dakRefreshBanksBtn = document.getElementById("dakRefreshBanksBtn");
+    const dakBanksList = document.getElementById("dakBanksList");
+    const dakBanksMsg = document.getElementById("dakBanksMsg");
+
+    const dakCfgDuration = document.getElementById("dakCfgDuration");
+    const dakCfgTotal = document.getElementById("dakCfgTotal");
+    const dakCfgPoints = document.getElementById("dakCfgPoints");
+    const dakQuestionsPerBank = document.getElementById("dakQuestionsPerBank");
+    const dakConfigBanks = document.getElementById("dakConfigBanks");
+    const dakConfigLoadBtn = document.getElementById("dakConfigLoadBtn");
+    const dakConfigSaveBtn = document.getElementById("dakConfigSaveBtn");
+    const dakConfigMsg = document.getElementById("dakConfigMsg");
 
     // 👤 O‘qituvchi ismini chiqarish
     async function loadTeacherInfo() {
@@ -275,9 +410,290 @@
       }
     }
 
+    // =========================
+    // DAK (Exam mode) helpers
+    // =========================
+    const dakState = {
+      banks: [],
+      config: null
+    };
+
+    function setMsg(target, msg, isError = false) {
+      if (!target) return;
+      target.textContent = msg || "";
+      target.className = `mt-2 text-sm ${isError ? "text-red-300" : "text-gray-300"}`;
+    }
+
+    async function fetchJson(url, opts = {}) {
+      const res = await fetch(url, { credentials: "include", ...opts });
+      const text = await res.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch {}
+      if (!res.ok) {
+        const msg = data?.error || data?.message || text || `${res.status} ${res.statusText}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    async function loadExamMode() {
+      try {
+        const data = await fetchJson("/api/public/exam-mode", { cache: "no-store" });
+        const enabled = !!data?.enabled;
+        if (examModeToggle) examModeToggle.checked = enabled;
+        if (examModeStatus) {
+          examModeStatus.textContent = enabled
+            ? "ON (\"/\" avtomatik /dak ga o'tadi)"
+            : "OFF (oddiy holat)";
+        }
+      } catch (e) {
+        if (examModeStatus) examModeStatus.textContent = `Xatolik: ${e.message}`;
+      }
+    }
+
+    async function setExamMode(enabled) {
+      await fetchJson("/api/teacher/exam-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled })
+      });
+    }
+
+    async function loadRoster() {
+      try {
+        setMsg(dakRosterMsg, "Yuklanmoqda...");
+        const roster = await fetchJson("/api/teacher/dak/roster", { cache: "no-store" });
+        if (dakRosterTextarea) dakRosterTextarea.value = JSON.stringify(roster, null, 2);
+        setMsg(dakRosterMsg, "OK");
+      } catch (e) {
+        setMsg(dakRosterMsg, e.message, true);
+      }
+    }
+
+    async function saveRoster() {
+      try {
+        if (!dakRosterTextarea) return;
+        let roster;
+        try {
+          roster = JSON.parse(dakRosterTextarea.value || "{}");
+        } catch {
+          setMsg(dakRosterMsg, "JSON format xato", true);
+          return;
+        }
+        setMsg(dakRosterMsg, "Saqlanmoqda...");
+        await fetchJson("/api/teacher/dak/roster", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(roster)
+        });
+        setMsg(dakRosterMsg, "Saved ✅");
+      } catch (e) {
+        setMsg(dakRosterMsg, e.message, true);
+      }
+    }
+
+    function renderBanks() {
+      if (!dakBanksList) return;
+      dakBanksList.innerHTML = "";
+
+      const banks = Array.isArray(dakState.banks) ? dakState.banks : [];
+      if (banks.length === 0) {
+        dakBanksList.innerHTML = `<div class="text-sm text-gray-300">Hozircha bank yo‘q</div>`;
+        return;
+      }
+
+      for (const b of banks) {
+        const row = document.createElement("div");
+        row.className = "bg-white/10 border border-white/10 rounded p-3 flex items-center justify-between gap-3";
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="font-semibold text-sm truncate">${b.subject_name || "Bank"}</div>
+            <div class="text-xs text-gray-300">ID: ${b.bank_id} • Savollar: ${b.questions_count ?? 0}</div>
+          </div>
+          <button class="delete-bank bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm" data-id="${b.bank_id}">
+            Delete
+          </button>
+        `;
+        row.querySelector(".delete-bank").addEventListener("click", async (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
+          if (!confirm("Bankni o‘chirasizmi?")) return;
+          try {
+            setMsg(dakBanksMsg, "O‘chirilmoqda...");
+            await fetchJson(`/api/teacher/dak/banks/${encodeURIComponent(id)}`, { method: "DELETE" });
+            await loadBanks();
+            await loadDakConfig(false);
+            setMsg(dakBanksMsg, "OK");
+          } catch (err) {
+            setMsg(dakBanksMsg, err.message, true);
+          }
+        });
+        dakBanksList.appendChild(row);
+      }
+    }
+
+    function renderConfigBanks() {
+      if (!dakConfigBanks) return;
+      dakConfigBanks.innerHTML = "";
+
+      const banks = Array.isArray(dakState.banks) ? dakState.banks : [];
+      const selected = new Set((dakState.config && Array.isArray(dakState.config.bank_ids)) ? dakState.config.bank_ids : []);
+
+      if (banks.length === 0) {
+        dakConfigBanks.innerHTML = `<div class="text-sm text-gray-300">Avval bank yuklang.</div>`;
+        return;
+      }
+
+      for (const b of banks) {
+        const label = document.createElement("label");
+        label.className = "flex items-center gap-2 text-sm";
+        const checked = selected.has(b.bank_id) ? "checked" : "";
+        label.innerHTML = `
+          <input type="checkbox" value="${b.bank_id}" ${checked}>
+          <span>${b.subject_name || "Bank"} (${b.questions_count ?? 0})</span>
+        `;
+        dakConfigBanks.appendChild(label);
+      }
+    }
+
+    async function loadBanks() {
+      try {
+        setMsg(dakBanksMsg, "Yuklanmoqda...");
+        const banks = await fetchJson("/api/teacher/dak/banks", { cache: "no-store" });
+        dakState.banks = Array.isArray(banks) ? banks : [];
+        renderBanks();
+        renderConfigBanks();
+        setMsg(dakBanksMsg, `Jami banklar: ${dakState.banks.length}`);
+      } catch (e) {
+        setMsg(dakBanksMsg, e.message, true);
+      }
+    }
+
+    async function uploadBank() {
+      if (!dakSubjectName || !dakBankFile) return;
+      const subject = (dakSubjectName.value || "").trim();
+      const file = dakBankFile.files && dakBankFile.files[0];
+      if (!subject) return setMsg(dakBanksMsg, "subject_name kiriting", true);
+      if (!file) return setMsg(dakBanksMsg, "file tanlang (.txt)", true);
+
+      try {
+        setMsg(dakBanksMsg, "Yuklanmoqda...");
+        const fd = new FormData();
+        fd.append("subject_name", subject);
+        fd.append("file", file);
+        const res = await fetch("/api/teacher/dak/upload-bank", {
+          method: "POST",
+          credentials: "include",
+          body: fd
+        });
+        const text = await res.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch {}
+        if (!res.ok) throw new Error(data?.error || text || `${res.status} ${res.statusText}`);
+
+        dakBankFile.value = "";
+        await loadBanks();
+        setMsg(dakBanksMsg, `Uploaded ✅ (savollar: ${data?.questions_count ?? "?"})`);
+      } catch (e) {
+        setMsg(dakBanksMsg, e.message, true);
+      }
+    }
+
+    async function loadDakConfig(showMsg = true) {
+      try {
+        if (showMsg) setMsg(dakConfigMsg, "Yuklanmoqda...");
+        const cfg = await fetchJson("/api/teacher/dak/config", { cache: "no-store" });
+        dakState.config = cfg || null;
+
+        if (dakCfgDuration) dakCfgDuration.textContent = String(cfg?.duration_minutes ?? 80);
+        if (dakCfgTotal) dakCfgTotal.textContent = String(cfg?.total_questions ?? 50);
+        if (dakCfgPoints) dakCfgPoints.textContent = String(cfg?.points_per_question ?? 2);
+        if (dakQuestionsPerBank) dakQuestionsPerBank.value = String(cfg?.questions_per_bank ?? 10);
+
+        renderConfigBanks();
+        if (showMsg) setMsg(dakConfigMsg, "OK");
+      } catch (e) {
+        if (showMsg) setMsg(dakConfigMsg, e.message, true);
+      }
+    }
+
+    async function saveDakConfig() {
+      try {
+        const qpb = parseInt(dakQuestionsPerBank?.value || "10", 10);
+        const duration = parseInt(dakCfgDuration?.textContent || "80", 10);
+        const total = parseInt(dakCfgTotal?.textContent || "50", 10);
+        const points = parseInt(dakCfgPoints?.textContent || "2", 10);
+
+        const selected = Array.from(dakConfigBanks?.querySelectorAll("input[type=checkbox]:checked") || [])
+          .map((i) => i.value)
+          .filter(Boolean);
+
+        if (!Number.isFinite(qpb) || qpb <= 0) return setMsg(dakConfigMsg, "questions_per_bank noto‘g‘ri", true);
+        if (selected.length * qpb !== total) {
+          return setMsg(
+            dakConfigMsg,
+            `Xato: tanlangan banklar (${selected.length}) × questions_per_bank (${qpb}) = ${selected.length * qpb} (kerak: ${total})`,
+            true
+          );
+        }
+
+        setMsg(dakConfigMsg, "Saqlanmoqda...");
+        const saved = await fetchJson("/api/teacher/dak/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            duration_minutes: duration,
+            total_questions: total,
+            points_per_question: points,
+            questions_per_bank: qpb,
+            bank_ids: selected
+          })
+        });
+
+        dakState.config = saved;
+        await loadDakConfig(false);
+        setMsg(dakConfigMsg, "Saved ✅");
+      } catch (e) {
+        setMsg(dakConfigMsg, e.message, true);
+      }
+    }
+
+    function initDak() {
+      if (!examModeToggle) return;
+
+      examModeToggle.addEventListener("change", async () => {
+        examModeToggle.disabled = true;
+        try {
+          await setExamMode(!!examModeToggle.checked);
+          await loadExamMode();
+        } catch (e) {
+          alert(e.message || "Xatolik");
+          await loadExamMode();
+        } finally {
+          examModeToggle.disabled = false;
+        }
+      });
+
+      dakRosterLoadBtn?.addEventListener("click", () => loadRoster());
+      dakRosterSaveBtn?.addEventListener("click", () => saveRoster());
+
+      dakRefreshBanksBtn?.addEventListener("click", () => loadBanks());
+      dakUploadBankBtn?.addEventListener("click", () => uploadBank());
+
+      dakConfigLoadBtn?.addEventListener("click", async () => {
+        await loadBanks();
+        await loadDakConfig();
+      });
+      dakConfigSaveBtn?.addEventListener("click", () => saveDakConfig());
+
+      loadExamMode();
+      loadRoster();
+      loadBanks().then(() => loadDakConfig());
+    }
+
     // Sahifa yuklanganda...
     loadTeacherInfo();
     loadTests();
+    initDak();
   </script>
 </body>
 </html>

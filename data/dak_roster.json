@@ -1,0 +1,70 @@
+{
+  "university": "Oriental Universiteti",
+  "programs": [
+    {
+      "program_id": "iqt",
+      "program_name": "Iqtisodiyot (tarmoqlar va sohalar bo‘yicha)",
+      "groups": [
+        {
+          "group_name": "IQTK-101",
+          "exam_date": "2026-01-22",
+          "students": [
+            "TOSHKULOV SHAXRIDDIN SHERALIYEVICH",
+            "XIKMATULLAYEV ABDULATIF FAYZULLA O‘G‘LI",
+            "HAZRATOV QUVONCHBEK HAMZA O‘G‘LI",
+            "NURALIYEV JAXONGIR QIRJIGITOVICH",
+            "OBIDOV JAVLONBEK DAVRONBEK O‘G‘LI",
+            "AKOBIROVA ASILAXON AXROROVNA",
+            "ALIQULOVA SHOHSANAM O‘TKIRJON QIZI",
+            "G‘ANIYEVA FARANGIS RAVSHAN QIZI",
+            "KARABAYEVA NAZOKAT PO‘LAT QIZI",
+            "SADULLAYEV SHOXZOD UTKIROVICH"
+          ]
+        },
+        {
+          "group_name": "IQTK-102",
+          "exam_date": "2026-01-22",
+          "students": [
+            "BEGMURODOV G‘ANISHER UMED O‘G‘LI",
+            "XAMIDULLAYEV JAMSHID ASOMIDDIN O‘G‘LI",
+            "ANORBEKOV SAMANDAR BOBOMUROD O‘G‘LI",
+            "ABDUSHUKUROV ABDUSAMAD ABDULAZIZ O‘G‘LI",
+            "NURIDDINOV BUNYOD QOBUL O‘G‘LI",
+            "PRIMQULOV KAMRONBEK RAYIMQUL O‘G‘LI",
+            "SHOIMOV ILHOMJON XAYRULLO O‘G‘LI",
+            "XUSANOV BAXODIR LAZIZ O‘G‘LI",
+            "ABDUXOLIQOV DOSTONBEK DONYORJON O‘G‘LI",
+            "ERKINOV ABDULLOX BOTIR O‘G‘LI",
+            "ISMOILOV ISROILXO‘JA NOSIRJON O‘G‘LI",
+            "JO‘RABOYEV TOXIR ABDUXALIL O‘G‘LI",
+            "KUTLIMURATOV SODIQJON AKBAR O‘G‘LI"
+          ]
+        }
+      ]
+    },
+    {
+      "program_id": "tur",
+      "program_name": "Turizm (faoliyat yo‘nalishlari bo‘yicha)",
+      "groups": [
+        {
+          "group_name": "TURK-101",
+          "exam_date": "2026-01-23",
+          "students": [
+            "ABBOSOVA NURSHODA TO‘LQIN QIZI",
+            "ABRUYOVA JASMINA FURQAT QIZI",
+            "BAXTIYOROVA NODIRABEGIM IGOR QIZI",
+            "OZODOV DIYORBEK RUSTAM O‘G‘LI",
+            "OTAMURODOVA MUQADDAS AZAMAT QIZI",
+            "RAXMONOV SARDORBEK ILXOM O‘G‘LI",
+            "MAMONOVA MUNIRA IXTIYOROVNA",
+            "BOBOYEVA SALOMAT HAMROQUL QIZI",
+            "TURSUNMURODOV SANJAR SUNNATILLA O‘G‘LI",
+            "ZOKIROV G‘ULOMIDDIN KAMOL O‘G‘LI",
+            "XALILULAYEV IZZATULLO HAMIDULLA O‘G‘LI"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
