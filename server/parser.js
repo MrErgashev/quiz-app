@@ -7,7 +7,7 @@ function parseQuestions(text) {
       const questionText = lines[0].replace(/^\d+\.\s*/, "").trim();
       const options = lines.slice(1).map(line => {
         const isCorrect = line.startsWith("*");
-        const cleanLine = line.replace(/^\*?([a-d]\))\s*/, "").trim();
+        const cleanLine = line.replace(/^\*?\s*[a-dA-D]\)\s*/, "").trim();
         return { text: cleanLine, isCorrect };
       });
       return {
