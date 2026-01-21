@@ -472,6 +472,28 @@
     });
     finishBtn.addEventListener("click", () => finishExam(false).catch((e) => showError(examError, e.message)));
 
+    // Klaviatura yo'nalish tugmalari bilan navigatsiya
+    document.addEventListener("keydown", (e) => {
+      // Faqat imtihon rejimida ishlaydi
+      if (examSection.classList.contains("hidden")) return;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderQuestion();
+          renderNav();
+        }
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (currentIndex < questions.length - 1) {
+          currentIndex++;
+          renderQuestion();
+          renderNav();
+        }
+      }
+    });
+
     backToCheckinBtn.addEventListener("click", () => resetAll());
 
     // Config dan max_attempts ni olish
