@@ -802,16 +802,16 @@ app.get("/api/export/:id", async (req, res) => {
             const st = toDate(r.started_at);
             const fn = toDate(r.finished_at);
             return {
-              University: r.university || "Oriental Universiteti",
-              Program: r.faculty || "",
-              Group: r.group || "",
-              "Full name": r.fullname || "",
-              "Exam date": dakExamDate,
-              "Started at": fmtDateTime(st),
-              "Finished at": fmtDateTime(fn),
-              "Correct count": r.correct ?? 0,
-              "Total questions": r.total ?? 0,
-              SCORE: r.score ?? 0
+              "Universitet": r.university || "Oriental Universiteti",
+              "Ta'lim yo'nalishi": r.faculty || "",
+              "Guruh": r.group || "",
+              "F.I.Sh.": r.fullname || "",
+              "Imtihon sanasi": dakExamDate,
+              "Boshlagan vaqti": fmtDateTime(st),
+              "Tugatgan vaqti": fmtDateTime(fn),
+              "To'g'ri javoblar soni": r.correct ?? 0,
+              "Jami savollar soni": r.total ?? 0,
+              "Ball (natija)": r.score ?? 0
             };
           })
         : rows.map(r => {
@@ -882,16 +882,16 @@ app.get("/api/export/:id", async (req, res) => {
 
           if (isDak) {
             rows.push({
-              University: data.university || "Oriental Universiteti",
-              Program: data.faculty || "",
-              Group: data.group || "",
-              "Full name": data.fullname || "",
-              "Exam date": dakExamDate,
-              "Started at": fmtDateTimeLocal(start),
-              "Finished at": fmtDateTimeLocal(end),
-              "Correct count": data.correct ?? 0,
-              "Total questions": data.total ?? 0,
-              SCORE: data.score ?? 0
+              "Universitet": data.university || "Oriental Universiteti",
+              "Ta'lim yo'nalishi": data.faculty || "",
+              "Guruh": data.group || "",
+              "F.I.Sh.": data.fullname || "",
+              "Imtihon sanasi": dakExamDate,
+              "Boshlagan vaqti": fmtDateTimeLocal(start),
+              "Tugatgan vaqti": fmtDateTimeLocal(end),
+              "To'g'ri javoblar soni": data.correct ?? 0,
+              "Jami savollar soni": data.total ?? 0,
+              "Ball (natija)": data.score ?? 0
             });
           } else {
             rows.push({

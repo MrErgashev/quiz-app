@@ -345,6 +345,15 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     if (!studentOk) return res.status(400).json({ error: "Talaba topilmadi" });
 
     const config = await store.getDakConfig();
+
+    // Urinishlar sonini tekshirish
+    const maxAttempts = config.max_attempts_per_student || 1;
+    const existingAttempts = await store.countStudentAttempts(program_id, group_name, student_fullname, group.exam_date);
+    if (existingAttempts >= maxAttempts) {
+      return res.status(403).json({
+        error: `Sizning urinishlar sonigiz tugadi (${existingAttempts}/${maxAttempts}). Qayta topshirish imkoniyati yo'q.`
+      });
+    }
     const bankIds = Array.isArray(config.bank_ids) ? config.bank_ids : [];
     if (!bankIds.length) return res.status(400).json({ error: "DAK config bank_ids bo'sh" });
 

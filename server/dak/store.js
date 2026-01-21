@@ -208,6 +208,32 @@ function createDakStore({ dataDir, supabase }) {
     return attempt;
   }
 
+  async function countStudentAttempts(programId, groupName, studentFullname, examDate) {
+    // Talabaning shu imtihon uchun nechta attempt yaratganini sanash
+    ensureDir(attemptsDir);
+    let count = 0;
+
+    try {
+      const files = fs.readdirSync(attemptsDir).filter((f) => f.endsWith(".json"));
+      for (const file of files) {
+        try {
+          const attempt = safeReadJson(path.join(attemptsDir, file), null);
+          if (!attempt) continue;
+          if (
+            attempt.program_id === programId &&
+            attempt.group_name === groupName &&
+            attempt.student_fullname === studentFullname &&
+            attempt.exam_date === examDate
+          ) {
+            count++;
+          }
+        } catch {}
+      }
+    } catch {}
+
+    return count;
+  }
+
   return {
     getExamMode,
     setExamMode,
@@ -220,6 +246,7 @@ function createDakStore({ dataDir, supabase }) {
     createAttempt,
     getAttempt,
     saveAttempt,
+    countStudentAttempts,
   };
 }
 
