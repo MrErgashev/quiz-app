@@ -151,14 +151,17 @@
       const btn = document.createElement("button");
       const answered = answers[String(i)] !== undefined;
       const isCurrent = i === currentIndex;
+      const stateClass = isCurrent
+        ? "bg-blue-600 text-white border-blue-700/30"
+        : answered
+          ? "bg-white border-slate-200 hover:bg-sky-50 text-slate-900"
+          : "bg-white border-red-200 hover:bg-red-50 text-red-700";
       const answeredClasses = answered
         ? ["ring-2", "ring-green-200", ...(isCurrent ? [] : ["border-green-300"])]
         : [];
       btn.className = [
         "text-sm px-2 py-1.5 rounded-lg border transition focus:outline-none focus:ring-4 focus:ring-blue-100",
-        isCurrent
-          ? "bg-blue-600 text-white border-blue-700/30"
-          : "bg-white border-slate-200 hover:bg-sky-50 text-slate-900",
+        stateClass,
         ...answeredClasses
       ].join(" ");
       btn.textContent = String(i + 1);
