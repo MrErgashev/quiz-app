@@ -97,6 +97,17 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
   });
 
   // =========================
+  // Public config (faqat max_attempts)
+  // =========================
+  router.get("/public/dak/config", async (req, res) => {
+    const config = await store.getDakConfig();
+    // Faqat talaba uchun kerakli ma'lumotlarni qaytarish
+    res.json({
+      max_attempts_per_student: config.max_attempts_per_student || 1
+    });
+  });
+
+  // =========================
   // Roster (public)
   // =========================
   router.get("/public/dak/programs", async (req, res) => {

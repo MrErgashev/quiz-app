@@ -34,8 +34,11 @@
   const totalText = el("totalText");
   const congratsText = el("congratsText");
   const backToCheckinBtn = el("backToCheckinBtn");
+  const retryContainer = el("retryContainer");
+  const retryHint = el("retryHint");
 
   const LS_ATTEMPT_ID = "dak_attempt_id";
+  let maxAttemptsConfig = 1; // o'qituvchi tomonidan belgilangan urinishlar soni
 
   let attemptId = null;
   let attemptMeta = null;
@@ -372,6 +375,18 @@
       congratsText.textContent = `Tabriklaymiz ${fish} siz ${score} ball to'pladingiz`;
     }
 
+    // Qaytadan topshirish tugmasini faqat max_attempts > 1 bo'lganda ko'rsatish
+    if (retryContainer) {
+      if (maxAttemptsConfig > 1) {
+        retryContainer.classList.remove("hidden");
+        if (retryHint) {
+          retryHint.textContent = `Sizga jami ${maxAttemptsConfig} marta urinish imkoniyati berilgan`;
+        }
+      } else {
+        retryContainer.classList.add("hidden");
+      }
+    }
+
     localStorage.removeItem(LS_ATTEMPT_ID);
     setMode("result");
   }
@@ -393,10 +408,19 @@
     setMode("checkin");
   }
 
+  async function loadDakConfig() {
+    try {
+      const cfg = await apiJson("/api/public/dak/config", { cache: "no-store" });
+      maxAttemptsConfig = cfg?.max_attempts_per_student || 1;
+    } catch {
+      maxAttemptsConfig = 1;
+    }
+  }
+
   async function init() {
     universityInput.value = UNIVERSITY;
     examDateInput.value = "";
-    checkinHint.textContent = "Eslatma: sahifa yangilansa ham savollar o‘zgarmaydi (attempt saqlanadi).";
+    checkinHint.textContent = "Eslatma: sahifa yangilansa ham savollar o'zgarmaydi (attempt saqlanadi).";
 
     programSelect.addEventListener("change", () => onProgramChange().catch((e) => showError(checkinError, e.message)));
     groupSelect.addEventListener("change", () => onGroupChange().catch((e) => showError(checkinError, e.message)));
@@ -421,6 +445,8 @@
 
     backToCheckinBtn.addEventListener("click", () => resetAll());
 
+    // Config dan max_attempts ni olish
+    await loadDakConfig();
     await loadPrograms();
 
     const savedAttempt = localStorage.getItem(LS_ATTEMPT_ID);

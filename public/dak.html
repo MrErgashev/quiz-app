@@ -131,10 +131,14 @@
       <div class="text-slate-800">Umumiy ball: <span id="scoreText" class="font-bold text-green-700"></span> / 100</div>
       <div class="text-slate-600 text-sm mt-1">To'g'ri javoblar: <span id="correctText"></span> / <span id="totalText"></span></div>
 
-      <div class="mt-5 flex flex-col md:flex-row gap-3">
-        <button id="backToCheckinBtn" class="bg-white hover:bg-sky-50 border border-slate-200 px-5 py-2.5 rounded-xl">
-          Yangi check-in
+      <div id="retryContainer" class="mt-5 hidden">
+        <button id="backToCheckinBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-lg border border-blue-700/20 inline-flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Qaytadan topshirish
         </button>
+        <p id="retryHint" class="mt-2 text-sm text-slate-500"></p>
       </div>
     </section>
   </main>
