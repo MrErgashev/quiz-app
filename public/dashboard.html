@@ -105,23 +105,68 @@
         </label>
       </div>
 
-      <!-- Roster editor -->
+      <!-- Roster Import (Paste) - NEW -->
       <div class="border-t border-white/10 pt-4">
         <div class="flex items-center justify-between gap-3 mb-2">
-          <div class="font-semibold">Roster (JSON)</div>
+          <div class="font-semibold">Roster Import (Paste)</div>
           <div class="text-xs text-gray-400">data/dak_roster.json</div>
         </div>
-        <textarea id="dakRosterTextarea" class="w-full h-64 p-2 rounded text-black font-mono text-xs"
-          placeholder="{ ... }"></textarea>
+        <div class="text-sm text-gray-300 mb-2">
+          Word/Excel jadvalidan COPY-PASTE qiling:
+        </div>
+        <textarea id="dakPasteTextarea" class="w-full h-48 p-2 rounded text-black font-mono text-xs"
+          placeholder="Har satr: Yo'nalish<TAB>Guruh<TAB>Sana<TAB>F.I.Sh&#10;&#10;Misol:&#10;Iqtisodiyot (tarmoqlar va sohalar bo'yicha)	IQTK-101	22.01.2026	TOSHKULOV SHAXRIDDIN SHERALIYEVICH&#10;Turizm (yo'nalishlar bo'yicha)	TURK-101	23.01.2026	ALIYEV JASUR ABBOSOVICH"></textarea>
         <div class="mt-2 flex flex-wrap gap-2">
-          <button id="dakRosterLoadBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
-            Load
+          <button id="dakPastePreviewBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+            Preview
           </button>
-          <button id="dakRosterSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-            Save
+          <button id="dakPasteImportBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+            Import & Save
           </button>
         </div>
-        <div id="dakRosterMsg" class="mt-2 text-sm text-gray-300"></div>
+        <div id="dakPasteMsg" class="mt-2 text-sm"></div>
+
+        <!-- Preview Results -->
+        <div id="dakPastePreview" class="mt-4 hidden">
+          <div class="font-semibold mb-2">Preview:</div>
+          <div class="overflow-x-auto">
+            <table id="dakPreviewTable" class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-white/10">
+                  <th class="border border-white/20 px-2 py-1 text-left">Program</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Group</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Exam Date</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Full Name</th>
+                </tr>
+              </thead>
+              <tbody id="dakPreviewBody"></tbody>
+            </table>
+          </div>
+          <div id="dakPreviewStats" class="mt-2 text-sm text-gray-300"></div>
+        </div>
+      </div>
+
+      <!-- Roster editor (JSON - Advanced) -->
+      <div class="border-t border-white/10 pt-4">
+        <details class="group">
+          <summary class="flex items-center justify-between gap-3 cursor-pointer select-none">
+            <div class="font-semibold">Advanced (JSON)</div>
+            <div class="text-xs text-gray-400">data/dak_roster.json</div>
+          </summary>
+          <div class="mt-3">
+            <textarea id="dakRosterTextarea" class="w-full h-64 p-2 rounded text-black font-mono text-xs"
+              placeholder="{ ... }"></textarea>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button id="dakRosterLoadBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
+                Load
+              </button>
+              <button id="dakRosterSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                Save
+              </button>
+            </div>
+            <div id="dakRosterMsg" class="mt-2 text-sm text-gray-300"></div>
+          </div>
+        </details>
       </div>
 
       <!-- Bank upload -->
@@ -210,6 +255,56 @@
         <div id="dakConfigMsg" class="mt-2 text-sm text-gray-300"></div>
       </div>
 
+      <!-- Talabalar login/parollari -->
+      <div class="border-t border-white/10 pt-4">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div class="font-semibold">Talabalar login/parollari</div>
+          <div class="text-xs text-gray-400">data/dak_accounts.json</div>
+        </div>
+        <div class="text-sm text-gray-300 mb-3">
+          Guruhni tanlang va login/parollarni yarating. Parollar faqat yaratilgan paytda ko'rinadi!
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-sm font-medium mb-1">Guruh</label>
+            <select id="credGroupSelect" class="w-full p-2 rounded text-black">
+              <option value="">Yuklanmoqda...</option>
+            </select>
+          </div>
+          <div class="flex items-end gap-2">
+            <button id="credGenerateBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+              Generate
+            </button>
+            <button id="credRegenerateBtn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
+              Regenerate
+            </button>
+            <button id="credExportCsvBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm hidden">
+              CSV Export
+            </button>
+          </div>
+        </div>
+
+        <div id="credMsg" class="text-sm text-gray-300 mb-3"></div>
+
+        <!-- Credentials Table -->
+        <div id="credTableWrap" class="hidden overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-white/10">
+                <th class="border border-white/20 px-2 py-1 text-left">#</th>
+                <th class="border border-white/20 px-2 py-1 text-left">F.I.Sh</th>
+                <th class="border border-white/20 px-2 py-1 text-left">Login</th>
+                <th class="border border-white/20 px-2 py-1 text-left">Parol</th>
+                <th class="border border-white/20 px-2 py-1 text-left">Guruh</th>
+                <th class="border border-white/20 px-2 py-1 text-left">Sana</th>
+              </tr>
+            </thead>
+            <tbody id="credTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Export -->
       <div class="border-t border-white/10 pt-4">
         <div class="font-semibold mb-2">Export</div>
@@ -242,7 +337,28 @@
     const dakRosterTextarea = document.getElementById("dakRosterTextarea");
     const dakRosterLoadBtn = document.getElementById("dakRosterLoadBtn");
     const dakRosterSaveBtn = document.getElementById("dakRosterSaveBtn");
+
+    // Credentials elements
+    const credGroupSelect = document.getElementById("credGroupSelect");
+    const credGenerateBtn = document.getElementById("credGenerateBtn");
+    const credRegenerateBtn = document.getElementById("credRegenerateBtn");
+    const credExportCsvBtn = document.getElementById("credExportCsvBtn");
+    const credMsg = document.getElementById("credMsg");
+    const credTableWrap = document.getElementById("credTableWrap");
+    const credTableBody = document.getElementById("credTableBody");
+
+    let lastGeneratedCredentials = null; // Store for CSV export
     const dakRosterMsg = document.getElementById("dakRosterMsg");
+
+    // Paste import elements
+    const dakPasteTextarea = document.getElementById("dakPasteTextarea");
+    const dakPastePreviewBtn = document.getElementById("dakPastePreviewBtn");
+    const dakPasteImportBtn = document.getElementById("dakPasteImportBtn");
+    const dakPasteMsg = document.getElementById("dakPasteMsg");
+    const dakPastePreview = document.getElementById("dakPastePreview");
+    const dakPreviewTable = document.getElementById("dakPreviewTable");
+    const dakPreviewBody = document.getElementById("dakPreviewBody");
+    const dakPreviewStats = document.getElementById("dakPreviewStats");
 
     const dakSubjectName = document.getElementById("dakSubjectName");
     const dakBankFile = document.getElementById("dakBankFile");
@@ -529,6 +645,125 @@
       }
     }
 
+    // === PASTE IMPORT FUNCTIONS ===
+
+    async function previewPasteImport() {
+      try {
+        if (!dakPasteTextarea) return;
+        const rawText = dakPasteTextarea.value || "";
+
+        if (!rawText.trim()) {
+          setMsg(dakPasteMsg, "Matn kiriting", true);
+          dakPastePreview.classList.add("hidden");
+          return;
+        }
+
+        setMsg(dakPasteMsg, "Preview qilinmoqda...");
+
+        const response = await fetchJson("/api/teacher/dak/roster/import-paste?dry_run=1", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ raw_text: rawText })
+        });
+
+        if (response.ok && response.roster) {
+          renderPreview(response.roster, response.stats);
+          setMsg(dakPasteMsg, "Preview tayyor ✅");
+        } else {
+          setMsg(dakPasteMsg, "Preview xatosi", true);
+          dakPastePreview.classList.add("hidden");
+        }
+      } catch (e) {
+        const errorMsg = e.line
+          ? `Qator ${e.line}: ${e.error || e.message}`
+          : (e.error || e.message || "Xatolik");
+        setMsg(dakPasteMsg, errorMsg, true);
+        dakPastePreview.classList.add("hidden");
+      }
+    }
+
+    function renderPreview(roster, stats) {
+      if (!dakPreviewBody || !dakPastePreview) return;
+
+      dakPreviewBody.innerHTML = "";
+
+      // Build rows from roster
+      const rows = [];
+      for (const program of roster.programs || []) {
+        for (const group of program.groups || []) {
+          for (const student of group.students || []) {
+            rows.push({
+              program_name: program.program_name,
+              group_name: group.group_name,
+              exam_date: group.exam_date,
+              student_fullname: student
+            });
+          }
+        }
+      }
+
+      // Render table rows
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-white/10";
+        tr.innerHTML = `
+          <td class="border border-white/20 px-2 py-1 text-sm">${row.program_name}</td>
+          <td class="border border-white/20 px-2 py-1 text-sm">${row.group_name}</td>
+          <td class="border border-white/20 px-2 py-1 text-sm">${row.exam_date}</td>
+          <td class="border border-white/20 px-2 py-1 text-sm">${row.student_fullname}</td>
+        `;
+        dakPreviewBody.appendChild(tr);
+      }
+
+      // Show stats
+      if (dakPreviewStats && stats) {
+        dakPreviewStats.textContent = `Programlar: ${stats.programs || 0}, Guruhlar: ${stats.groups || 0}, Talabalar: ${stats.students || 0}`;
+      }
+
+      dakPastePreview.classList.remove("hidden");
+    }
+
+    async function importAndSavePaste() {
+      try {
+        if (!dakPasteTextarea) return;
+        const rawText = dakPasteTextarea.value || "";
+
+        if (!rawText.trim()) {
+          setMsg(dakPasteMsg, "Matn kiriting", true);
+          return;
+        }
+
+        if (!confirm("Roster saqlansini? Avvalgi roster ustiga yoziladi.")) {
+          return;
+        }
+
+        setMsg(dakPasteMsg, "Saqlanmoqda...");
+
+        const response = await fetchJson("/api/teacher/dak/roster/import-paste", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ raw_text: rawText })
+        });
+
+        if (response.ok) {
+          const stats = response.stats || {};
+          setMsg(dakPasteMsg, `Saved ✅ (Programlar: ${stats.programs || 0}, Guruhlar: ${stats.groups || 0}, Talabalar: ${stats.students || 0})`);
+
+          // Reload roster in JSON editor too
+          await loadRoster();
+        } else {
+          setMsg(dakPasteMsg, "Saqlashda xatolik", true);
+        }
+      } catch (e) {
+        const errorMsg = e.line
+          ? `Qator ${e.line}: ${e.error || e.message}`
+          : (e.error || e.message || "Xatolik");
+        setMsg(dakPasteMsg, errorMsg, true);
+      }
+    }
+
+    // === END PASTE IMPORT ===
+
     function renderBanks() {
       if (!dakBanksList) return;
       dakBanksList.innerHTML = "";
@@ -757,6 +992,10 @@
       dakRosterLoadBtn?.addEventListener("click", () => loadRoster());
       dakRosterSaveBtn?.addEventListener("click", () => saveRoster());
 
+      // Paste import event listeners
+      dakPastePreviewBtn?.addEventListener("click", () => previewPasteImport());
+      dakPasteImportBtn?.addEventListener("click", () => importAndSavePaste());
+
       dakRefreshBanksBtn?.addEventListener("click", () => loadBanks());
       dakUploadBankBtn?.addEventListener("click", () => uploadBank());
 
@@ -795,6 +1034,160 @@
       loadExamMode();
       loadRoster();
       loadBanks().then(() => loadDakConfig());
+
+      // Initialize credentials section
+      initCredentials();
+    }
+
+    // =========================
+    // Credentials Functions
+    // =========================
+    async function loadCredentialGroups() {
+      try {
+        const groups = await fetchJson("/api/teacher/dak/credentials/groups", { cache: "no-store" });
+        if (!credGroupSelect) return;
+
+        credGroupSelect.innerHTML = `<option value="">Tanlang...</option>`;
+        for (const g of groups) {
+          const opt = document.createElement("option");
+          opt.value = JSON.stringify({ group: g.group_name, exam_date: g.exam_date });
+          opt.textContent = `${g.group_name} (${g.exam_date}) - ${g.student_count} ta talaba`;
+          credGroupSelect.appendChild(opt);
+        }
+      } catch (e) {
+        if (credGroupSelect) credGroupSelect.innerHTML = `<option value="">Xatolik: ${e.message}</option>`;
+      }
+    }
+
+    function setCredMsg(msg, isError = false) {
+      if (!credMsg) return;
+      credMsg.textContent = msg || "";
+      credMsg.className = `text-sm ${isError ? "text-red-300" : "text-gray-300"} mb-3`;
+    }
+
+    function renderCredentialsTable(credentials) {
+      if (!credTableBody || !credTableWrap) return;
+
+      credTableBody.innerHTML = "";
+      if (!credentials || credentials.length === 0) {
+        credTableWrap.classList.add("hidden");
+        return;
+      }
+
+      for (let i = 0; i < credentials.length; i++) {
+        const c = credentials[i];
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-white/10";
+        tr.innerHTML = `
+          <td class="border border-white/20 px-2 py-1">${i + 1}</td>
+          <td class="border border-white/20 px-2 py-1">${c.full_name || ""}</td>
+          <td class="border border-white/20 px-2 py-1 font-mono">${c.login || ""}</td>
+          <td class="border border-white/20 px-2 py-1 font-mono font-bold ${c.password ? "text-green-300" : "text-gray-500"}">${c.password || "(saqlangan)"}</td>
+          <td class="border border-white/20 px-2 py-1">${c.group || ""}</td>
+          <td class="border border-white/20 px-2 py-1">${c.exam_date || ""}</td>
+        `;
+        credTableBody.appendChild(tr);
+      }
+
+      credTableWrap.classList.remove("hidden");
+    }
+
+    async function generateCredentials(regenerate = false) {
+      if (!credGroupSelect) return;
+
+      const selected = credGroupSelect.value;
+      if (!selected) {
+        setCredMsg("Guruhni tanlang", true);
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(selected);
+      } catch {
+        setCredMsg("Guruh tanlanmadi", true);
+        return;
+      }
+
+      setCredMsg("Yaratilmoqda...");
+
+      try {
+        const res = await fetchJson("/api/teacher/dak/credentials/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            group: parsed.group,
+            exam_date: parsed.exam_date,
+            regenerate
+          })
+        });
+
+        if (res.ok && res.credentials) {
+          lastGeneratedCredentials = res.credentials;
+          renderCredentialsTable(res.credentials);
+
+          const newCount = res.new_count || 0;
+          const existingCount = res.total - newCount;
+          setCredMsg(`✅ Jami: ${res.total} ta. Yangi yaratildi: ${newCount} ta. Mavjud: ${existingCount} ta.`);
+
+          // Show CSV export button if we have passwords
+          if (credExportCsvBtn && res.credentials.some(c => c.password)) {
+            credExportCsvBtn.classList.remove("hidden");
+          }
+        }
+      } catch (e) {
+        setCredMsg(e.message || "Xatolik", true);
+      }
+    }
+
+    function exportCredentialsCsv() {
+      if (!lastGeneratedCredentials || lastGeneratedCredentials.length === 0) {
+        setCredMsg("Avval credentials yarating", true);
+        return;
+      }
+
+      // Build CSV content
+      const headers = ["#", "F.I.Sh", "Login", "Parol", "Guruh", "Sana"];
+      const rows = lastGeneratedCredentials.map((c, i) => [
+        i + 1,
+        c.full_name || "",
+        c.login || "",
+        c.password || "",
+        c.group || "",
+        c.exam_date || ""
+      ]);
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      ].join("\n");
+
+      // Download
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const group = lastGeneratedCredentials[0]?.group || "credentials";
+      const date = lastGeneratedCredentials[0]?.exam_date || new Date().toISOString().split("T")[0];
+      a.download = `dak_credentials_${group}_${date}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setCredMsg("CSV yuklab olindi ✅");
+    }
+
+    function initCredentials() {
+      loadCredentialGroups();
+
+      credGenerateBtn?.addEventListener("click", () => generateCredentials(false));
+      credRegenerateBtn?.addEventListener("click", () => {
+        if (confirm("Barcha parollar qayta yaratiladi. Davom etasizmi?")) {
+          generateCredentials(true);
+        }
+      });
+      credExportCsvBtn?.addEventListener("click", () => exportCredentialsCsv());
     }
 
     // Sahifa yuklanganda...

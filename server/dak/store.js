@@ -110,6 +110,8 @@ function createDakStore({ dataDir, supabase }) {
   const banksPath = path.join(dataDir, "dak_banks.json");
   const configPath = path.join(dataDir, "dak_config.json");
   const attemptsDir = path.join(dataDir, "dak_attempts");
+  const accountsPath = path.join(dataDir, "dak_accounts.json");
+  const sessionsPath = path.join(dataDir, "dak_sessions.json");
 
   ensureDir(attemptsDir);
 
@@ -235,6 +237,85 @@ function createDakStore({ dataDir, supabase }) {
     return count;
   }
 
+  // =========================
+  // Accounts (student login/password)
+  // =========================
+  async function getAccounts() {
+    const accounts = safeReadJson(accountsPath, []);
+    return Array.isArray(accounts) ? accounts : [];
+  }
+
+  async function setAccounts(accounts) {
+    atomicWriteJson(accountsPath, Array.isArray(accounts) ? accounts : []);
+    return accounts;
+  }
+
+  async function getAccountByLogin(login) {
+    const accounts = await getAccounts();
+    return accounts.find((a) => a.login === login && a.active !== false) || null;
+  }
+
+  async function getAccountById(id) {
+    const accounts = await getAccounts();
+    return accounts.find((a) => a.id === id) || null;
+  }
+
+  // =========================
+  // Sessions (httpOnly cookie based)
+  // =========================
+  async function getSessions() {
+    const sessions = safeReadJson(sessionsPath, []);
+    return Array.isArray(sessions) ? sessions : [];
+  }
+
+  async function setSessions(sessions) {
+    atomicWriteJson(sessionsPath, Array.isArray(sessions) ? sessions : []);
+    return sessions;
+  }
+
+  async function createSession(accountId, expiresInMs = 6 * 60 * 60 * 1000) {
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + expiresInMs).toISOString();
+    const session = { token, accountId, expiresAt, createdAt: new Date().toISOString() };
+
+    const sessions = await getSessions();
+    sessions.push(session);
+    await setSessions(sessions);
+
+    return session;
+  }
+
+  async function getSessionByToken(token) {
+    if (!token) return null;
+    const sessions = await getSessions();
+    const session = sessions.find((s) => s.token === token);
+    if (!session) return null;
+
+    // Check expiration
+    if (new Date(session.expiresAt) < new Date()) {
+      // Expired - remove it
+      await setSessions(sessions.filter((s) => s.token !== token));
+      return null;
+    }
+
+    return session;
+  }
+
+  async function deleteSession(token) {
+    if (!token) return;
+    const sessions = await getSessions();
+    await setSessions(sessions.filter((s) => s.token !== token));
+  }
+
+  async function cleanupExpiredSessions() {
+    const sessions = await getSessions();
+    const now = new Date();
+    const valid = sessions.filter((s) => new Date(s.expiresAt) > now);
+    if (valid.length !== sessions.length) {
+      await setSessions(valid);
+    }
+  }
+
   return {
     getExamMode,
     setExamMode,
@@ -248,6 +329,18 @@ function createDakStore({ dataDir, supabase }) {
     getAttempt,
     saveAttempt,
     countStudentAttempts,
+    // Accounts
+    getAccounts,
+    setAccounts,
+    getAccountByLogin,
+    getAccountById,
+    // Sessions
+    getSessions,
+    setSessions,
+    createSession,
+    getSessionByToken,
+    deleteSession,
+    cleanupExpiredSessions,
   };
 }
 

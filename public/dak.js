@@ -6,14 +6,22 @@
   const examSection = el("examSection");
   const resultSection = el("resultSection");
 
-  const universityInput = el("universityInput");
-  const examDateInput = el("examDateInput");
-  const programSelect = el("programSelect");
-  const groupSelect = el("groupSelect");
-  const studentSelect = el("studentSelect");
+  // Login form elements
+  const loginForm = el("loginForm");
+  const studentInfo = el("studentInfo");
+  const loginInput = el("loginInput");
+  const passwordInput = el("passwordInput");
+  const loginBtn = el("loginBtn");
+  const logoutBtn = el("logoutBtn");
   const startBtn = el("startBtn");
   const checkinError = el("checkinError");
-  const checkinHint = el("checkinHint");
+
+  // Info display elements
+  const infoUniversity = el("infoUniversity");
+  const infoExamDate = el("infoExamDate");
+  const infoProgram = el("infoProgram");
+  const infoGroup = el("infoGroup");
+  const infoFullName = el("infoFullName");
 
   const infoLine1 = el("infoLine1");
   const infoLine2 = el("infoLine2");
@@ -50,6 +58,7 @@
   let answers = {};
   let currentIndex = 0;
   let timerInterval = null;
+  let currentUserMeta = null; // Logged in user's meta data
 
   function showError(targetEl, message) {
     if (!targetEl) return;
@@ -244,76 +253,91 @@
     updateFinishState();
   }
 
-  async function loadPrograms() {
-    const programs = await apiJson("/api/public/dak/programs", { cache: "no-store" });
-    setSelectOptions(programSelect, Array.isArray(programs) ? programs : [], "program_id", "program_name");
+  // =========================
+  // Auth functions
+  // =========================
+  function showLoginForm() {
+    if (loginForm) loginForm.classList.remove("hidden");
+    if (studentInfo) studentInfo.classList.add("hidden");
   }
 
-  async function onProgramChange() {
-    groupSelect.disabled = true;
-    studentSelect.disabled = true;
-    examDateInput.value = "";
-    groupSelect.innerHTML = `<option value=\"\">Tanlang...</option>`;
-    studentSelect.innerHTML = `<option value=\"\">Tanlang...</option>`;
+  function showStudentInfo(meta) {
+    if (loginForm) loginForm.classList.add("hidden");
+    if (studentInfo) studentInfo.classList.remove("hidden");
 
-    const program_id = programSelect.value;
-    if (!program_id) return;
-    const groups = await apiJson(`/api/public/dak/groups?program_id=${encodeURIComponent(program_id)}`, { cache: "no-store" });
-    setSelectOptions(groupSelect, Array.isArray(groups) ? groups : [], "group_name", "group_name");
-    groupSelect.disabled = false;
+    if (infoUniversity) infoUniversity.textContent = meta.university || UNIVERSITY;
+    if (infoExamDate) infoExamDate.textContent = meta.exam_date || "";
+    if (infoProgram) infoProgram.textContent = meta.program || "";
+    if (infoGroup) infoGroup.textContent = meta.group || "";
+    if (infoFullName) infoFullName.textContent = meta.full_name || "";
   }
 
-  let lastGroupExamDate = "";
+  async function doLogin() {
+    showError(checkinError, "");
+    const login = (loginInput?.value || "").trim();
+    const password = (passwordInput?.value || "").trim();
 
-  async function onGroupChange() {
-    studentSelect.disabled = true;
-    examDateInput.value = "";
-    studentSelect.innerHTML = `<option value=\"\">Tanlang...</option>`;
-    lastGroupExamDate = "";
-
-    const program_id = programSelect.value;
-    const group_name = groupSelect.value;
-    if (!program_id || !group_name) return;
-    const students = await apiJson(
-      `/api/public/dak/students?program_id=${encodeURIComponent(program_id)}&group_name=${encodeURIComponent(group_name)}`,
-      { cache: "no-store" }
-    );
-    const items = Array.isArray(students) ? students : [];
-    lastGroupExamDate = items[0]?.exam_date || "";
-    studentSelect.innerHTML = `<option value=\"\">Tanlang...</option>`;
-    for (const s of items) {
-      const opt = document.createElement("option");
-      opt.value = s.fullname;
-      opt.textContent = s.fullname;
-      studentSelect.appendChild(opt);
+    if (!login || !password) {
+      showError(checkinError, "Login va parolni kiriting.");
+      return;
     }
-    studentSelect.disabled = false;
+
+    try {
+      const res = await apiJson("/api/public/dak/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ login, password }),
+      });
+
+      if (res.ok && res.meta) {
+        currentUserMeta = res.meta;
+        showStudentInfo(res.meta);
+      }
+    } catch (e) {
+      showError(checkinError, e.message || "Kirish xatosi");
+    }
   }
 
-  function onStudentChange() {
-    examDateInput.value = lastGroupExamDate || "";
+  async function doLogout() {
+    try {
+      await apiJson("/api/public/dak/auth/logout", { method: "POST" });
+    } catch {}
+    currentUserMeta = null;
+    if (loginInput) loginInput.value = "";
+    if (passwordInput) passwordInput.value = "";
+    showLoginForm();
+    showError(checkinError, "");
+  }
+
+  async function checkAuth() {
+    try {
+      const res = await apiJson("/api/public/dak/auth/me", { cache: "no-store" });
+      if (res.ok && res.meta) {
+        currentUserMeta = res.meta;
+        showStudentInfo(res.meta);
+        return true;
+      }
+    } catch {}
+    showLoginForm();
+    return false;
   }
 
   async function startExam() {
     showError(checkinError, "");
-    const program_id = programSelect.value;
-    const group_name = groupSelect.value;
-    const student_fullname = studentSelect.value;
 
-    if (!program_id || !group_name || !student_fullname) {
-      showError(checkinError, "Iltimos, yo‘nalish, guruh va F.I.Sh ni tanlang.");
+    if (!currentUserMeta) {
+      showError(checkinError, "Avval tizimga kiring.");
       return;
     }
 
     const examMode = await apiJson("/api/public/exam-mode", { cache: "no-store" });
     if (!examMode?.enabled) {
-      showError(checkinError, "Imtihon rejimi hozir OFF. O‘qituvchi yoqishini kuting.");
+      showError(checkinError, "Imtihon rejimi hozir OFF. O'qituvchi yoqishini kuting.");
       return;
     }
 
     const start = await apiJson("/api/public/dak/start", {
       method: "POST",
-      body: JSON.stringify({ program_id, group_name, student_fullname }),
+      body: JSON.stringify({}), // Server will use session data
     });
     attemptId = start.attempt_id;
     if (!attemptId) throw new Error("attempt_id qaytmadi");
@@ -333,10 +357,10 @@
     answers = data.answers && typeof data.answers === "object" ? data.answers : {};
     currentIndex = 0;
 
-    const prog = programSelect.selectedOptions?.[0]?.textContent || attemptMeta.program_name || "";
-    const grp = attemptMeta.group_name || groupSelect.value || "";
-    const fish = attemptMeta.student_fullname || studentSelect.value || "";
-    const date = attemptMeta.exam_date || examDateInput.value || "";
+    const prog = currentUserMeta?.program || attemptMeta.program_name || "";
+    const grp = attemptMeta.group_name || currentUserMeta?.group || "";
+    const fish = attemptMeta.student_fullname || currentUserMeta?.full_name || "";
+    const date = attemptMeta.exam_date || currentUserMeta?.exam_date || "";
 
     infoLine1.textContent = `${UNIVERSITY} / ${prog} / ${grp}`;
     infoLine2.textContent = `${fish} / Sana: ${date}`;
@@ -427,13 +451,13 @@
     questions = [];
     answers = {};
     currentIndex = 0;
-    examDateInput.value = "";
-    programSelect.value = "";
-    groupSelect.value = "";
-    studentSelect.value = "";
-    groupSelect.disabled = true;
-    studentSelect.disabled = true;
     localStorage.removeItem(LS_ATTEMPT_ID);
+    // Stay logged in, just go back to checkin
+    if (currentUserMeta) {
+      showStudentInfo(currentUserMeta);
+    } else {
+      showLoginForm();
+    }
     setMode("checkin");
   }
 
@@ -447,14 +471,38 @@
   }
 
   async function init() {
-    universityInput.value = UNIVERSITY;
-    examDateInput.value = "";
-    checkinHint.textContent = "Eslatma: sahifa yangilansa ham savollar o'zgarmaydi (attempt saqlanadi).";
+    // Login button event
+    if (loginBtn) {
+      loginBtn.addEventListener("click", () => doLogin().catch((e) => showError(checkinError, e.message)));
+    }
 
-    programSelect.addEventListener("change", () => onProgramChange().catch((e) => showError(checkinError, e.message)));
-    groupSelect.addEventListener("change", () => onGroupChange().catch((e) => showError(checkinError, e.message)));
-    studentSelect.addEventListener("change", onStudentChange);
-    startBtn.addEventListener("click", () => startExam().catch((e) => showError(checkinError, e.message)));
+    // Allow Enter key to submit login
+    if (passwordInput) {
+      passwordInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          doLogin().catch((e) => showError(checkinError, e.message));
+        }
+      });
+    }
+    if (loginInput) {
+      loginInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          doLogin().catch((e) => showError(checkinError, e.message));
+        }
+      });
+    }
+
+    // Logout button event
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => doLogout());
+    }
+
+    // Start exam button
+    if (startBtn) {
+      startBtn.addEventListener("click", () => startExam().catch((e) => showError(checkinError, e.message)));
+    }
 
     prevBtn.addEventListener("click", () => {
       if (currentIndex > 0) {
@@ -498,8 +546,11 @@
 
     // Config dan max_attempts ni olish
     await loadDakConfig();
-    await loadPrograms();
 
+    // Check if already authenticated
+    await checkAuth();
+
+    // Check for saved attempt
     const savedAttempt = localStorage.getItem(LS_ATTEMPT_ID);
     if (savedAttempt) {
       try {

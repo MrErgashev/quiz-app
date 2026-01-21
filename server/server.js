@@ -1,6 +1,7 @@
 // === Boshlanishi ===
 const express = require("express");
 const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const path = require("path");
 const fs = require("fs");
@@ -109,6 +110,7 @@ const dakStore = createDakStore({ dataDir: DATA_DIR, supabase });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 /* =========================
    trust proxy ni sessiondan OLDIN qo‘ying

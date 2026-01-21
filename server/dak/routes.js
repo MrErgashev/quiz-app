@@ -8,6 +8,43 @@ function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 }
 
+// =========================
+// Password hashing utilities (using Node built-in crypto)
+// =========================
+const SALT_LENGTH = 16;
+const KEY_LENGTH = 64;
+const SCRYPT_OPTIONS = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(SALT_LENGTH).toString("hex");
+  const hash = crypto.scryptSync(password, salt, KEY_LENGTH, SCRYPT_OPTIONS).toString("hex");
+  return { hash, salt };
+}
+
+function verifyPassword(password, storedHash, storedSalt) {
+  const hash = crypto.scryptSync(password, storedSalt, KEY_LENGTH, SCRYPT_OPTIONS);
+  const storedHashBuffer = Buffer.from(storedHash, "hex");
+  // Timing-safe comparison
+  return crypto.timingSafeEqual(hash, storedHashBuffer);
+}
+
+// Generate random password: 8 chars, A-Z and 2-9 (no 0,O,1,I)
+function generatePassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0,O,1,I
+  let pwd = "";
+  const bytes = crypto.randomBytes(8);
+  for (let i = 0; i < 8; i++) {
+    pwd += chars[bytes[i] % chars.length];
+  }
+  return pwd;
+}
+
+// Generate login from group + number: e.g., "TURK-101-001"
+function generateLogin(groupName, num) {
+  const padded = String(num).padStart(3, "0");
+  return `${groupName}-${padded}`;
+}
+
 function safeUnlink(filePath) {
   try {
     if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
@@ -80,6 +117,102 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     if (!email || email !== teacherEmail) return res.status(403).json({ error: "Forbidden" });
     return next();
   }
+
+  const DAK_SESSION_COOKIE = "dak_session";
+  const SESSION_EXPIRE_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+  // =========================
+  // Student Auth (login/password)
+  // =========================
+  router.post("/public/dak/auth/login", async (req, res) => {
+    const login = (req.body?.login || "").toString().trim();
+    const password = (req.body?.password || "").toString();
+
+    if (!login || !password) {
+      return res.status(400).json({ error: "Login va parol kiritilishi shart" });
+    }
+
+    const account = await store.getAccountByLogin(login);
+    if (!account) {
+      return res.status(401).json({ error: "Login yoki parol noto'g'ri" });
+    }
+
+    // Verify password
+    let valid = false;
+    try {
+      valid = verifyPassword(password, account.password_hash, account.salt);
+    } catch {
+      valid = false;
+    }
+
+    if (!valid) {
+      return res.status(401).json({ error: "Login yoki parol noto'g'ri" });
+    }
+
+    // Create session
+    const session = await store.createSession(account.id, SESSION_EXPIRE_MS);
+
+    // Set httpOnly cookie
+    res.cookie(DAK_SESSION_COOKIE, session.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: SESSION_EXPIRE_MS,
+      path: "/",
+    });
+
+    res.json({
+      ok: true,
+      meta: {
+        university: account.university || "Oriental Universiteti",
+        program: account.program,
+        program_id: account.program_id,
+        group: account.group,
+        full_name: account.full_name,
+        exam_date: account.exam_date,
+      },
+    });
+  });
+
+  router.get("/public/dak/auth/me", async (req, res) => {
+    const token = req.cookies?.[DAK_SESSION_COOKIE];
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const session = await store.getSessionByToken(token);
+    if (!session) {
+      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+      return res.status(401).json({ error: "Session expired" });
+    }
+
+    const account = await store.getAccountById(session.accountId);
+    if (!account || account.active === false) {
+      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+      return res.status(401).json({ error: "Account not found" });
+    }
+
+    res.json({
+      ok: true,
+      meta: {
+        university: account.university || "Oriental Universiteti",
+        program: account.program,
+        program_id: account.program_id,
+        group: account.group,
+        full_name: account.full_name,
+        exam_date: account.exam_date,
+      },
+    });
+  });
+
+  router.post("/public/dak/auth/logout", async (req, res) => {
+    const token = req.cookies?.[DAK_SESSION_COOKIE];
+    if (token) {
+      await store.deleteSession(token);
+    }
+    res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+    res.json({ ok: true });
+  });
 
   // =========================
   // Exam mode flag
@@ -160,6 +293,257 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     if (!Array.isArray(roster.programs)) return res.status(400).json({ error: "roster.programs must be array" });
     await store.setRoster(roster);
     res.json({ ok: true });
+  });
+
+  // =========================
+  // Roster Import (Paste) - NEW
+  // =========================
+
+  // Helper: normalize program name for matching
+  function normalizeProgramName(name) {
+    return (name || "")
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[''`]/g, "'") // normalize apostrophes
+      .replace(/\s+/g, " "); // collapse multiple spaces
+  }
+
+  // Helper: detect program_id from program_name
+  function detectProgramId(programName) {
+    const norm = normalizeProgramName(programName);
+
+    // Known mappings
+    if (norm.includes("iqtisod")) return "iqt";
+    if (norm.includes("turizm")) return "tur";
+
+    // Fallback: slugify (simple version)
+    // Extract latin letters/numbers, join with underscore
+    const slug = programName
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/gi, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_|_$/g, "");
+
+    return slug || "prog_" + crypto.randomBytes(4).toString("hex");
+  }
+
+  // Helper: convert date from dd.mm.yyyy or yyyy-mm-dd to yyyy-mm-dd
+  function parseExamDate(dateStr) {
+    const s = (dateStr || "").toString().trim();
+
+    // Already yyyy-mm-dd format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      return s;
+    }
+
+    // dd.mm.yyyy format
+    const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s);
+    if (match) {
+      const day = match[1];
+      const month = match[2];
+      const year = match[3];
+      return `${year}-${month}-${day}`;
+    }
+
+    return null; // invalid format
+  }
+
+  // Helper: parse raw text into structured rows
+  function parseRosterText(rawText) {
+    const lines = (rawText || "").toString().split(/\r?\n/);
+    const rows = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineNum = i + 1;
+      const line = lines[i].trim();
+
+      // Skip empty lines
+      if (!line) continue;
+
+      // Try TAB delimiter first
+      let parts = line.split("\t").map(p => p.trim());
+
+      // If not enough parts, try 2+ spaces
+      if (parts.length < 4) {
+        parts = line.split(/\s{2,}/).map(p => p.trim());
+      }
+
+      // Must have exactly 4 columns
+      if (parts.length !== 4) {
+        throw {
+          line: lineNum,
+          text: line,
+          error: `Qator ${lineNum}: 4 ta ustun bo'lishi kerak (Yo'nalish, Guruh, Sana, F.I.Sh), lekin ${parts.length} ta topildi`
+        };
+      }
+
+      const [program_name, group_name, exam_date_raw, full_name] = parts;
+
+      if (!program_name || !group_name || !exam_date_raw || !full_name) {
+        throw {
+          line: lineNum,
+          text: line,
+          error: `Qator ${lineNum}: Barcha ustunlar to'ldirilishi shart`
+        };
+      }
+
+      const exam_date = parseExamDate(exam_date_raw);
+      if (!exam_date) {
+        throw {
+          line: lineNum,
+          text: line,
+          error: `Qator ${lineNum}: Sana formati noto'g'ri (dd.mm.yyyy yoki yyyy-mm-dd bo'lishi kerak): "${exam_date_raw}"`
+        };
+      }
+
+      rows.push({
+        line: lineNum,
+        program_name: program_name.trim(),
+        group_name: group_name.trim(),
+        exam_date,
+        full_name: full_name.trim()
+      });
+    }
+
+    return rows;
+  }
+
+  // Helper: build roster JSON from parsed rows
+  function buildRosterFromRows(rows, universityName = "Oriental Universiteti") {
+    // Group by program_id
+    const programsMap = new Map();
+
+    for (const row of rows) {
+      const program_id = detectProgramId(row.program_name);
+
+      if (!programsMap.has(program_id)) {
+        programsMap.set(program_id, {
+          program_id,
+          program_name: row.program_name, // Use first occurrence
+          groupsMap: new Map()
+        });
+      }
+
+      const prog = programsMap.get(program_id);
+
+      // Check if program_name is consistent
+      if (normalizeProgramName(prog.program_name) !== normalizeProgramName(row.program_name)) {
+        // Different spelling for same program_id - use first one but warn in comment
+      }
+
+      const groupKey = row.group_name;
+
+      if (!prog.groupsMap.has(groupKey)) {
+        prog.groupsMap.set(groupKey, {
+          group_name: row.group_name,
+          exam_date: row.exam_date,
+          students: []
+        });
+      }
+
+      const grp = prog.groupsMap.get(groupKey);
+
+      // Validate exam_date consistency
+      if (grp.exam_date !== row.exam_date) {
+        throw {
+          line: row.line,
+          error: `Qator ${row.line}: Guruh "${row.group_name}" uchun sana ziddiyati: avval "${grp.exam_date}", endi "${row.exam_date}"`
+        };
+      }
+
+      // Add student (check duplicates)
+      if (!grp.students.includes(row.full_name)) {
+        grp.students.push(row.full_name);
+      }
+    }
+
+    // Convert maps to arrays
+    const programs = [];
+    for (const [program_id, prog] of programsMap) {
+      const groups = Array.from(prog.groupsMap.values());
+      programs.push({
+        program_id: prog.program_id,
+        program_name: prog.program_name,
+        groups
+      });
+    }
+
+    return {
+      university: universityName,
+      programs
+    };
+  }
+
+  // Endpoint: POST /api/teacher/dak/roster/import-paste
+  router.post("/teacher/dak/roster/import-paste", requireTeacher, async (req, res) => {
+    const rawText = (req.body?.raw_text || "").toString();
+    const dryRun = req.query?.dry_run === "1" || req.query?.dry_run === "true";
+
+    if (!rawText.trim()) {
+      return res.status(400).json({ error: "raw_text bo'sh bo'lmasligi kerak" });
+    }
+
+    try {
+      // Parse text
+      const rows = parseRosterText(rawText);
+
+      if (rows.length === 0) {
+        return res.status(400).json({ error: "Hech qanday satr topilmadi" });
+      }
+
+      // Get current roster to preserve university name
+      const currentRoster = await store.getRoster();
+      const universityName = currentRoster?.university || "Oriental Universiteti";
+
+      // Build roster JSON
+      const roster = buildRosterFromRows(rows, universityName);
+
+      // Calculate stats
+      const stats = {
+        programs: roster.programs.length,
+        groups: roster.programs.reduce((sum, p) => sum + (p.groups || []).length, 0),
+        students: roster.programs.reduce((sum, p) =>
+          sum + (p.groups || []).reduce((s, g) => s + (g.students || []).length, 0), 0)
+      };
+
+      // If dry_run, just return preview
+      if (dryRun) {
+        return res.json({
+          ok: true,
+          dry_run: true,
+          stats,
+          roster
+        });
+      }
+
+      // Save to file
+      await store.setRoster(roster);
+
+      res.json({
+        ok: true,
+        stats,
+        message: "Roster muvaffaqiyatli saqlandi"
+      });
+
+    } catch (err) {
+      // Handle parsing errors
+      if (err && typeof err === "object" && err.line) {
+        return res.status(400).json({
+          error: err.error || "Parsing xatosi",
+          line: err.line,
+          text: err.text
+        });
+      }
+
+      // Generic error
+      console.error("Import-paste error:", err);
+      return res.status(500).json({
+        error: err?.message || "Serverda xatolik yuz berdi"
+      });
+    }
   });
 
   // =========================
@@ -334,19 +718,37 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
   });
 
   // =========================
-  // Attempt (public)
+  // Attempt (public) - Auth-based start
   // =========================
   router.post("/public/dak/start", async (req, res) => {
     const { enabled } = await store.getExamMode();
     if (!enabled) return res.status(409).json({ error: "Exam mode is OFF" });
 
-    const program_id = (req.body?.program_id || "").toString().trim();
-    const group_name = (req.body?.group_name || "").toString().trim();
-    const student_fullname = (req.body?.student_fullname || "").toString().trim();
-    if (!program_id || !group_name || !student_fullname) {
-      return res.status(400).json({ error: "program_id, group_name, student_fullname required" });
+    // Check session cookie for authenticated student
+    const token = req.cookies?.[DAK_SESSION_COOKIE];
+    if (!token) {
+      return res.status(401).json({ error: "Avval tizimga kiring (login)" });
     }
 
+    const session = await store.getSessionByToken(token);
+    if (!session) {
+      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+      return res.status(401).json({ error: "Sessiya muddati tugagan. Qaytadan kiring." });
+    }
+
+    const account = await store.getAccountById(session.accountId);
+    if (!account || account.active === false) {
+      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+      return res.status(401).json({ error: "Hisob topilmadi" });
+    }
+
+    // Use account data instead of request body
+    const program_id = account.program_id;
+    const group_name = account.group;
+    const student_fullname = account.full_name;
+    const exam_date = account.exam_date;
+
+    // Validate against roster (still necessary for security)
     const roster = await store.getRoster();
     const program = (roster.programs || []).find((p) => p.program_id === program_id);
     if (!program) return res.status(400).json({ error: "Program topilmadi" });
@@ -359,7 +761,7 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
 
     // Urinishlar sonini tekshirish
     const maxAttempts = config.max_attempts_per_student || 1;
-    const existingAttempts = await store.countStudentAttempts(program_id, group_name, student_fullname, group.exam_date);
+    const existingAttempts = await store.countStudentAttempts(program_id, group_name, student_fullname, exam_date);
     if (existingAttempts >= maxAttempts) {
       return res.status(403).json({
         error: `Sizning urinishlar sonigiz tugadi (${existingAttempts}/${maxAttempts}). Qayta topshirish imkoniyati yo'q.`
@@ -599,6 +1001,168 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
       finished_at: attempt.finished_at,
       started_at: attempt.started_at,
     });
+  });
+
+  // =========================
+  // Teacher: Credentials Generation
+  // =========================
+
+  // Generate credentials for students in a group
+  router.post("/teacher/dak/credentials/generate", requireTeacher, async (req, res) => {
+    const group = (req.body?.group || "").toString().trim();
+    const exam_date = (req.body?.exam_date || "").toString().trim();
+    const regenerate = !!req.body?.regenerate;
+
+    if (!group || !exam_date) {
+      return res.status(400).json({ error: "group va exam_date kiritilishi shart" });
+    }
+
+    // Find students from roster
+    const roster = await store.getRoster();
+    let targetGroup = null;
+    let targetProgram = null;
+
+    for (const program of roster.programs || []) {
+      for (const g of program.groups || []) {
+        if (g.group_name === group && g.exam_date === exam_date) {
+          targetGroup = g;
+          targetProgram = program;
+          break;
+        }
+      }
+      if (targetGroup) break;
+    }
+
+    if (!targetGroup) {
+      return res.status(404).json({ error: "Guruh topilmadi" });
+    }
+
+    const students = targetGroup.students || [];
+    if (students.length === 0) {
+      return res.status(400).json({ error: "Guruhda talabalar yo'q" });
+    }
+
+    const accounts = await store.getAccounts();
+    const createdCredentials = [];
+
+    for (let i = 0; i < students.length; i++) {
+      const fullName = students[i];
+      const login = generateLogin(group, i + 1);
+
+      // Check if account already exists
+      const existingIdx = accounts.findIndex(
+        (a) => a.login === login || (a.group === group && a.full_name === fullName && a.exam_date === exam_date)
+      );
+
+      if (existingIdx >= 0 && !regenerate) {
+        // Already exists, skip (don't expose password)
+        createdCredentials.push({
+          login: accounts[existingIdx].login,
+          full_name: fullName,
+          group,
+          exam_date,
+          password: null, // Not shown for existing accounts
+          existing: true,
+        });
+        continue;
+      }
+
+      // Generate new password
+      const password = generatePassword();
+      const { hash, salt } = hashPassword(password);
+
+      const accountId =
+        typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : crypto.randomBytes(16).toString("hex");
+
+      const newAccount = {
+        id: accountId,
+        login,
+        password_hash: hash,
+        salt,
+        full_name: fullName,
+        university: roster.university || "Oriental Universiteti",
+        program: targetProgram.program_name,
+        program_id: targetProgram.program_id,
+        group,
+        exam_date,
+        active: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      if (existingIdx >= 0) {
+        // Replace existing
+        accounts[existingIdx] = newAccount;
+      } else {
+        accounts.push(newAccount);
+      }
+
+      createdCredentials.push({
+        login,
+        full_name: fullName,
+        group,
+        exam_date,
+        password, // Only shown when creating/regenerating
+        existing: false,
+      });
+    }
+
+    await store.setAccounts(accounts);
+
+    res.json({
+      ok: true,
+      credentials: createdCredentials,
+      total: createdCredentials.length,
+      new_count: createdCredentials.filter((c) => !c.existing).length,
+    });
+  });
+
+  // List credentials (without passwords)
+  router.get("/teacher/dak/credentials/list", requireTeacher, async (req, res) => {
+    const group = (req.query?.group || "").toString().trim();
+    const exam_date = (req.query?.exam_date || "").toString().trim();
+
+    const accounts = await store.getAccounts();
+    let filtered = accounts;
+
+    if (group) {
+      filtered = filtered.filter((a) => a.group === group);
+    }
+    if (exam_date) {
+      filtered = filtered.filter((a) => a.exam_date === exam_date);
+    }
+
+    const list = filtered.map((a) => ({
+      login: a.login,
+      full_name: a.full_name,
+      group: a.group,
+      exam_date: a.exam_date,
+      program: a.program,
+      active: a.active !== false,
+      createdAt: a.createdAt,
+    }));
+
+    res.json(list);
+  });
+
+  // Get available groups for credential generation
+  router.get("/teacher/dak/credentials/groups", requireTeacher, async (req, res) => {
+    const roster = await store.getRoster();
+    const groups = [];
+
+    for (const program of roster.programs || []) {
+      for (const g of program.groups || []) {
+        groups.push({
+          group_name: g.group_name,
+          exam_date: g.exam_date,
+          program_name: program.program_name,
+          student_count: (g.students || []).length,
+        });
+      }
+    }
+
+    res.json(groups);
   });
 
   // Expose for server.js: parse helper used in export (optional)

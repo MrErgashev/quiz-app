@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.55.0",
     "connect-pg-simple": "^10.0.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
