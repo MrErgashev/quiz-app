@@ -158,7 +158,17 @@
           <div class="font-semibold">Config</div>
           <div class="text-xs text-gray-400">data/dak_config.json (yoki app_settings)</div>
         </div>
-        <div class="text-sm text-gray-300">Duration: <span id="dakCfgDuration">80</span> min • Total: <span id="dakCfgTotal">50</span> • Points/Q: <span id="dakCfgPoints">2</span></div>
+        <div class="text-sm text-gray-300 flex flex-wrap items-center gap-2">
+          <span>Duration:</span>
+          <input id="dakCfgDuration" type="number" min="1"
+            class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="80">
+          <span>min • Total:</span>
+          <input id="dakCfgTotal" type="number" min="1"
+            class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="50">
+          <span>• Points/Q:</span>
+          <input id="dakCfgPoints" type="number" min="1"
+            class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="2">
+        </div>
         <div class="mt-3">
           <label class="block text-sm font-medium mb-1">questions_per_bank</label>
           <input id="dakQuestionsPerBank" type="number" min="1" class="w-full p-2 rounded text-black" value="10">
@@ -604,9 +614,9 @@
         const cfg = await fetchJson("/api/teacher/dak/config", { cache: "no-store" });
         dakState.config = cfg || null;
 
-        if (dakCfgDuration) dakCfgDuration.textContent = String(cfg?.duration_minutes ?? 80);
-        if (dakCfgTotal) dakCfgTotal.textContent = String(cfg?.total_questions ?? 50);
-        if (dakCfgPoints) dakCfgPoints.textContent = String(cfg?.points_per_question ?? 2);
+        if (dakCfgDuration) dakCfgDuration.value = String(cfg?.duration_minutes ?? 80);
+        if (dakCfgTotal) dakCfgTotal.value = String(cfg?.total_questions ?? 50);
+        if (dakCfgPoints) dakCfgPoints.value = String(cfg?.points_per_question ?? 2);
         if (dakQuestionsPerBank) dakQuestionsPerBank.value = String(cfg?.questions_per_bank ?? 10);
 
         renderConfigBanks();
@@ -619,14 +629,17 @@
     async function saveDakConfig() {
       try {
         const qpb = parseInt(dakQuestionsPerBank?.value || "10", 10);
-        const duration = parseInt(dakCfgDuration?.textContent || "80", 10);
-        const total = parseInt(dakCfgTotal?.textContent || "50", 10);
-        const points = parseInt(dakCfgPoints?.textContent || "2", 10);
+        const duration = parseInt(dakCfgDuration?.value || "80", 10);
+        const total = parseInt(dakCfgTotal?.value || "50", 10);
+        const points = parseInt(dakCfgPoints?.value || "2", 10);
 
         const selected = Array.from(dakConfigBanks?.querySelectorAll("input[type=checkbox]:checked") || [])
           .map((i) => i.value)
           .filter(Boolean);
 
+        if (!Number.isFinite(duration) || duration <= 0) return setMsg(dakConfigMsg, "duration_minutes noto‘g‘ri", true);
+        if (!Number.isFinite(total) || total <= 0) return setMsg(dakConfigMsg, "total_questions noto‘g‘ri", true);
+        if (!Number.isFinite(points) || points <= 0) return setMsg(dakConfigMsg, "points_per_question noto‘g‘ri", true);
         if (!Number.isFinite(qpb) || qpb <= 0) return setMsg(dakConfigMsg, "questions_per_bank noto‘g‘ri", true);
         if (selected.length * qpb !== total) {
           return setMsg(
