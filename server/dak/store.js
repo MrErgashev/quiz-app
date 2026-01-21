@@ -163,6 +163,32 @@ function createDakStore({ dataDir, supabase }) {
 
   async function getRoster() {
     const fallback = { university: "Oriental Universiteti", programs: [] };
+
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_roster")
+          .select("*")
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error; // PGRST116 = no rows
+
+        if (data && data.roster_data) {
+          const roster = data.roster_data;
+          if (!roster || typeof roster !== "object") return fallback;
+          if (!Array.isArray(roster.programs)) return { ...roster, programs: [] };
+          if (!normalizeString(roster.university)) return { ...roster, university: fallback.university };
+          return roster;
+        }
+      } catch (err) {
+        console.error("getRoster Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     const roster = safeReadJson(rosterPath, fallback);
     if (!roster || typeof roster !== "object") return fallback;
     if (!Array.isArray(roster.programs)) return { ...roster, programs: [] };
@@ -171,16 +197,85 @@ function createDakStore({ dataDir, supabase }) {
   }
 
   async function setRoster(roster) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        // Delete old roster entries (keep only latest)
+        await supabase.from("dak_roster").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+        // Insert new roster
+        const { error } = await supabase.from("dak_roster").insert({
+          roster_data: roster,
+          updated_at: new Date().toISOString()
+        });
+
+        if (error) throw error;
+        return roster;
+      } catch (err) {
+        console.error("setRoster Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     atomicWriteJson(rosterPath, roster);
     return roster;
   }
 
   async function getBanks() {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_banks")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        // Transform DB format to in-memory format
+        return (data || []).map(row => ({
+          bank_id: row.bank_id,
+          subject_name: row.subject_name,
+          questions: row.questions || [],
+          created_at: row.created_at
+        }));
+      } catch (err) {
+        console.error("getBanks Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     const banks = safeReadJson(banksPath, []);
     return Array.isArray(banks) ? banks : [];
   }
 
   async function setBanks(banks) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        // Delete all existing banks
+        await supabase.from("dak_banks").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+        // Insert new banks
+        if (Array.isArray(banks) && banks.length > 0) {
+          const rows = banks.map(b => ({
+            bank_id: b.bank_id,
+            subject_name: b.subject_name || "",
+            questions: b.questions || [],
+            created_at: b.created_at || new Date().toISOString()
+          }));
+
+          const { error } = await supabase.from("dak_banks").insert(rows);
+          if (error) throw error;
+        }
+
+        return banks;
+      } catch (err) {
+        console.error("setBanks Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     atomicWriteJson(banksPath, Array.isArray(banks) ? banks : []);
     return banks;
   }
@@ -196,23 +291,113 @@ function createDakStore({ dataDir, supabase }) {
         ? crypto.randomUUID()
         : crypto.randomBytes(16).toString("hex");
     const record = { ...attempt, attempt_id };
+
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { error } = await supabase.from("dak_attempts").insert({
+          attempt_id,
+          university: record.university || "Oriental Universiteti",
+          program_id: record.program_id,
+          program_name: record.program_name,
+          group_name: record.group_name,
+          student_fullname: record.student_fullname,
+          exam_date: record.exam_date,
+          started_at: record.started_at,
+          finished_at: record.finished_at || null,
+          updated_at: new Date().toISOString(),
+          duration_minutes: record.duration_minutes,
+          total_questions: record.total_questions,
+          points_per_question: record.points_per_question,
+          questions: record.questions || [],
+          answers: record.answers || {},
+          correct_count: record.correct_count || null,
+          score_points: record.score_points || null
+        });
+
+        if (error) throw error;
+        return record;
+      } catch (err) {
+        console.error("createAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     atomicWriteJson(getAttemptPath(attempt_id), record);
     return record;
   }
 
   async function getAttempt(attemptId) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_attempts")
+          .select("*")
+          .eq("attempt_id", attemptId)
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        return data || null;
+      } catch (err) {
+        console.error("getAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     const p = getAttemptPath(attemptId);
     const obj = safeReadJson(p, null);
     return obj && typeof obj === "object" ? obj : null;
   }
 
   async function saveAttempt(attemptId, attempt) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from("dak_attempts")
+          .update({
+            finished_at: attempt.finished_at || null,
+            updated_at: new Date().toISOString(),
+            answers: attempt.answers || {},
+            correct_count: attempt.correct_count || null,
+            score_points: attempt.score_points || null
+          })
+          .eq("attempt_id", attemptId);
+
+        if (error) throw error;
+        return attempt;
+      } catch (err) {
+        console.error("saveAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     atomicWriteJson(getAttemptPath(attemptId), attempt);
     return attempt;
   }
 
   async function countStudentAttempts(programId, groupName, studentFullname, examDate) {
-    // Talabaning shu imtihon uchun nechta attempt yaratganini sanash
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_attempts")
+          .select("attempt_id", { count: "exact", head: false })
+          .eq("program_id", programId)
+          .eq("group_name", groupName)
+          .eq("student_fullname", studentFullname)
+          .eq("exam_date", examDate)
+          .not("finished_at", "is", null);
+
+        if (error) throw error;
+        return data ? data.length : 0;
+      } catch (err) {
+        console.error("countStudentAttempts Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local files
     ensureDir(attemptsDir);
     let count = 0;
 
@@ -226,7 +411,8 @@ function createDakStore({ dataDir, supabase }) {
             attempt.program_id === programId &&
             attempt.group_name === groupName &&
             attempt.student_fullname === studentFullname &&
-            attempt.exam_date === examDate
+            attempt.exam_date === examDate &&
+            attempt.finished_at
           ) {
             count++;
           }
@@ -241,21 +427,89 @@ function createDakStore({ dataDir, supabase }) {
   // Accounts (student login/password)
   // =========================
   async function getAccounts() {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_accounts")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        return data || [];
+      } catch (err) {
+        console.error("getAccounts Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     const accounts = safeReadJson(accountsPath, []);
     return Array.isArray(accounts) ? accounts : [];
   }
 
   async function setAccounts(accounts) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        // Delete all existing accounts
+        await supabase.from("dak_accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+        // Insert new accounts
+        if (Array.isArray(accounts) && accounts.length > 0) {
+          const { error } = await supabase.from("dak_accounts").insert(accounts);
+          if (error) throw error;
+        }
+        return accounts;
+      } catch (err) {
+        console.error("setAccounts Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     atomicWriteJson(accountsPath, Array.isArray(accounts) ? accounts : []);
     return accounts;
   }
 
   async function getAccountByLogin(login) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_accounts")
+          .select("*")
+          .eq("login", login)
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        return data && data.active !== false ? data : null;
+      } catch (err) {
+        console.error("getAccountByLogin Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     const accounts = await getAccounts();
     return accounts.find((a) => a.login === login && a.active !== false) || null;
   }
 
   async function getAccountById(id) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_accounts")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        return data || null;
+      } catch (err) {
+        console.error("getAccountById Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
     const accounts = await getAccounts();
     return accounts.find((a) => a.id === id) || null;
   }
