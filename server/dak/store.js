@@ -88,6 +88,9 @@ function normalizeDakConfig(value) {
   const questions_per_bank = Number.isFinite(+value?.questions_per_bank)
     ? Math.max(1, parseInt(value.questions_per_bank, 10))
     : 10;
+  const max_attempts_per_student = Number.isFinite(+value?.max_attempts_per_student)
+    ? Math.max(1, parseInt(value.max_attempts_per_student, 10))
+    : 1;
   const bank_ids = normalizeStringArray(value?.bank_ids);
 
   return {
@@ -96,6 +99,7 @@ function normalizeDakConfig(value) {
     points_per_question,
     bank_ids,
     questions_per_bank,
+    max_attempts_per_student,
   };
 }
 

@@ -250,6 +250,7 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
       total_questions: body.total_questions ?? config.total_questions,
       points_per_question: body.points_per_question ?? config.points_per_question,
       questions_per_bank: body.questions_per_bank ?? config.questions_per_bank,
+      max_attempts_per_student: body.max_attempts_per_student ?? config.max_attempts_per_student,
       bank_ids: Array.isArray(body.bank_ids) ? body.bank_ids : config.bank_ids,
     };
 
@@ -260,6 +261,7 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
       total_questions: parseInt(next.total_questions, 10),
       points_per_question: parseInt(next.points_per_question, 10),
       questions_per_bank: parseInt(next.questions_per_bank, 10),
+      max_attempts_per_student: parseInt(next.max_attempts_per_student, 10),
       bank_ids: (Array.isArray(next.bank_ids) ? next.bank_ids : [])
         .map((x) => (x || "").toString().trim())
         .filter(Boolean),
@@ -276,6 +278,13 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     }
     if (!Number.isFinite(normalized.questions_per_bank) || normalized.questions_per_bank <= 0) {
       return res.status(400).json({ error: "questions_per_bank must be > 0" });
+    }
+    if (
+      !Number.isFinite(normalized.max_attempts_per_student) ||
+      normalized.max_attempts_per_student <= 0 ||
+      normalized.max_attempts_per_student > 10
+    ) {
+      return res.status(400).json({ error: "max_attempts_per_student must be 1..10" });
     }
 
     const uniqueBankIds = Array.from(new Set(normalized.bank_ids));
@@ -307,6 +316,7 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
       total_questions: normalized.total_questions,
       points_per_question: normalized.points_per_question,
       questions_per_bank: normalized.questions_per_bank,
+      max_attempts_per_student: normalized.max_attempts_per_student,
       bank_ids: uniqueBankIds,
     });
     res.json(saved);

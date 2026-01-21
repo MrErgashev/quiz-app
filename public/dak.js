@@ -32,6 +32,7 @@
   const scoreText = el("scoreText");
   const correctText = el("correctText");
   const totalText = el("totalText");
+  const congratsText = el("congratsText");
   const backToCheckinBtn = el("backToCheckinBtn");
 
   const LS_ATTEMPT_ID = "dak_attempt_id";
@@ -366,6 +367,10 @@
     scoreText.textContent = String(score);
     correctText.textContent = String(correct);
     totalText.textContent = String(total);
+    if (congratsText) {
+      const fish = attemptMeta?.student_fullname || "";
+      congratsText.textContent = `Tabriklaymiz ${fish} siz ${score} ball to'pladingiz`;
+    }
 
     localStorage.removeItem(LS_ATTEMPT_ID);
     setMode("result");
