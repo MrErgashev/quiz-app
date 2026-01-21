@@ -49,6 +49,29 @@
     targetEl.classList.toggle("hidden", !message);
   }
 
+  function answeredCount() {
+    if (!answers || typeof answers !== "object") return 0;
+    // faqat haqiqiy indexlar (0..len-1) sanalsin
+    const max = questions.length;
+    let c = 0;
+    for (const k of Object.keys(answers)) {
+      const i = parseInt(k, 10);
+      if (Number.isFinite(i) && i >= 0 && i < max) c++;
+    }
+    return c;
+  }
+
+  function allAnswered() {
+    return questions.length > 0 && answeredCount() >= questions.length;
+  }
+
+  function updateFinishState() {
+    if (!finishBtn) return;
+    const ok = allAnswered();
+    finishBtn.disabled = !ok;
+    finishBtn.title = ok ? "" : "Finish faqat barcha savollarga javob berilgandan keyin ishlaydi";
+  }
+
   async function apiJson(url, opts = {}) {
     const res = await fetch(url, {
       credentials: "include",
@@ -129,9 +152,11 @@
       const answered = answers[String(i)] !== undefined;
       const isCurrent = i === currentIndex;
       btn.className = [
-        "text-sm px-2 py-1 rounded border",
-        isCurrent ? "bg-blue-500 text-white border-blue-300" : "bg-white/10 border-white/10 hover:bg-white/20",
-        answered ? "ring-2 ring-green-400/60" : ""
+        "text-sm px-2 py-1 rounded-lg border transition",
+        isCurrent
+          ? "bg-blue-600 text-white border-blue-400/40"
+          : "bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20",
+        answered ? "ring-2 ring-green-400/60" : "hover:border-blue-400/40"
       ].join(" ");
       btn.textContent = String(i + 1);
       btn.addEventListener("click", () => {
@@ -160,16 +185,25 @@
       const row = document.createElement("button");
       const active = selected === idx;
       row.className = [
-        "w-full text-left p-3 rounded border flex gap-3 items-start",
-        active ? "bg-green-600/30 border-green-300" : "bg-white/10 border-white/10 hover:bg-white/20"
+        "w-full text-left p-3 rounded-xl border flex gap-3 items-start transition",
+        active
+          ? "bg-green-600/25 border-green-400/50"
+          : "bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-400/40"
       ].join(" ");
-      row.innerHTML = `<div class=\"font-semibold\">${labels[idx] || (idx + 1)}</div><div class=\"text-gray-100\">${o.text || ""}</div>`;
+      row.innerHTML = `
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold border
+          ${active ? "bg-green-600/20 border-green-400/40 text-green-200" : "bg-blue-600/20 border-blue-400/30 text-blue-100"}">
+          ${labels[idx] || (idx + 1)}
+        </div>
+        <div class="text-slate-100 leading-relaxed">${o.text || ""}</div>
+      `;
       row.addEventListener("click", async () => {
         try {
           answers[String(currentIndex)] = idx;
           renderQuestion();
           renderNav();
-          progressText.textContent = `${Object.keys(answers).length}/${questions.length}`;
+          progressText.textContent = `${answeredCount()}/${questions.length}`;
+          updateFinishState();
           await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/answer`, {
             method: "POST",
             body: JSON.stringify({ question_index: currentIndex, chosen_option: idx }),
@@ -183,7 +217,8 @@
 
     prevBtn.disabled = currentIndex <= 0;
     nextBtn.disabled = currentIndex >= questions.length - 1;
-    progressText.textContent = `${Object.keys(answers).length}/${questions.length}`;
+    progressText.textContent = `${answeredCount()}/${questions.length}`;
+    updateFinishState();
   }
 
   async function loadPrograms() {
@@ -287,12 +322,18 @@
     renderNav();
     renderQuestion();
     startTimer(attemptMeta.started_at, attemptMeta.duration_minutes || 80);
+    updateFinishState();
 
     setMode("exam");
   }
 
   async function finishExam(auto = false) {
     if (!attemptId) return;
+    if (!auto && !allAnswered()) {
+      showError(examError, `Finish uchun barcha ${questions.length || 50} ta savolga javob belgilang.`);
+      updateFinishState();
+      return;
+    }
     if (!auto) {
       if (!confirm("Imtihonni yakunlaysizmi?")) return;
     }
@@ -370,8 +411,9 @@
         localStorage.removeItem(LS_ATTEMPT_ID);
       }
     }
+
+    updateFinishState();
   }
 
   init().catch((e) => showError(checkinError, e.message || "Xatolik"));
 })();
-
