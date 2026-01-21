@@ -354,7 +354,17 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
         return res.status(400).json({ error: `Bankda savol yetarli emas: ${id}` });
       }
       const picked = pickRandomSample(pool, config.questions_per_bank);
-      selectedQuestions.push(...picked);
+      // Bankdagi savollarni mutatsiya qilmaslik uchun clone qilamiz (har attempt muhrlangan bo'lsin).
+      const cloned = picked.map((q) => {
+        const options = Array.isArray(q?.options) ? q.options : [];
+        const clonedOptions = options.map((o) => ({
+          text: o?.text ?? "",
+          isCorrect: !!o?.isCorrect,
+        }));
+        shuffleInPlace(clonedOptions); // javob variantlari ham shuffle bo'lsin
+        return { ...(q && typeof q === "object" ? q : {}), options: clonedOptions };
+      });
+      selectedQuestions.push(...cloned);
     }
 
     shuffleInPlace(selectedQuestions);
