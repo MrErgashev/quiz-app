@@ -162,12 +162,21 @@
           <span>Duration:</span>
           <input id="dakCfgDuration" type="number" min="1"
             class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="80">
+          <button id="dakCfgDurationSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
+            Save
+          </button>
           <span>min • Total:</span>
           <input id="dakCfgTotal" type="number" min="1"
             class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="50">
+          <button id="dakCfgTotalSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
+            Save
+          </button>
           <span>• Points/Q:</span>
           <input id="dakCfgPoints" type="number" min="1"
             class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="2">
+          <button id="dakCfgPointsSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
+            Save
+          </button>
         </div>
         <div class="mt-3">
           <label class="block text-sm font-medium mb-1">questions_per_bank</label>
@@ -230,8 +239,11 @@
     const dakBanksMsg = document.getElementById("dakBanksMsg");
 
     const dakCfgDuration = document.getElementById("dakCfgDuration");
+    const dakCfgDurationSaveBtn = document.getElementById("dakCfgDurationSaveBtn");
     const dakCfgTotal = document.getElementById("dakCfgTotal");
+    const dakCfgTotalSaveBtn = document.getElementById("dakCfgTotalSaveBtn");
     const dakCfgPoints = document.getElementById("dakCfgPoints");
+    const dakCfgPointsSaveBtn = document.getElementById("dakCfgPointsSaveBtn");
     const dakQuestionsPerBank = document.getElementById("dakQuestionsPerBank");
     const dakConfigBanks = document.getElementById("dakConfigBanks");
     const dakConfigLoadBtn = document.getElementById("dakConfigLoadBtn");
@@ -626,6 +638,43 @@
       }
     }
 
+    async function runWithDisabledButton(btn, fn) {
+      if (!btn) return fn();
+      btn.disabled = true;
+      btn.classList.add("opacity-60", "cursor-not-allowed");
+      try {
+        return await fn();
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("opacity-60", "cursor-not-allowed");
+      }
+    }
+
+    async function saveDakConfigPartial(patch) {
+      try {
+        setMsg(dakConfigMsg, "Saqlanmoqda...");
+        const saved = await fetchJson("/api/teacher/dak/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch || {})
+        });
+
+        dakState.config = saved;
+        await loadDakConfig(false);
+        setMsg(dakConfigMsg, "Saved ✅");
+      } catch (e) {
+        setMsg(dakConfigMsg, e.message, true);
+      }
+    }
+
+    async function saveDakConfigNumberField(fieldKey, inputEl) {
+      const value = parseInt((inputEl?.value || "").toString(), 10);
+      if (!Number.isFinite(value) || value <= 0) {
+        return setMsg(dakConfigMsg, `${fieldKey} noto‘g‘ri`, true);
+      }
+      await saveDakConfigPartial({ [fieldKey]: value });
+    }
+
     async function saveDakConfig() {
       try {
         const qpb = parseInt(dakQuestionsPerBank?.value || "10", 10);
@@ -697,6 +746,22 @@
         await loadDakConfig();
       });
       dakConfigSaveBtn?.addEventListener("click", () => saveDakConfig());
+
+      dakCfgDurationSaveBtn?.addEventListener("click", () =>
+        runWithDisabledButton(dakCfgDurationSaveBtn, () =>
+          saveDakConfigNumberField("duration_minutes", dakCfgDuration)
+        )
+      );
+      dakCfgTotalSaveBtn?.addEventListener("click", () =>
+        runWithDisabledButton(dakCfgTotalSaveBtn, () =>
+          saveDakConfigNumberField("total_questions", dakCfgTotal)
+        )
+      );
+      dakCfgPointsSaveBtn?.addEventListener("click", () =>
+        runWithDisabledButton(dakCfgPointsSaveBtn, () =>
+          saveDakConfigNumberField("points_per_question", dakCfgPoints)
+        )
+      );
 
       loadExamMode();
       loadRoster();

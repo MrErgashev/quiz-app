@@ -129,16 +129,144 @@ const isProd =
   !!process.env.FLY_APP_NAME;
 
 let sessionStore;
+const memoryFallbackStore = new MemoryStore();
+
+function createPgFailoverStore(primaryStore, fallbackStore, opts = {}) {
+  const timeoutMs = Number.isFinite(+opts.timeoutMs) ? +opts.timeoutMs : 2000;
+  const cooldownMs = Number.isFinite(+opts.cooldownMs) ? +opts.cooldownMs : 30000;
+
+  const Store = session.Store;
+  class FailoverStore extends Store {
+    constructor(primary, fallback) {
+      super();
+      this.primary = primary;
+      this.fallback = fallback;
+      this.downUntil = 0;
+      this.lastLogAt = 0;
+    }
+
+    _primaryAllowed() {
+      return Date.now() >= this.downUntil;
+    }
+
+    _markDown(err) {
+      this.downUntil = Date.now() + cooldownMs;
+      const now = Date.now();
+      if (now - this.lastLogAt > 10000) {
+        this.lastLogAt = now;
+        console.warn("⚠️ PG session store muammo, vaqtincha MemoryStore fallback ishlaydi:", err?.message || err);
+      }
+    }
+
+    _callPrimary(methodName, args, cb) {
+      if (typeof this.primary?.[methodName] !== "function") return cb(new Error("primary store missing method"));
+
+      let done = false;
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        cb(new Error(`primary store timeout (${timeoutMs}ms)`));
+      }, timeoutMs);
+
+      try {
+        this.primary[methodName](...args, (...cbArgs) => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          cb(...cbArgs);
+        });
+      } catch (e) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cb(e);
+      }
+    }
+
+    get(sid, cb) {
+      const done = typeof cb === "function" ? cb : () => {};
+      if (!this._primaryAllowed()) {
+        return this.fallback.get(sid, (_err, sess) => done(null, sess || null));
+      }
+
+      this._callPrimary("get", [sid], (err, sess) => {
+        if (!err) return done(null, sess || null);
+        this._markDown(err);
+        return this.fallback.get(sid, (_err2, sess2) => done(null, sess2 || null));
+      });
+    }
+
+    set(sid, sess, cb) {
+      const done = typeof cb === "function" ? cb : () => {};
+      if (!this._primaryAllowed()) {
+        this.fallback.set(sid, sess, () => done(null));
+        return;
+      }
+
+      this._callPrimary("set", [sid, sess], (err) => {
+        if (!err) return done(null);
+        this._markDown(err);
+        this.fallback.set(sid, sess, () => done(null));
+      });
+    }
+
+    destroy(sid, cb) {
+      const done = typeof cb === "function" ? cb : () => {};
+      if (!this._primaryAllowed()) {
+        this.fallback.destroy(sid, () => done(null));
+        return;
+      }
+
+      this._callPrimary("destroy", [sid], (err) => {
+        if (!err) return done(null);
+        this._markDown(err);
+        this.fallback.destroy(sid, () => done(null));
+      });
+    }
+
+    touch(sid, sess, cb) {
+      const done = typeof cb === "function" ? cb : () => {};
+      // touch ixtiyoriy; yo‘q bo‘lsa ham session ishlaydi
+      if (typeof this.primary?.touch !== "function") return done(null);
+
+      if (!this._primaryAllowed()) {
+        if (typeof this.fallback?.touch === "function") this.fallback.touch(sid, sess, () => done(null));
+        else done(null);
+        return;
+      }
+
+      this._callPrimary("touch", [sid, sess], (err) => {
+        if (!err) return done(null);
+        this._markDown(err);
+        if (typeof this.fallback?.touch === "function") this.fallback.touch(sid, sess, () => done(null));
+        else done(null);
+      });
+    }
+  }
+
+  return new FailoverStore(primaryStore, fallbackStore);
+}
+
 if (!FORCE_MEMORY_SESSION && pgPool) {
-  sessionStore = new PGSession({
-    pool: pgPool,
-    tableName: "user_sessions",
-    createTableIfMissing: true,
-    // pruneSessionInterval: 60 * 60, // ixtiyoriy
-  });
+  try {
+    const pgSessionStore = new PGSession({
+      pool: pgPool,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+      // pruneSessionInterval: 60 * 60, // ixtiyoriy
+    });
+    sessionStore = createPgFailoverStore(pgSessionStore, memoryFallbackStore, {
+      timeoutMs: +(process.env.PG_STORE_TIMEOUT_MS || 2000),
+      cooldownMs: +(process.env.PG_STORE_COOLDOWN_MS || 30000),
+    });
+    console.log("✅ Session store: Postgres (failover enabled)");
+  } catch (e) {
+    console.warn("⚠️ PG session store yaratilmadi, MemoryStore ishlaydi:", e?.message || e);
+    sessionStore = memoryFallbackStore;
+  }
 } else {
-  console.warn("⚠️ PG session o‘rniga MemoryStore ishlayapti (FORCE_MEMORY_SESSION yoki PG mavjud emas).");
-  sessionStore = new MemoryStore();
+  console.warn("⚠️ Session store: MemoryStore (FORCE_MEMORY_SESSION yoki PG mavjud emas).");
+  sessionStore = memoryFallbackStore;
 }
 
 const sessionOptions = {
