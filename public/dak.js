@@ -69,7 +69,7 @@
     if (!finishBtn) return;
     const ok = allAnswered();
     finishBtn.disabled = !ok;
-    finishBtn.title = ok ? "" : "Finish faqat barcha savollarga javob berilgandan keyin ishlaydi";
+    finishBtn.title = ok ? "" : "Yakunlash faqat barcha savollarga javob berilgandan keyin ishlaydi";
   }
 
   async function apiJson(url, opts = {}) {
@@ -151,12 +151,15 @@
       const btn = document.createElement("button");
       const answered = answers[String(i)] !== undefined;
       const isCurrent = i === currentIndex;
+      const answeredClasses = answered
+        ? ["ring-2", "ring-green-200", ...(isCurrent ? [] : ["border-green-300"])]
+        : [];
       btn.className = [
-        "text-sm px-2 py-1 rounded-lg border transition",
+        "text-sm px-2 py-1.5 rounded-lg border transition focus:outline-none focus:ring-4 focus:ring-blue-100",
         isCurrent
-          ? "bg-green-600 text-white border-green-700/30"
-          : "bg-white border-red-200 hover:bg-red-50",
-        answered ? "ring-2 ring-green-400/60 border-green-200" : "text-slate-900"
+          ? "bg-blue-600 text-white border-blue-700/30"
+          : "bg-white border-slate-200 hover:bg-sky-50 text-slate-900",
+        ...answeredClasses
       ].join(" ");
       btn.textContent = String(i + 1);
       btn.addEventListener("click", () => {
@@ -178,25 +181,34 @@
 
     const selected = answers[String(currentIndex)];
     const opts = Array.isArray(q.options) ? q.options : [];
-    const labels = ["A", "B", "C", "D"];
 
     optionsWrap.innerHTML = "";
     opts.forEach((o, idx) => {
       const row = document.createElement("button");
       const active = selected === idx;
       row.className = [
-        "w-full text-left p-3 rounded-xl border flex gap-3 items-start transition",
+        "w-full text-left p-4 rounded-xl border flex gap-3 items-start transition focus:outline-none focus:ring-4 focus:ring-blue-100",
         active
-          ? "bg-green-50 border-green-300"
-          : "bg-red-50 border-red-200 hover:bg-red-100"
+          ? "bg-green-50 border-green-300 shadow-sm"
+          : "bg-white border-slate-200 hover:bg-sky-50"
       ].join(" ");
-      row.innerHTML = `
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-extrabold border
-          ${active ? "bg-green-600/10 border-green-200 text-green-700" : "bg-red-600/10 border-red-200 text-red-600"}">
-          ${labels[idx] || (idx + 1)}
-        </div>
-        <div class="text-slate-900 leading-relaxed">${o.text || ""}</div>
-      `;
+      const optionText = typeof o === "string" ? o : (o?.text || "");
+      const indicator = document.createElement("div");
+      indicator.className = [
+        "mt-1 w-5 h-5 rounded-full border flex items-center justify-center",
+        active ? "border-green-600" : "border-slate-300"
+      ].join(" ");
+
+      const dot = document.createElement("div");
+      dot.className = ["w-2.5 h-2.5 rounded-full", active ? "bg-green-600" : "bg-transparent"].join(" ");
+      indicator.appendChild(dot);
+
+      const textDiv = document.createElement("div");
+      textDiv.className = "text-slate-900 leading-relaxed";
+      textDiv.textContent = optionText;
+
+      row.appendChild(indicator);
+      row.appendChild(textDiv);
       row.addEventListener("click", async () => {
         try {
           answers[String(currentIndex)] = idx;
@@ -330,7 +342,7 @@
   async function finishExam(auto = false) {
     if (!attemptId) return;
     if (!auto && !allAnswered()) {
-      showError(examError, `Finish uchun barcha ${questions.length || 50} ta savolga javob belgilang.`);
+      showError(examError, `Yakunlash uchun barcha ${questions.length || 50} ta savolga javob belgilang.`);
       updateFinishState();
       return;
     }

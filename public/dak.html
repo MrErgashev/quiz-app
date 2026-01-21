@@ -12,42 +12,42 @@
     }
   </style>
 </head>
-<body class="min-h-screen font-sans bg-gradient-to-br from-white via-red-50 to-green-50 text-slate-900">
+<body class="min-h-screen font-sans bg-gradient-to-br from-slate-50 via-white to-sky-50 text-slate-900">
   <header class="max-w-6xl mx-auto px-6 pt-8 pb-6 text-center">
     <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">DAK Imtihon</h1>
   </header>
 
   <main class="max-w-6xl mx-auto px-6 pb-10 space-y-6">
     <!-- CHECK-IN -->
-    <section id="checkinSection" class="bg-white p-6 rounded-2xl shadow-xl border border-red-200">
+    <section id="checkinSection" class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
       <h2 class="text-xl font-semibold mb-4">Check-in</h2>
 
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium mb-1">Universitet</label>
-          <input id="universityInput" type="text" class="w-full p-3 rounded-xl bg-white border border-red-200 text-slate-900" readonly />
+          <input id="universityInput" type="text" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-900" readonly />
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Imtihon sanasi</label>
-          <input id="examDateInput" type="text" class="w-full p-3 rounded-xl bg-white border border-red-200 text-slate-900" readonly />
+          <input id="examDateInput" type="text" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-900" readonly />
         </div>
 
         <div>
           <label class="block text-sm font-medium mb-1">Yo'nalish</label>
-          <select id="programSelect" class="w-full p-3 rounded-xl bg-white border border-red-200 text-slate-900 focus:outline-none focus:ring-4 focus:ring-green-100">
+          <select id="programSelect" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-100">
             <option value="">Tanlang...</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Guruh</label>
-          <select id="groupSelect" class="w-full p-3 rounded-xl bg-white border border-red-200 text-slate-900 disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-green-100" disabled>
+          <select id="groupSelect" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-900 disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-blue-100" disabled>
             <option value="">Tanlang...</option>
           </select>
         </div>
 
         <div class="md:col-span-2">
           <label class="block text-sm font-medium mb-1">F.I.Sh</label>
-          <select id="studentSelect" class="w-full p-3 rounded-xl bg-white border border-red-200 text-slate-900 disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-green-100" disabled>
+          <select id="studentSelect" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-slate-900 disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-blue-100" disabled>
             <option value="">Tanlang...</option>
           </select>
         </div>
@@ -55,7 +55,7 @@
 
       <div class="mt-5 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
         <div id="checkinHint" class="text-sm text-slate-600"></div>
-        <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl shadow-lg border border-green-700/20">
+        <button id="startBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-lg border border-blue-700/20">
           Imtihonni boshlash
         </button>
       </div>
@@ -65,7 +65,7 @@
 
     <!-- EXAM -->
     <section id="examSection" class="hidden">
-      <div class="sticky top-0 z-10 bg-white/90 backdrop-blur-md border border-red-200 rounded-2xl p-4 mb-4 shadow-lg">
+      <div class="sticky top-0 z-10 bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl p-4 mb-4 shadow-lg">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div class="text-sm text-slate-800">
             <div class="font-semibold" id="infoLine1"></div>
@@ -85,7 +85,7 @@
       </div>
 
       <div class="grid lg:grid-cols-[1fr_260px] gap-4">
-        <div class="bg-white p-6 rounded-2xl shadow-xl border border-red-200">
+        <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
           <div class="flex items-center justify-between mb-3">
             <div class="text-sm text-slate-600">Savol</div>
             <div class="text-sm text-slate-600"><span id="qIndexText">1</span>/ <span id="qTotalText">50</span></div>
@@ -95,24 +95,24 @@
           <div id="optionsWrap" class="space-y-2"></div>
 
           <div class="mt-5 flex items-center justify-between">
-            <button id="prevBtn" class="bg-white hover:bg-red-50 border border-red-200 px-5 py-2.5 rounded-xl">
-              Prev
+            <button id="prevBtn" class="bg-white hover:bg-sky-50 border border-slate-200 px-5 py-2.5 rounded-xl">
+              Orqaga
             </button>
-            <button id="nextBtn" class="bg-white hover:bg-red-50 border border-red-200 px-5 py-2.5 rounded-xl">
-              Next
+            <button id="nextBtn" class="bg-white hover:bg-sky-50 border border-slate-200 px-5 py-2.5 rounded-xl">
+              Oldinga
             </button>
           </div>
 
           <div class="mt-6 flex items-center justify-end gap-3">
             <button id="finishBtn" class="bg-green-600 hover:bg-green-700 disabled:bg-green-600/30 disabled:hover:bg-green-600/30 text-white px-6 py-3 rounded-xl shadow-lg shadow-green-600/20 border border-green-400/20 disabled:cursor-not-allowed disabled:opacity-70">
-              Finish
+              Yakunlash
             </button>
           </div>
 
           <div id="examError" class="mt-3 text-sm text-red-600 hidden"></div>
         </div>
 
-        <aside class="bg-white p-4 rounded-2xl shadow-xl border border-red-200">
+        <aside class="bg-white p-4 rounded-2xl shadow-xl border border-slate-200">
           <div class="font-semibold mb-2">Savollar</div>
           <div id="navGrid" class="grid grid-cols-5 gap-2"></div>
         </aside>
@@ -120,13 +120,13 @@
     </section>
 
     <!-- RESULT -->
-    <section id="resultSection" class="hidden bg-white p-6 rounded-2xl shadow-xl border border-red-200">
+    <section id="resultSection" class="hidden bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
       <h2 class="text-xl font-semibold mb-2">Natija</h2>
       <div class="text-slate-800">Umumiy ball: <span id="scoreText" class="font-bold text-green-700"></span> / 100</div>
       <div class="text-slate-600 text-sm mt-1">To'g'ri javoblar: <span id="correctText"></span> / <span id="totalText"></span></div>
 
       <div class="mt-5 flex flex-col md:flex-row gap-3">
-        <button id="backToCheckinBtn" class="bg-white hover:bg-red-50 border border-red-200 px-5 py-2.5 rounded-xl">
+        <button id="backToCheckinBtn" class="bg-white hover:bg-sky-50 border border-slate-200 px-5 py-2.5 rounded-xl">
           Yangi check-in
         </button>
       </div>
