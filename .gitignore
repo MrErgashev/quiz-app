@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.local
+*.log
+.DS_Store
+data/dak_accounts.json
+data/dak_sessions.json
+data/dak_attempts/
+server/dak/debug-auth.js
+server/dak/test-*.js
+server/dak/fix-*.js

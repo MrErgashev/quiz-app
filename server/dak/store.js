@@ -451,10 +451,6 @@ function createDakStore({ dataDir, supabase }) {
     // Try Supabase first
     if (supabase) {
       try {
-        // Delete all existing accounts
-        await supabase.from("dak_accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-
-        // Insert new accounts
         if (Array.isArray(accounts) && accounts.length > 0) {
           // Normalize field names for Supabase (createdAt -> created_at)
           const normalizedAccounts = accounts.map(acc => ({
@@ -472,10 +468,16 @@ function createDakStore({ dataDir, supabase }) {
             created_at: acc.created_at || acc.createdAt || new Date().toISOString(),
           }));
 
-          const { error } = await supabase.from("dak_accounts").insert(normalizedAccounts);
-          if (error) {
-            console.error("setAccounts Supabase insert error:", error.message, error.details, error.hint);
-            throw error;
+          // XAVFSIZ: upsert ishlatamiz (delete-insert o'rniga)
+          // Agar login mavjud bo'lsa - yangilanadi, bo'lmasa - qo'shiladi
+          for (const acc of normalizedAccounts) {
+            const { error } = await supabase
+              .from("dak_accounts")
+              .upsert(acc, { onConflict: "login" });
+            if (error) {
+              console.error("setAccounts Supabase upsert error:", error.message, error.details, error.hint);
+              throw error;
+            }
           }
         }
         return accounts;

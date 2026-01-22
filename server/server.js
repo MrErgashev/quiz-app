@@ -12,6 +12,7 @@ const XLSX = require("xlsx");
 const parser = require("./parser");
 const createDakRouter = require("./dak/routes");
 const { createDakStore } = require("./dak/store");
+const rateLimit = require("express-rate-limit");
 require('dotenv').config();
 // 🔧 Supabase/Render TLS: self-signed sertifikatni inkor qilish
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -67,7 +68,7 @@ const pgPool = DATABASE_URL
       connectionString: DATABASE_URL,
       // Supabase SSL talab qiladi; sertifikatni tekshirishni o‘chirib qo‘yamiz
       ssl: { require: true, rejectUnauthorized: false },
-      max: +(process.env.PG_MAX || 5),
+      max: +(process.env.PG_MAX || 20),
       idleTimeoutMillis: +(process.env.PG_IDLE_TIMEOUT || 30000),
       connectionTimeoutMillis: +(process.env.PG_CONN_TIMEOUT || 10000),
     })
@@ -289,6 +290,31 @@ app.use(session(sessionOptions));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// =========================
+// Rate Limiting (DDoS va brute-force himoyasi)
+// =========================
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,  // 1 daqiqa
+  max: 100,             // 100 so'rov/daqiqa har bir IP uchun
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Juda ko'p so'rov yuborildi. 1 daqiqa kuting." },
+  skip: (req) => req.path === "/api/public/exam-mode", // exam-mode check tez-tez bo'ladi
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 daqiqa
+  max: 10,                    // 10 ta login urinish
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Ko'p marta noto'g'ri parol kiritildi. 15 daqiqa kuting." },
+});
+
+// API uchun umumiy limiter
+app.use("/api", apiLimiter);
+// Login endpoint uchun qattiqroq limiter
+app.use("/api/public/dak/auth/login", loginLimiter);
 
 // ?? Exam mode ON bo'lsa: "/" -> "/dak" (oddiy test oqimi o'zgarmaydi)
 app.get("/", async (req, res, next) => {
