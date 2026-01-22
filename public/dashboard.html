@@ -751,6 +751,9 @@
 
           // Reload roster in JSON editor too
           await loadRoster();
+
+          // Reload credential groups dropdown
+          await loadCredentialGroups();
         } else {
           setMsg(dakPasteMsg, "Saqlashda xatolik", true);
         }
