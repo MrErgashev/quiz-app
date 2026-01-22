@@ -1088,7 +1088,7 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
         group,
         exam_date,
         active: true,
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       if (existingIdx >= 0) {

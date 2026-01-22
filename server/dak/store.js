@@ -456,12 +456,33 @@ function createDakStore({ dataDir, supabase }) {
 
         // Insert new accounts
         if (Array.isArray(accounts) && accounts.length > 0) {
-          const { error } = await supabase.from("dak_accounts").insert(accounts);
-          if (error) throw error;
+          // Normalize field names for Supabase (createdAt -> created_at)
+          const normalizedAccounts = accounts.map(acc => ({
+            id: acc.id,
+            login: acc.login,
+            password_hash: acc.password_hash,
+            salt: acc.salt,
+            full_name: acc.full_name,
+            university: acc.university,
+            program: acc.program,
+            program_id: acc.program_id,
+            group: acc.group,
+            exam_date: acc.exam_date,
+            active: acc.active !== false,
+            created_at: acc.created_at || acc.createdAt || new Date().toISOString(),
+          }));
+
+          const { error } = await supabase.from("dak_accounts").insert(normalizedAccounts);
+          if (error) {
+            console.error("setAccounts Supabase insert error:", error.message, error.details, error.hint);
+            throw error;
+          }
         }
         return accounts;
       } catch (err) {
         console.error("setAccounts Supabase error:", err.message || err);
+        // Don't fallback silently - throw error so UI knows something went wrong
+        throw err;
       }
     }
 
