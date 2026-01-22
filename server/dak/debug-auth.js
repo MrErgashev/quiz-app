@@ -8,11 +8,19 @@ const crypto = require("crypto");
 require("dotenv").config();
 
 const { createClient } = require("@supabase/supabase-js");
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error("❌ Missing SUPABASE_URL or SUPABASE_KEY");
+// Agar .env faylda bo'lmasa, qo'lda kiriting:
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://gwnmjpxkpbvbpthtmroj.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bm1qcHhrcGJ2YnB0aHRtcm9qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTE1NDk5NCwiZXhwIjoyMDcwNzMwOTk0fQ.qC5hL1PDqEuulGBdrmi8cmj3kDwrcYMZG8OA1SSyVOY";
+
+if (!SUPABASE_URL || SUPABASE_URL === "YOUR_SUPABASE_URL_HERE") {
+  console.error("❌ SUPABASE_URL kerak!");
+  console.error("");
+  console.error("Iltimos, debug-auth.js faylida yoki .env faylida quyidagilarni o'rnating:");
+  console.error("  SUPABASE_URL=https://your-project.supabase.co");
+  console.error("  SUPABASE_SERVICE_ROLE_KEY=your-service-role-key");
+  console.error("");
+  console.error("Yoki to'g'ridan-to'g'ri shu faylda o'zgartiring (14-15 qatorlar)");
   process.exit(1);
 }
 
