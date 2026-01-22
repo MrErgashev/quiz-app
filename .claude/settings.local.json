@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e:*)",
+      "Bash(if [ -f data/dak_accounts.json ])",
+      "Bash(then cat data/dak_accounts.json)",
+      "Bash(else echo \"File not found\")",
+      "Bash(fi)",
+      "Bash(node:*)"
+    ]
+  }
+}
