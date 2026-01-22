@@ -9,7 +9,8 @@
       "Bash(node:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: credential generation now saves correctly to Supabase\n\n- Fixed field name: createdAt -> created_at to match Supabase table schema\n- Added field normalization in setAccounts to handle both naming conventions\n- Added better error logging for Supabase insert failures\n- Throw error instead of silent fallback so UI shows proper error\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
