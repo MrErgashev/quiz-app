@@ -5,338 +5,685 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>O‘qituvchi Paneli | Test Tayyor</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: dark; }
+    .card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 1rem;
+      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
+    }
+    .card-soft {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px dashed rgba(148, 163, 184, 0.2);
+      border-radius: 0.9rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 0.75rem;
+      padding: 0.55rem 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1;
+      transition: transform 0.12s ease, background 0.2s ease, border 0.2s ease, color 0.2s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-primary { background: #22c55e; color: #0b1f0f; }
+    .btn-primary:hover { background: #16a34a; }
+    .btn-secondary { background: rgba(148, 163, 184, 0.15); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .btn-secondary:hover { background: rgba(148, 163, 184, 0.25); }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-outline { background: transparent; border: 1px solid rgba(148, 163, 184, 0.35); color: #e2e8f0; }
+    .btn-ghost { background: transparent; color: #cbd5f5; }
+    .btn-xs { padding: 0.35rem 0.7rem; font-size: 0.75rem; border-radius: 0.6rem; }
+    .field {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.75rem;
+      background: rgba(255, 255, 255, 0.95);
+      color: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .field-dark {
+      background: rgba(15, 23, 42, 0.6);
+      color: #e2e8f0;
+    }
+    .field:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+    .focus-ring:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+    .tab-btn {
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #cbd5f5;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: rgba(15, 23, 42, 0.35);
+    }
+    .tab-btn[aria-selected="true"] {
+      background: rgba(56, 189, 248, 0.2);
+      color: #e2e8f0;
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .badge-green { background: rgba(34, 197, 94, 0.15); color: #86efac; border-color: rgba(34, 197, 94, 0.4); }
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: #bae6fd; border-color: rgba(56, 189, 248, 0.4); }
+    .badge-red { background: rgba(248, 113, 113, 0.15); color: #fecaca; border-color: rgba(248, 113, 113, 0.4); }
+    .badge-gray { background: rgba(148, 163, 184, 0.15); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.4); }
+    .spinner {
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 999px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast {
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 0.9rem;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.4);
+    }
+    .toast-success { border-color: rgba(34, 197, 94, 0.5); }
+    .toast-error { border-color: rgba(248, 113, 113, 0.6); }
+    .toast-info { border-color: rgba(56, 189, 248, 0.6); }
+    .toast-hide { opacity: 0; transform: translateY(8px); transition: opacity 0.3s ease, transform 0.3s ease; }
+    .modal-backdrop { background: rgba(2, 6, 23, 0.7); }
+    .step-index {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.75rem;
+      background: rgba(56, 189, 248, 0.2);
+      color: #bae6fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      flex-shrink: 0;
+    }
+    .empty-state {
+      border: 1px dashed rgba(148, 163, 184, 0.35);
+      padding: 1rem;
+      border-radius: 0.9rem;
+      background: rgba(15, 23, 42, 0.35);
+    }
+    .toggle-track {
+      width: 3rem;
+      height: 1.6rem;
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 999px;
+      position: relative;
+      transition: background 0.2s ease;
+    }
+    .toggle-thumb {
+      position: absolute;
+      top: 0.2rem;
+      left: 0.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 999px;
+      background: #e2e8f0;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    input:checked + .toggle-track { background: rgba(34, 197, 94, 0.35); }
+    input:checked + .toggle-track .toggle-thumb { transform: translateX(1.4rem); background: #22c55e; }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 to-blue-900 text-white min-h-screen p-6 font-sans">
-
-  <!-- HEADER -->
-  <header class="max-w-4xl mx-auto mb-10 text-center">
-    <h1 class="text-3xl font-bold mb-2">👩‍🏫 O‘qituvchi Paneli</h1>
-    <p id="teacherName" class="text-lg text-green-300 font-semibold mb-1">Assalomu alaykum!</p>
-    <p class="text-gray-300">Test yarating va uni talabalarga ulashish uchun link oling</p>
-    <p class="mt-1 text-sm text-gray-400">Google hisobingiz orqali tizimga kirgansiz</p>
-  </header>
-
-  <!-- FORM -->
-  <main class="max-w-2xl mx-auto bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-xl space-y-6">
-    <h2 class="text-xl font-semibold mb-4">🧾 Yangi test yaratish</h2>
-
-    <form id="testForm" enctype="multipart/form-data" class="space-y-4">
-      <div>
-        <label for="testName" class="block text-sm font-medium">Test nomi</label>
-        <input type="text" id="testName" name="testName" class="w-full p-2 rounded text-black" required>
+<body class="bg-gradient-to-br from-slate-900 to-blue-900 text-white min-h-screen px-4 md:px-6 py-6">
+  <div class="max-w-6xl mx-auto space-y-8">
+    <header class="text-center space-y-2">
+      <div class="flex flex-col items-center gap-2">
+        <div class="text-xs uppercase tracking-widest text-blue-200/80">TestTayyor</div>
+        <h1 class="text-3xl md:text-4xl font-bold">O‘qituvchi Paneli</h1>
       </div>
+      <p id="teacherName" class="text-lg text-green-300 font-semibold">Assalomu alaykum!</p>
+      <p class="text-gray-300">Test yarating, DAK seanslarni boshqaring va natijalarni kuzating.</p>
+      <p class="text-sm text-gray-400">Google hisobingiz orqali tizimga kirgansiz</p>
+    </header>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label for="duration" class="block text-sm font-medium">Test vaqti (daqiqa)</label>
-          <input type="number" id="duration" name="duration" min="1" class="w-full p-2 rounded text-black" required>
-        </div>
-        <div>
-          <label for="questionCount" class="block text-sm font-medium">Savollar soni (tasodifiy)</label>
-          <input type="number" id="questionCount" name="questionCount" min="1" class="w-full p-2 rounded text-black" required>
-        </div>
+    <nav class="card card-soft p-3" role="tablist" aria-label="Dashboard navigation">
+      <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+        <button class="tab-btn focus-ring" data-tab="tests" role="tab" aria-selected="true" aria-controls="tab-tests" id="tab-tests-btn">Testlar</button>
+        <button class="tab-btn focus-ring" data-tab="dak" role="tab" aria-selected="false" aria-controls="tab-dak" id="tab-dak-btn">DAK Seanslar</button>
+        <button class="tab-btn focus-ring" data-tab="banks" role="tab" aria-selected="false" aria-controls="tab-banks" id="tab-banks-btn">Savol banklari</button>
+        <button class="tab-btn focus-ring" data-tab="settings" role="tab" aria-selected="false" aria-controls="tab-settings" id="tab-settings-btn">Sozlamalar</button>
       </div>
+      <div class="mt-3 text-xs text-slate-300">Bo‘limni tanlang. Default: "Testlar".</div>
+    </nav>
 
-      <!-- Rejim tanlash -->
-      <div>
-        <span class="block text-sm font-medium mb-1">Rejim</span>
-        <label class="mr-4 inline-flex items-center gap-2">
-          <input type="radio" name="mode" value="real" checked>
-          <span>Real test</span>
-        </label>
-        <label class="inline-flex items-center gap-2">
-          <input type="radio" name="mode" value="training">
-          <span>Training (o‘rganish) rejimi</span>
-        </label>
-      </div>
-
-      <div>
-        <label for="file" class="block text-sm font-medium">📁 Test fayli (.txt)</label>
-        <input type="file" id="file" name="file" accept=".txt" class="w-full p-2 bg-white rounded text-black" required>
-      </div>
-
-      <!-- 📷 Rasm -->
-      <div>
-        <label for="image" class="block text-sm font-medium">🖼 Test rasmi (jpg/png)</label>
-        <input type="file" id="image" name="image" accept="image/*" class="w-full p-2 bg-white rounded text-black">
-      </div>
-
-      <div class="flex justify-between items-center">
-        <a href="/samples/namuna.txt" download class="text-blue-300 underline text-sm hover:text-blue-200">
-          📥 Namuna faylni yuklab olish
-        </a>
-        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow">
-          Testni yaratish
-        </button>
-      </div>
-    </form>
-
-    <div id="uploadStatus" class="mt-4 text-sm hidden"></div>
-  </main>
-
-  <!-- 📋 Testlar Ro‘yxati -->
-  <section class="max-w-3xl mx-auto mt-12 bg-white/10 backdrop-blur p-6 rounded-xl shadow">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold">📚 Yaratilgan testlar</h2>
-      <button id="deleteAllBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-        🗑️ Hammasini o‘chirish
-      </button>
-    </div>
-    <ul id="testList" class="space-y-3"></ul>
-  </section>
-
-  <!-- DAK (Exam mode) -->
-  <section class="max-w-3xl mx-auto mt-12 bg-white/10 backdrop-blur p-6 rounded-xl shadow">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold">DAK</h2>
-      <a href="/dak" target="_blank" class="text-blue-300 underline text-sm hover:text-blue-200">/dak</a>
-    </div>
-
-    <div class="space-y-6">
-      <!-- Exam mode toggle -->
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <div class="font-semibold">Exam mode</div>
-          <div id="examModeStatus" class="text-sm text-gray-300">Yuklanmoqda...</div>
-        </div>
-        <label class="inline-flex items-center gap-2 select-none">
-          <input id="examModeToggle" type="checkbox" class="scale-125">
-          <span>ON/OFF</span>
-        </label>
-      </div>
-
-      <!-- Roster Import (Paste) - NEW -->
-      <div class="border-t border-white/10 pt-4">
-        <div class="flex items-center justify-between gap-3 mb-2">
-          <div class="font-semibold">Roster Import (Paste)</div>
-          <div class="text-xs text-gray-400">data/dak_roster.json</div>
-        </div>
-        <div class="text-sm text-gray-300 mb-2">
-          Word/Excel jadvalidan COPY-PASTE qiling:
-        </div>
-        <textarea id="dakPasteTextarea" class="w-full h-48 p-2 rounded text-black font-mono text-xs"
-          placeholder="Har satr: Yo'nalish<TAB>Guruh<TAB>Sana<TAB>F.I.Sh&#10;&#10;Misol:&#10;Iqtisodiyot (tarmoqlar va sohalar bo'yicha)	IQTK-101	22.01.2026	TOSHKULOV SHAXRIDDIN SHERALIYEVICH&#10;Turizm (yo'nalishlar bo'yicha)	TURK-101	23.01.2026	ALIYEV JASUR ABBOSOVICH"></textarea>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button id="dakPastePreviewBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
-            Preview
-          </button>
-          <button id="dakPasteImportBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-            Import & Save
-          </button>
-        </div>
-        <div id="dakPasteMsg" class="mt-2 text-sm"></div>
-
-        <!-- Preview Results -->
-        <div id="dakPastePreview" class="mt-4 hidden">
-          <div class="font-semibold mb-2">Preview:</div>
-          <div class="overflow-x-auto">
-            <table id="dakPreviewTable" class="w-full text-sm border-collapse">
-              <thead>
-                <tr class="bg-white/10">
-                  <th class="border border-white/20 px-2 py-1 text-left">Program</th>
-                  <th class="border border-white/20 px-2 py-1 text-left">Group</th>
-                  <th class="border border-white/20 px-2 py-1 text-left">Exam Date</th>
-                  <th class="border border-white/20 px-2 py-1 text-left">Full Name</th>
-                </tr>
-              </thead>
-              <tbody id="dakPreviewBody"></tbody>
-            </table>
+    <section id="tab-tests" data-tab-panel role="tabpanel" aria-labelledby="tab-tests-btn" class="space-y-6">
+      <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div class="card p-6 space-y-6">
+          <div>
+            <h2 class="text-xl font-semibold flex items-center gap-2">🧾 Yangi test yaratish</h2>
+            <p class="text-sm text-slate-300 mt-1">Majburiy maydonlarni to‘ldiring, fayl formatini tekshiring.</p>
           </div>
-          <div id="dakPreviewStats" class="mt-2 text-sm text-gray-300"></div>
-        </div>
-      </div>
 
-      <!-- Roster editor (JSON - Advanced) -->
-      <div class="border-t border-white/10 pt-4">
-        <details class="group">
-          <summary class="flex items-center justify-between gap-3 cursor-pointer select-none">
-            <div class="font-semibold">Advanced (JSON)</div>
-            <div class="text-xs text-gray-400">data/dak_roster.json</div>
-          </summary>
-          <div class="mt-3">
-            <textarea id="dakRosterTextarea" class="w-full h-64 p-2 rounded text-black font-mono text-xs"
-              placeholder="{ ... }"></textarea>
-            <div class="mt-2 flex flex-wrap gap-2">
-              <button id="dakRosterLoadBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
-                Load
-              </button>
-              <button id="dakRosterSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                Save
+          <form id="testForm" enctype="multipart/form-data" class="space-y-4" novalidate>
+            <div>
+              <label for="testName" class="block text-sm font-medium">Test nomi *</label>
+              <input type="text" id="testName" name="testName" class="field focus-ring" placeholder="Masalan: Fizika 1-modul" aria-describedby="testNameHelp testNameError" required>
+              <p id="testNameHelp" class="text-xs text-slate-400 mt-1">Talabalar ko‘radigan nom.</p>
+              <p id="testNameError" class="text-xs text-red-300 mt-1 hidden"></p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label for="duration" class="block text-sm font-medium">Test vaqti (daqiqa) *</label>
+                <input type="number" id="duration" name="duration" min="1" class="field focus-ring" placeholder="40" aria-describedby="durationHelp durationError" required>
+                <p id="durationHelp" class="text-xs text-slate-400 mt-1">0 emas, kamida 1 daqiqa.</p>
+                <p id="durationError" class="text-xs text-red-300 mt-1 hidden"></p>
+              </div>
+              <div>
+                <label for="questionCount" class="block text-sm font-medium">Savollar soni (tasodifiy) *</label>
+                <input type="number" id="questionCount" name="questionCount" min="1" class="field focus-ring" placeholder="20" aria-describedby="questionCountHelp questionCountError" required>
+                <p id="questionCountHelp" class="text-xs text-slate-400 mt-1">Tasodifiy tanlash uchun son.</p>
+                <p id="questionCountError" class="text-xs text-red-300 mt-1 hidden"></p>
+              </div>
+            </div>
+
+            <fieldset class="space-y-2">
+              <legend class="text-sm font-medium">Rejim *</legend>
+              <div class="flex flex-wrap gap-4">
+                <label class="inline-flex items-center gap-2 text-sm">
+                  <input type="radio" name="mode" value="real" class="focus-ring" checked>
+                  <span>Real test</span>
+                </label>
+                <label class="inline-flex items-center gap-2 text-sm">
+                  <input type="radio" name="mode" value="training" class="focus-ring">
+                  <span>Training (o‘rganish) rejimi</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div>
+              <label for="file" class="block text-sm font-medium">📁 Test fayli (.txt) *</label>
+              <input type="file" id="file" name="file" accept=".txt" class="field focus-ring bg-white text-slate-900" aria-describedby="fileHelp fileError" required>
+              <p id="fileHelp" class="text-xs text-slate-400 mt-1">Faqat .txt. Har bir savol yangi qatorda.</p>
+              <p id="fileError" class="text-xs text-red-300 mt-1 hidden"></p>
+            </div>
+
+            <div>
+              <label for="image" class="block text-sm font-medium">🖼 Test rasmi (jpg/png)</label>
+              <input type="file" id="image" name="image" accept="image/*" class="field focus-ring bg-white text-slate-900" aria-describedby="imageHelp">
+              <p id="imageHelp" class="text-xs text-slate-400 mt-1">Ixtiyoriy. Tavsiya: 1MB dan kichik.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <a href="/samples/namuna.txt" download class="text-blue-300 underline text-sm hover:text-blue-200 focus-ring">
+                📥 Namuna faylni yuklab olish
+              </a>
+              <button id="createTestBtn" type="submit" class="btn btn-primary focus-ring">
+                <span id="createTestSpinner" class="spinner hidden" aria-hidden="true"></span>
+                <span>Testni yaratish</span>
               </button>
             </div>
-            <div id="dakRosterMsg" class="mt-2 text-sm text-gray-300"></div>
+          </form>
+
+          <div id="uploadStatus" class="text-sm text-slate-300 hidden" aria-live="polite"></div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-semibold">📚 Yaratilgan testlar</h2>
+              <p class="text-sm text-slate-300 mt-1">Linkni nusxalash, statistika va xavfsiz o‘chirish.</p>
+            </div>
+            <button id="deleteAllBtn" class="btn btn-outline btn-xs focus-ring">🗑️ Hammasini o‘chirish</button>
           </div>
-        </details>
+          <ul id="testList" class="space-y-3"></ul>
+        </div>
       </div>
+    </section>
 
-      <!-- Bank upload -->
-      <div class="border-t border-white/10 pt-4">
-        <div class="flex items-center justify-between gap-3 mb-2">
-          <div class="font-semibold">Savol banklari</div>
-          <div class="text-xs text-gray-400">data/dak_banks.json</div>
-        </div>
-        <div class="grid md:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-medium mb-1">subject_name</label>
-            <input id="dakSubjectName" type="text" class="w-full p-2 rounded text-black" placeholder="Fan-1">
+    <section id="tab-dak" data-tab-panel role="tabpanel" aria-labelledby="tab-dak-btn" class="space-y-6" hidden>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-semibold">DAK rejimi</h2>
+              <p class="text-sm text-slate-300">/dak sahifasi uchun yo‘naltirish.</p>
+            </div>
+            <a href="/dak" target="_blank" class="text-blue-300 underline text-sm hover:text-blue-200 focus-ring">/dak</a>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">file (.txt)</label>
-            <input id="dakBankFile" type="file" accept=".txt" class="w-full p-2 bg-white rounded text-black">
-          </div>
-        </div>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button id="dakUploadBankBtn" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm">
-            Upload
-          </button>
-          <button id="dakRefreshBanksBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
-            Refresh
-          </button>
-        </div>
-        <div id="dakBanksList" class="mt-3 space-y-2"></div>
-        <div id="dakBanksMsg" class="mt-2 text-sm text-gray-300"></div>
-      </div>
-
-      <!-- Config -->
-      <div class="border-t border-white/10 pt-4">
-        <div class="flex items-center justify-between gap-3 mb-2">
-          <div class="font-semibold">Config</div>
-          <div class="text-xs text-gray-400">data/dak_config.json (yoki app_settings)</div>
-        </div>
-        <div class="text-sm text-gray-300 flex flex-wrap items-center gap-2">
-          <span>Duration:</span>
-          <input id="dakCfgDuration" type="number" min="1"
-            class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="80">
-          <button id="dakCfgDurationSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
-            Save
-          </button>
-          <span>min • Total:</span>
-          <input id="dakCfgTotal" type="number" min="1"
-            class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="50">
-          <button id="dakCfgTotalSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
-            Save
-          </button>
-          <span>• Points/Q:</span>
-          <input id="dakCfgPoints" type="number" min="1"
-            class="w-20 px-2 py-1 rounded bg-white/10 border border-white/10 text-white" value="2">
-          <button id="dakCfgPointsSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
-            Save
-          </button>
-        </div>
-        <div class="mt-3">
-          <label class="block text-sm font-medium mb-1">Urinishlar soni (har bir talaba uchun)</label>
-          <div class="flex items-center gap-2">
-            <select id="dakMaxAttempts" class="w-24 p-2 rounded text-black">
-              <option value="1">1 marta</option>
-              <option value="2">2 marta</option>
-              <option value="3">3 marta</option>
-            </select>
-            <button id="dakMaxAttemptsSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
-              Save
-            </button>
-          </div>
-        </div>
-        <div class="mt-3">
-          <label class="block text-sm font-medium mb-1">questions_per_bank</label>
-          <input id="dakQuestionsPerBank" type="number" min="1" class="w-full p-2 rounded text-black" value="10">
-        </div>
-        <div class="mt-3">
-          <div class="text-sm font-medium mb-1">Banklar (tanlang)</div>
-          <div id="dakConfigBanks" class="space-y-1"></div>
-        </div>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button id="dakConfigLoadBtn" class="bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded text-sm">
-            Load
-          </button>
-          <button id="dakConfigSaveBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-            Save
-          </button>
-        </div>
-        <div id="dakConfigMsg" class="mt-2 text-sm text-gray-300"></div>
-      </div>
-
-      <!-- Talabalar login/parollari -->
-      <div class="border-t border-white/10 pt-4">
-        <div class="flex items-center justify-between gap-3 mb-2">
-          <div class="font-semibold">Talabalar login/parollari</div>
-          <div class="text-xs text-gray-400">data/dak_accounts.json</div>
-        </div>
-        <div class="text-sm text-gray-300 mb-3">
-          Guruhni tanlang va login/parollarni yarating. Parollar faqat yaratilgan paytda ko'rinadi!
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-3 mb-3">
-          <div>
-            <label class="block text-sm font-medium mb-1">Guruh</label>
-            <select id="credGroupSelect" class="w-full p-2 rounded text-black">
-              <option value="">Yuklanmoqda...</option>
-            </select>
-          </div>
-          <div class="flex items-end gap-2">
-            <button id="credGenerateBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
-              Generate
-            </button>
-            <button id="credRegenerateBtn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
-              Regenerate
-            </button>
-            <button id="credExportCsvBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm hidden">
-              CSV Export
-            </button>
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-semibold">Exam mode</span>
+                <span id="examModeBadge" class="badge badge-gray">Yuklanmoqda</span>
+                <span class="text-xs text-slate-400" title="ON bo‘lsa, asosiy sahifa /dak ga yo‘naltiriladi.">?</span>
+              </div>
+              <div id="examModeStatus" class="text-sm text-slate-300">Yuklanmoqda...</div>
+            </div>
+            <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+              <input id="examModeToggle" type="checkbox" class="sr-only">
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+              <span class="text-sm">ON/OFF</span>
+            </label>
           </div>
         </div>
 
-        <div id="credMsg" class="text-sm text-gray-300 mb-3"></div>
-
-        <!-- Credentials Table -->
-        <div id="credTableWrap" class="hidden overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="bg-white/10">
-                <th class="border border-white/20 px-2 py-1 text-left">#</th>
-                <th class="border border-white/20 px-2 py-1 text-left">F.I.Sh</th>
-                <th class="border border-white/20 px-2 py-1 text-left">Login</th>
-                <th class="border border-white/20 px-2 py-1 text-left">Parol</th>
-                <th class="border border-white/20 px-2 py-1 text-left">Guruh</th>
-                <th class="border border-white/20 px-2 py-1 text-left">Sana</th>
-              </tr>
-            </thead>
-            <tbody id="credTableBody"></tbody>
-          </table>
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold">Live Monitor</h2>
+            <span class="badge badge-blue">Status</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="card-soft p-3">
+              <div class="text-xs text-slate-400">Online</div>
+              <div id="monitorOnline" class="text-lg font-semibold">0</div>
+            </div>
+            <div class="card-soft p-3">
+              <div class="text-xs text-slate-400">Started</div>
+              <div id="monitorStarted" class="text-lg font-semibold">0</div>
+            </div>
+            <div class="card-soft p-3">
+              <div class="text-xs text-slate-400">Submitted</div>
+              <div id="monitorSubmitted" class="text-lg font-semibold">0</div>
+            </div>
+            <div class="card-soft p-3">
+              <div class="text-xs text-slate-400">Disconnected</div>
+              <div id="monitorDisconnected" class="text-lg font-semibold">0</div>
+            </div>
+          </div>
+          <div id="monitorList" class="space-y-2"></div>
+          <div class="flex flex-wrap gap-2 text-xs text-slate-400">
+            <span class="badge badge-green">Online</span>
+            <span class="badge badge-blue">Started</span>
+            <span class="badge badge-gray">Submitted</span>
+            <span class="badge badge-red">Disconnected</span>
+          </div>
         </div>
       </div>
 
-      <!-- Export -->
-      <div class="border-t border-white/10 pt-4">
-        <div class="font-semibold mb-2">Export</div>
+      <div class="card p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-semibold">DAK seans quruvchi</h2>
+          <p class="text-sm text-slate-300">Bosqichma-bosqich ma'lumotlarni tayyorlang.</p>
+        </div>
+
+        <ol class="space-y-5">
+          <li class="flex gap-4">
+            <div class="step-index">1</div>
+            <div class="flex-1 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold">Guruh(lar) tanlash</h3>
+                <span class="text-xs text-slate-400">Multi-select</span>
+              </div>
+              <select id="dakSessionGroups" multiple class="field focus-ring h-32" aria-describedby="dakSessionGroupsHelp"></select>
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span id="dakSessionGroupsHelp">Ctrl/Cmd bilan bir nechta guruh tanlang.</span>
+                <span>Tanlangan: <span id="dakSessionGroupCount">0</span></span>
+              </div>
+            </div>
+          </li>
+
+          <li class="flex gap-4">
+            <div class="step-index">2</div>
+            <div class="flex-1 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold">Roster import (Paste)</h3>
+                <span class="text-xs text-slate-400">Dry-run preview (frontend)</span>
+              </div>
+              <label for="dakPasteTextarea" class="sr-only">Roster paste</label>
+              <textarea id="dakPasteTextarea" class="field focus-ring h-40 font-mono text-xs" placeholder="Har satr: Yo'nalish<TAB>Guruh<TAB>Sana<TAB>F.I.Sh&#10;&#10;Misol:&#10;Iqtisodiyot (tarmoqlar va sohalar bo'yicha)\tIQTK-101\t22.01.2026\tTOSHKULOV SHAXRIDDIN SHERALIYEVICH"></textarea>
+              <div class="flex flex-wrap gap-2">
+                <button id="dakPastePreviewBtn" class="btn btn-secondary btn-xs focus-ring">Preview</button>
+                <button id="dakPasteImportBtn" class="btn btn-primary btn-xs focus-ring">
+                  <span id="dakPasteImportSpinner" class="spinner hidden" aria-hidden="true"></span>
+                  Import &amp; Save
+                </button>
+              </div>
+              <div id="dakPasteMsg" class="text-sm"></div>
+              <div id="dakPreviewCounters" class="text-xs text-slate-400"></div>
+
+              <div id="dakPastePreview" class="mt-3 hidden">
+                <div class="font-semibold mb-2">Preview:</div>
+                <div class="overflow-x-auto">
+                  <table id="dakPreviewTable" class="w-full text-sm border-collapse">
+                    <thead>
+                      <tr class="bg-white/10">
+                        <th class="border border-white/20 px-2 py-1 text-left">Program</th>
+                        <th class="border border-white/20 px-2 py-1 text-left">Group</th>
+                        <th class="border border-white/20 px-2 py-1 text-left">Exam Date</th>
+                        <th class="border border-white/20 px-2 py-1 text-left">Full Name</th>
+                        <th class="border border-white/20 px-2 py-1 text-left">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dakPreviewBody"></tbody>
+                  </table>
+                </div>
+                <div id="dakPreviewStats" class="mt-2 text-sm text-slate-300"></div>
+              </div>
+            </div>
+          </li>
+
+          <li class="flex gap-4">
+            <div class="step-index">3</div>
+            <div class="flex-1 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold">Savol banklari va questions_per_bank</h3>
+                <span class="text-xs text-slate-400">Session uchun</span>
+              </div>
+              <div class="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label for="dakSessionQuestionsPerBank" class="block text-sm font-medium">questions_per_bank</label>
+                  <input id="dakSessionQuestionsPerBank" type="number" min="1" class="field focus-ring" placeholder="10">
+                  <p class="text-xs text-slate-400 mt-1">Bu faqat seans uchun (backend bo‘lsa).</p>
+                </div>
+                <div>
+                  <div class="text-sm font-medium mb-2">Banklar (tanlang)</div>
+                  <div id="dakSessionBanks" class="space-y-2"></div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="flex gap-4">
+            <div class="step-index">4</div>
+            <div class="flex-1 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold">Review va yaratish</h3>
+                <span class="text-xs text-slate-400">Backend required</span>
+              </div>
+              <div id="dakSessionSummary" class="card-soft p-3 text-sm text-slate-300">
+                Hozircha backend yo‘q. Seans yaratish uchun server kerak.
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button id="dakSessionCreateBtn" class="btn btn-secondary btn-xs focus-ring" disabled title="Backend required">Create</button>
+                <button id="dakSessionStartBtn" class="btn btn-primary btn-xs focus-ring" disabled title="Backend required">Start</button>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <div class="card p-6 space-y-4">
+          <details class="group">
+            <summary class="flex items-center justify-between gap-3 cursor-pointer select-none">
+              <div class="font-semibold">Advanced (JSON)</div>
+              <div class="text-xs text-slate-400">data/dak_roster.json</div>
+            </summary>
+            <div class="mt-3 space-y-3">
+              <textarea id="dakRosterTextarea" class="field focus-ring h-64 font-mono text-xs" placeholder="{ ... }"></textarea>
+              <div class="flex flex-wrap gap-2">
+                <button id="dakRosterLoadBtn" class="btn btn-secondary btn-xs focus-ring">Load</button>
+                <button id="dakRosterSaveBtn" class="btn btn-primary btn-xs focus-ring">Save</button>
+              </div>
+              <div id="dakRosterMsg" class="text-sm text-slate-300"></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="font-semibold">Talabalar login/parollari</div>
+            <div class="text-xs text-slate-400">data/dak_accounts.json</div>
+          </div>
+          <div class="text-sm text-slate-300">Guruhni tanlang va login/parollarni yarating. Parollar faqat yaratilgan paytda ko'rinadi.</div>
+
+          <div class="grid md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Guruh</label>
+              <select id="credGroupSelect" class="field focus-ring">
+                <option value="">Yuklanmoqda...</option>
+              </select>
+            </div>
+            <div class="flex items-end gap-2 flex-wrap">
+              <button id="credGenerateBtn" class="btn btn-primary btn-xs focus-ring">Generate</button>
+              <button id="credRegenerateBtn" class="btn btn-secondary btn-xs focus-ring">Regenerate</button>
+              <button id="credExportCsvBtn" class="btn btn-outline btn-xs focus-ring hidden">CSV Export</button>
+            </div>
+          </div>
+
+          <div id="credMsg" class="text-sm text-slate-300"></div>
+
+          <div id="credTableWrap" class="hidden overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-white/10">
+                  <th class="border border-white/20 px-2 py-1 text-left">#</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">F.I.Sh</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Login</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Parol</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Guruh</th>
+                  <th class="border border-white/20 px-2 py-1 text-left">Sana</th>
+                </tr>
+              </thead>
+              <tbody id="credTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-6 space-y-3">
+        <div class="font-semibold">Export</div>
         <div class="flex flex-col md:flex-row gap-2">
-          <a href="/api/export/DAK_2026-01-22_iqt" target="_blank"
-             class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded shadow text-sm text-center">
+          <a href="/api/export/DAK_2026-01-22_iqt" target="_blank" class="btn btn-outline focus-ring text-center">
             DAK Iqtisodiyot (2026-01-22) Export
           </a>
-          <a href="/api/export/DAK_2026-01-23_tur" target="_blank"
-             class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded shadow text-sm text-center">
+          <a href="/api/export/DAK_2026-01-23_tur" target="_blank" class="btn btn-outline focus-ring text-center">
             DAK Turizm (2026-01-23) Export
           </a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- SCRIPT -->
+    <section id="tab-banks" data-tab-panel role="tabpanel" aria-labelledby="tab-banks-btn" class="space-y-6" hidden>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <div class="card p-6 space-y-4">
+          <div>
+            <h2 class="text-xl font-semibold">Savol bankini yuklash</h2>
+            <p class="text-sm text-slate-300">subject_name va .txt fayl yuklang.</p>
+          </div>
+          <div class="grid gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">subject_name *</label>
+              <input id="dakSubjectName" type="text" class="field focus-ring" placeholder="Fan-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">file (.txt) *</label>
+              <input id="dakBankFile" type="file" accept=".txt" class="field focus-ring bg-white text-slate-900">
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="dakUploadBankBtn" class="btn btn-primary focus-ring">Upload</button>
+            <button id="dakRefreshBanksBtn" class="btn btn-secondary focus-ring">Refresh</button>
+          </div>
+          <div id="dakBanksMsg" class="text-sm text-slate-300"></div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-semibold">Banklar ro‘yxati</h2>
+              <p class="text-sm text-slate-300">Qidirish va xavfsiz o‘chirish.</p>
+            </div>
+            <div class="text-xs text-slate-400">data/dak_banks.json</div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+            <div class="flex-1">
+              <label for="dakBankSearch" class="sr-only">Qidirish</label>
+              <input id="dakBankSearch" type="search" class="field focus-ring" placeholder="Bank nomi bo‘yicha qidirish">
+            </div>
+            <div class="text-xs text-slate-400">Jami: <span id="dakBankCount">0</span></div>
+          </div>
+          <div id="dakBanksList" class="space-y-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-settings" data-tab-panel role="tabpanel" aria-labelledby="tab-settings-btn" class="space-y-6" hidden>
+      <div id="examModeWarning" class="card p-4 border border-red-400/40 bg-red-500/10 hidden">
+        <div class="flex items-start gap-3">
+          <span class="badge badge-red">Ogohlantirish</span>
+          <div>
+            <div class="font-semibold">Exam mode ON</div>
+            <p class="text-sm text-red-100/80">Sozlamalarni o‘zgartirish running examga ta'sir qilishi mumkin.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-3">
+        <div class="card p-6 space-y-4">
+          <div>
+            <h2 class="text-lg font-semibold">Vaqt sozlamalari</h2>
+            <p class="text-sm text-slate-300">Duration va umumiy savollar soni.</p>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label for="dakCfgDuration" class="block text-sm font-medium">Duration (min)</label>
+              <div class="flex items-center gap-2">
+                <input id="dakCfgDuration" type="number" min="1" class="field focus-ring" value="80">
+                <button id="dakCfgDurationSaveBtn" class="btn btn-secondary btn-xs focus-ring">Save</button>
+                <span id="durationSaveMsg" class="text-xs text-slate-400"></span>
+              </div>
+            </div>
+            <div>
+              <label for="dakCfgTotal" class="block text-sm font-medium">Total questions</label>
+              <div class="flex items-center gap-2">
+                <input id="dakCfgTotal" type="number" min="1" class="field focus-ring" value="50">
+                <button id="dakCfgTotalSaveBtn" class="btn btn-secondary btn-xs focus-ring">Save</button>
+                <span id="totalSaveMsg" class="text-xs text-slate-400"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <div>
+            <h2 class="text-lg font-semibold">Baholash</h2>
+            <p class="text-sm text-slate-300">Points per question.</p>
+          </div>
+          <div>
+            <label for="dakCfgPoints" class="block text-sm font-medium">Points/Q</label>
+            <div class="flex items-center gap-2">
+              <input id="dakCfgPoints" type="number" min="1" class="field focus-ring" value="2">
+              <button id="dakCfgPointsSaveBtn" class="btn btn-secondary btn-xs focus-ring">Save</button>
+              <span id="pointsSaveMsg" class="text-xs text-slate-400"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <div>
+            <h2 class="text-lg font-semibold">Randomization</h2>
+            <p class="text-sm text-slate-300">Banklar va urinishlar.</p>
+          </div>
+          <div>
+            <label for="dakQuestionsPerBank" class="block text-sm font-medium">questions_per_bank</label>
+            <div class="flex items-center gap-2">
+              <input id="dakQuestionsPerBank" type="number" min="1" class="field focus-ring" value="10">
+              <button id="dakQuestionsPerBankSaveBtn" class="btn btn-secondary btn-xs focus-ring">Save</button>
+              <span id="qpbSaveMsg" class="text-xs text-slate-400"></span>
+            </div>
+          </div>
+          <div>
+            <label for="dakMaxAttempts" class="block text-sm font-medium">Urinishlar soni</label>
+            <div class="flex items-center gap-2">
+              <select id="dakMaxAttempts" class="field focus-ring">
+                <option value="1">1 marta</option>
+                <option value="2">2 marta</option>
+                <option value="3">3 marta</option>
+              </select>
+              <button id="dakMaxAttemptsSaveBtn" class="btn btn-secondary btn-xs focus-ring">Save</button>
+              <span id="attemptsSaveMsg" class="text-xs text-slate-400"></span>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm font-medium mb-2">Banklar (tanlang)</div>
+            <div id="dakConfigBanks" class="space-y-2"></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="dakConfigLoadBtn" class="btn btn-secondary btn-xs focus-ring">Load</button>
+            <button id="dakConfigSaveBtn" class="btn btn-primary btn-xs focus-ring">Save</button>
+            <span id="configSaveMsg" class="text-xs text-slate-400"></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="dakConfigMsg" class="text-sm text-slate-300"></div>
+    </section>
+  </div>
+
+  <div id="toastContainer" class="fixed right-4 bottom-4 space-y-2 z-50" aria-live="polite"></div>
+
+  <div id="confirmModal" class="fixed inset-0 hidden items-center justify-center z-50" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 modal-backdrop"></div>
+    <div class="relative card p-6 w-full max-w-md z-10">
+      <h3 id="confirmTitle" class="text-lg font-semibold">Tasdiqlash</h3>
+      <p id="confirmMessage" class="text-sm text-slate-300 mt-2"></p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button id="confirmCancel" class="btn btn-secondary focus-ring">Bekor qilish</button>
+        <button id="confirmOk" class="btn btn-danger focus-ring">Tasdiqlash</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const form = document.getElementById('testForm');
     const statusMsg = document.getElementById('uploadStatus');
     const testList = document.getElementById("testList");
     const teacherName = document.getElementById("teacherName");
     const deleteAllBtn = document.getElementById("deleteAllBtn");
+    const createTestBtn = document.getElementById("createTestBtn");
+    const createTestSpinner = document.getElementById("createTestSpinner");
+
+    const testNameInput = document.getElementById("testName");
+    const durationInput = document.getElementById("duration");
+    const questionCountInput = document.getElementById("questionCount");
+    const testFileInput = document.getElementById("file");
+
+    const testNameError = document.getElementById("testNameError");
+    const durationError = document.getElementById("durationError");
+    const questionCountError = document.getElementById("questionCountError");
+    const fileError = document.getElementById("fileError");
+
+    const tabButtons = Array.from(document.querySelectorAll("[data-tab]"));
+    const tabPanels = Array.from(document.querySelectorAll("[data-tab-panel]"));
+
+    const toastContainer = document.getElementById("toastContainer");
+    const confirmModal = document.getElementById("confirmModal");
+    const confirmTitle = document.getElementById("confirmTitle");
+    const confirmMessage = document.getElementById("confirmMessage");
+    const confirmOk = document.getElementById("confirmOk");
+    const confirmCancel = document.getElementById("confirmCancel");
+    const confirmBackdrop = confirmModal ? confirmModal.querySelector(".modal-backdrop") : null;
+
+    let confirmResolve = null;
 
     // --- DAK elements ---
     const examModeToggle = document.getElementById("examModeToggle");
     const examModeStatus = document.getElementById("examModeStatus");
+    const examModeBadge = document.getElementById("examModeBadge");
+    const examModeWarning = document.getElementById("examModeWarning");
 
     const dakRosterTextarea = document.getElementById("dakRosterTextarea");
     const dakRosterLoadBtn = document.getElementById("dakRosterLoadBtn");
     const dakRosterSaveBtn = document.getElementById("dakRosterSaveBtn");
+
+    const dakSessionGroups = document.getElementById("dakSessionGroups");
+    const dakSessionGroupCount = document.getElementById("dakSessionGroupCount");
+    const dakSessionQuestionsPerBank = document.getElementById("dakSessionQuestionsPerBank");
+    const dakSessionBanks = document.getElementById("dakSessionBanks");
+    const dakSessionSummary = document.getElementById("dakSessionSummary");
 
     // Credentials elements
     const credGroupSelect = document.getElementById("credGroupSelect");
@@ -354,11 +701,13 @@
     const dakPasteTextarea = document.getElementById("dakPasteTextarea");
     const dakPastePreviewBtn = document.getElementById("dakPastePreviewBtn");
     const dakPasteImportBtn = document.getElementById("dakPasteImportBtn");
+    const dakPasteImportSpinner = document.getElementById("dakPasteImportSpinner");
     const dakPasteMsg = document.getElementById("dakPasteMsg");
     const dakPastePreview = document.getElementById("dakPastePreview");
     const dakPreviewTable = document.getElementById("dakPreviewTable");
     const dakPreviewBody = document.getElementById("dakPreviewBody");
     const dakPreviewStats = document.getElementById("dakPreviewStats");
+    const dakPreviewCounters = document.getElementById("dakPreviewCounters");
 
     const dakSubjectName = document.getElementById("dakSubjectName");
     const dakBankFile = document.getElementById("dakBankFile");
@@ -366,6 +715,8 @@
     const dakRefreshBanksBtn = document.getElementById("dakRefreshBanksBtn");
     const dakBanksList = document.getElementById("dakBanksList");
     const dakBanksMsg = document.getElementById("dakBanksMsg");
+    const dakBankSearch = document.getElementById("dakBankSearch");
+    const dakBankCount = document.getElementById("dakBankCount");
 
     const dakCfgDuration = document.getElementById("dakCfgDuration");
     const dakCfgDurationSaveBtn = document.getElementById("dakCfgDurationSaveBtn");
@@ -374,12 +725,309 @@
     const dakCfgPoints = document.getElementById("dakCfgPoints");
     const dakCfgPointsSaveBtn = document.getElementById("dakCfgPointsSaveBtn");
     const dakQuestionsPerBank = document.getElementById("dakQuestionsPerBank");
+    const dakQuestionsPerBankSaveBtn = document.getElementById("dakQuestionsPerBankSaveBtn");
     const dakMaxAttempts = document.getElementById("dakMaxAttempts");
     const dakMaxAttemptsSaveBtn = document.getElementById("dakMaxAttemptsSaveBtn");
     const dakConfigBanks = document.getElementById("dakConfigBanks");
     const dakConfigLoadBtn = document.getElementById("dakConfigLoadBtn");
     const dakConfigSaveBtn = document.getElementById("dakConfigSaveBtn");
     const dakConfigMsg = document.getElementById("dakConfigMsg");
+    const durationSaveMsg = document.getElementById("durationSaveMsg");
+    const totalSaveMsg = document.getElementById("totalSaveMsg");
+    const pointsSaveMsg = document.getElementById("pointsSaveMsg");
+    const qpbSaveMsg = document.getElementById("qpbSaveMsg");
+    const attemptsSaveMsg = document.getElementById("attemptsSaveMsg");
+    const configSaveMsg = document.getElementById("configSaveMsg");
+
+    const monitorOnline = document.getElementById("monitorOnline");
+    const monitorStarted = document.getElementById("monitorStarted");
+    const monitorSubmitted = document.getElementById("monitorSubmitted");
+    const monitorDisconnected = document.getElementById("monitorDisconnected");
+    const monitorList = document.getElementById("monitorList");
+
+    const sessionState = {
+      selectedBanks: new Set(),
+      selectedGroups: [],
+      questionsPerBank: null
+    };
+
+    function initTabs() {
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+      });
+
+      const hash = (location.hash || "").replace("#", "");
+      if (hash && tabButtons.some((btn) => btn.dataset.tab === hash)) {
+        setActiveTab(hash);
+      } else {
+        setActiveTab("tests");
+      }
+    }
+
+    function setActiveTab(tabId) {
+      tabButtons.forEach((btn) => {
+        const isActive = btn.dataset.tab === tabId;
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      tabPanels.forEach((panel) => {
+        panel.hidden = panel.id !== `tab-${tabId}`;
+      });
+
+      if (location.hash !== `#${tabId}`) {
+        history.replaceState(null, "", `#${tabId}`);
+      }
+    }
+
+    function showToast(type, message, title = "") {
+      if (!toastContainer) return;
+
+      const toast = document.createElement("div");
+      const icon = type === "success" ? "✅" : type === "error" ? "⚠️" : "ℹ️";
+      const fallbackTitle = type === "success" ? "Muvaffaqiyat" : type === "error" ? "Xatolik" : "Ma'lumot";
+
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <div class="font-semibold">${icon} ${title || fallbackTitle}</div>
+        <div class="text-sm text-slate-200/90 mt-1">${message}</div>
+      `;
+
+      toastContainer.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add("toast-hide");
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function openConfirm({ title = "Tasdiqlash", message = "", confirmText = "Tasdiqlash", cancelText = "Bekor qilish", danger = true } = {}) {
+      if (!confirmModal || !confirmOk || !confirmCancel) {
+        return Promise.resolve(window.confirm(message || title));
+      }
+
+      confirmTitle.textContent = title;
+      confirmMessage.textContent = message;
+      confirmOk.textContent = confirmText;
+      confirmOk.className = `btn ${danger ? "btn-danger" : "btn-primary"} focus-ring`;
+      confirmCancel.textContent = cancelText;
+
+      confirmModal.classList.remove("hidden");
+      confirmModal.classList.add("flex");
+
+      return new Promise((resolve) => {
+        confirmResolve = resolve;
+      });
+    }
+
+    function closeConfirm(result) {
+      if (!confirmModal) return;
+      confirmModal.classList.add("hidden");
+      confirmModal.classList.remove("flex");
+      if (confirmResolve) {
+        confirmResolve(result);
+        confirmResolve = null;
+      }
+    }
+
+    confirmCancel?.addEventListener("click", () => closeConfirm(false));
+    confirmOk?.addEventListener("click", () => closeConfirm(true));
+    confirmBackdrop?.addEventListener("click", () => closeConfirm(false));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && confirmModal && !confirmModal.classList.contains("hidden")) {
+        closeConfirm(false);
+      }
+    });
+
+    function setFieldError(input, errorEl, message) {
+      if (!input || !errorEl) return;
+      if (message) {
+        errorEl.textContent = message;
+        errorEl.classList.remove("hidden");
+        input.setAttribute("aria-invalid", "true");
+      } else {
+        errorEl.textContent = "";
+        errorEl.classList.add("hidden");
+        input.removeAttribute("aria-invalid");
+      }
+    }
+
+    function validateTestForm(showToastOnError = true) {
+      let valid = true;
+
+      if (!testNameInput?.value.trim()) {
+        setFieldError(testNameInput, testNameError, "Test nomi majburiy.");
+        valid = false;
+      } else {
+        setFieldError(testNameInput, testNameError, "");
+      }
+
+      const duration = parseInt(durationInput?.value || "", 10);
+      if (!Number.isFinite(duration) || duration < 1) {
+        setFieldError(durationInput, durationError, "Kamida 1 daqiqa kiriting.");
+        valid = false;
+      } else {
+        setFieldError(durationInput, durationError, "");
+      }
+
+      const qCount = parseInt(questionCountInput?.value || "", 10);
+      if (!Number.isFinite(qCount) || qCount < 1) {
+        setFieldError(questionCountInput, questionCountError, "Kamida 1 ta savol.");
+        valid = false;
+      } else {
+        setFieldError(questionCountInput, questionCountError, "");
+      }
+
+      if (!testFileInput?.files || testFileInput.files.length === 0) {
+        setFieldError(testFileInput, fileError, ".txt faylni tanlang.");
+        valid = false;
+      } else {
+        setFieldError(testFileInput, fileError, "");
+      }
+
+      if (!valid && showToastOnError) {
+        showToast("error", "Majburiy maydonlarni to‘ldiring.");
+      }
+
+      return valid;
+    }
+
+    function setButtonLoading(btn, spinner, isLoading) {
+      if (!btn) return;
+      btn.disabled = !!isLoading;
+      if (spinner) spinner.classList.toggle("hidden", !isLoading);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        const temp = document.createElement("input");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        try {
+          document.execCommand("copy");
+          document.body.removeChild(temp);
+          return true;
+        } catch {
+          document.body.removeChild(temp);
+          return false;
+        }
+      }
+    }
+
+    function formatDateTime(value) {
+      if (!value) return null;
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return null;
+      return date.toLocaleString("uz-UZ", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function updateExamModeUI(enabled) {
+      if (examModeBadge) {
+        examModeBadge.textContent = enabled ? "ON" : "OFF";
+        examModeBadge.className = `badge ${enabled ? "badge-green" : "badge-gray"}`;
+      }
+      if (examModeWarning) {
+        examModeWarning.classList.toggle("hidden", !enabled);
+      }
+    }
+
+    function updateSessionGroupSelection() {
+      if (!dakSessionGroups) return;
+      const selected = Array.from(dakSessionGroups.selectedOptions).map((opt) => opt.textContent);
+      sessionState.selectedGroups = selected;
+      if (dakSessionGroupCount) dakSessionGroupCount.textContent = String(selected.length);
+      updateSessionSummary();
+    }
+
+    function updateSessionSummary() {
+      if (!dakSessionSummary) return;
+      const bankNames = Array.isArray(dakState.banks)
+        ? dakState.banks
+            .filter((b) => sessionState.selectedBanks.has(b.bank_id))
+            .map((b) => b.subject_name || b.bank_id)
+        : [];
+      const qpb = parseInt(dakSessionQuestionsPerBank?.value || "", 10);
+
+      dakSessionSummary.innerHTML = "";
+
+      const lines = [
+        `Guruhlar: ${sessionState.selectedGroups.length ? sessionState.selectedGroups.join(", ") : "tanlanmadi"}`,
+        `Banklar: ${bankNames.length ? bankNames.join(", ") : "tanlanmadi"}`,
+        `questions_per_bank: ${Number.isFinite(qpb) ? qpb : "—"}`
+      ];
+
+      for (const line of lines) {
+        const p = document.createElement("p");
+        p.textContent = line;
+        dakSessionSummary.appendChild(p);
+      }
+    }
+
+    function renderSessionBanks() {
+      if (!dakSessionBanks) return;
+      dakSessionBanks.innerHTML = "";
+
+      const banks = Array.isArray(dakState.banks) ? dakState.banks : [];
+      if (banks.length === 0) {
+        dakSessionBanks.innerHTML = `<div class="text-xs text-slate-400">Banklar yuklanganda bu yerda ko‘rinadi.</div>`;
+        return;
+      }
+
+      if (sessionState.selectedBanks.size === 0 && Array.isArray(dakState.config?.bank_ids)) {
+        dakState.config.bank_ids.forEach((id) => sessionState.selectedBanks.add(id));
+      }
+
+      for (const b of banks) {
+        const label = document.createElement("label");
+        label.className = "flex items-center gap-2 text-sm";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = b.bank_id;
+        input.checked = sessionState.selectedBanks.has(b.bank_id);
+        input.className = "focus-ring";
+        input.addEventListener("change", () => {
+          if (input.checked) {
+            sessionState.selectedBanks.add(b.bank_id);
+          } else {
+            sessionState.selectedBanks.delete(b.bank_id);
+          }
+          updateSessionSummary();
+        });
+
+        const span = document.createElement("span");
+        span.textContent = `${b.subject_name || "Bank"} (${b.questions_count ?? 0})`;
+
+        label.appendChild(input);
+        label.appendChild(span);
+        dakSessionBanks.appendChild(label);
+      }
+
+      updateSessionSummary();
+    }
+
+    function initMonitor() {
+      if (monitorOnline) monitorOnline.textContent = "0";
+      if (monitorStarted) monitorStarted.textContent = "0";
+      if (monitorSubmitted) monitorSubmitted.textContent = "0";
+      if (monitorDisconnected) monitorDisconnected.textContent = "0";
+      if (monitorList) {
+        monitorList.innerHTML = `
+          <div class="empty-state text-sm text-slate-300">
+            Hozircha aktiv seans yo‘q. Seans ishga tushsa, talabalar statuslari shu yerda ko‘rinadi.
+          </div>
+        `;
+      }
+    }
 
     // 👤 O‘qituvchi ismini chiqarish
     async function loadTeacherInfo() {
@@ -394,14 +1042,17 @@
     }
 
     // 📤 Testni yuklash
-    form.addEventListener('submit', async (e) => {
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      statusMsg.className = "mt-4 text-sm";
-      statusMsg.classList.add("text-blue-300");
+      if (!validateTestForm(true)) return;
+
+      statusMsg.className = "text-sm text-blue-300";
       statusMsg.classList.remove("hidden");
       statusMsg.textContent = "⏳ Yuklanmoqda...";
 
       const formData = new FormData(form);
+      setButtonLoading(createTestBtn, createTestSpinner, true);
+
       try {
         const res = await fetch('/api/upload-test', {
           method: 'POST',
@@ -410,54 +1061,73 @@
         });
         if (!res.ok) throw new Error("Upload failed");
         const data = await res.json();
-        statusMsg.classList.remove('text-red-400', 'text-blue-300');
-        statusMsg.classList.add('text-green-400');
+        const link = `${location.origin}${data.testLink}`;
+
+        statusMsg.className = "text-sm text-green-300";
         statusMsg.innerHTML = `
-          ✅ Test muvaffaqiyatli yuklandi va yaratildi!<br>
-          🔗 <strong>Talabalarga ulashish uchun link:</strong>
-          <a href="${data.testLink}" target="_blank" class="underline text-blue-300">${location.origin}${data.testLink}</a>
+          <div class="space-y-2">
+            <div class="font-semibold">✅ Test muvaffaqiyatli yaratildi</div>
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+              <a href="${data.testLink}" target="_blank" class="underline text-blue-200">${link}</a>
+              <button class="btn btn-outline btn-xs focus-ring" data-link="${link}" id="copyNewTestLink">Copy</button>
+            </div>
+          </div>
         `;
+
+        const copyBtn = document.getElementById("copyNewTestLink");
+        copyBtn?.addEventListener("click", async () => {
+          const ok = await copyToClipboard(link);
+          showToast(ok ? "success" : "error", ok ? "Link nusxalandi" : "Nusxalashda xatolik", "Link");
+        });
+
+        showToast("success", "Test yaratildi va yuklandi.");
         form.reset();
-        await loadTests(); // ro‘yxatni yangilash
+        await loadTests();
       } catch (err) {
-        statusMsg.classList.remove('text-green-400', 'text-blue-300');
-        statusMsg.classList.add('text-red-400');
+        statusMsg.className = "text-sm text-red-300";
         statusMsg.textContent = "❌ Yuklashda xatolik. Qaytadan urinib ko‘ring.";
+        showToast("error", "Yuklashda xatolik. Qayta urinib ko‘ring.");
+      } finally {
+        setButtonLoading(createTestBtn, createTestSpinner, false);
       }
     });
 
     // 🗑️ Hammasini o‘chirish
-    deleteAllBtn.addEventListener("click", async () => {
-      if (!confirm("Haqiqatan ham BARCHA testlaringizni o‘chirilsinmi?")) return;
+    deleteAllBtn?.addEventListener("click", async () => {
+      const ok = await openConfirm({
+        title: "Barcha testlarni o‘chirish",
+        message: "Haqiqatan ham barcha testlaringiz o‘chirilsinmi? Bu amalni ortga qaytarib bo‘lmaydi.",
+        confirmText: "Ha, o‘chirish",
+        danger: true
+      });
+      if (!ok) return;
       try {
         const resp = await fetch("/api/tests", { method: "DELETE", credentials: "include" });
         if (!resp.ok) throw new Error();
         await loadTests();
+        showToast("success", "Barcha testlar o‘chirildi.");
       } catch {
-        alert("❌ O‘chirishda xatolik!");
+        showToast("error", "O‘chirishda xatolik.");
       }
     });
 
     // ⚙️ Sozlash modal/prompt orqali — PATCH /api/tests/:id/settings
     async function editTestSettings(testId) {
       try {
-        // joriy sozlamalarni olib kelamiz (prefill uchun)
         const cur = await fetch(`/api/tests/${testId}/settings`, { credentials: "include", cache: "no-store" });
         if (!cur.ok) {
           const t = await cur.text();
-          alert(`❌ Sozlamalarni olishda xatolik: ${cur.status} ${t}`);
+          showToast("error", `Sozlamalarni olishda xatolik: ${cur.status} ${t}`);
           return;
         }
         const settings = await cur.json();
 
-        // Vaqt (daq) — 0 yoki bo'sh => cheksiz
         const timeInput = prompt(
           `⏱ Vaqt (daqiqa) kiriting.\n0 yoki bo'sh qoldirsangiz — cheksiz bo'ladi.\nJoriy qiymat: ${settings.time === null ? "cheksiz" : settings.time + " daq"}`,
           settings.time === null ? "" : String(settings.time)
         );
-        if (timeInput === null) return; // bekor qilish
+        if (timeInput === null) return;
 
-        // Savollar soni
         const qInput = prompt(
           `❓ Savollar soni kiriting (1..${settings.totalQuestions}).\nJoriy qiymat: ${settings.questionCount}`,
           String(settings.questionCount || "")
@@ -466,7 +1136,7 @@
 
         const body = {};
         if (timeInput !== "") body.time = (timeInput === "0") ? null : parseInt(timeInput, 10);
-        else body.time = null; // bo'sh => cheksiz
+        else body.time = null;
 
         if (qInput !== "") body.questionCount = parseInt(qInput, 10);
 
@@ -479,67 +1149,82 @@
 
         const j = await resp.json().catch(() => ({}));
         if (!resp.ok) {
-          alert(`❌ Saqlanmadi: ${resp.status} ${j?.error || ""}`);
+          showToast("error", `Saqlanmadi: ${resp.status} ${j?.error || ""}`);
           return;
         }
-        alert("✅ Sozlamalar yangilandi");
+        showToast("success", "Sozlamalar yangilandi.");
         await loadTests();
       } catch (e) {
         console.error(e);
-        alert("❌ Xatolik. Internetni tekshirib, qayta urinib ko‘ring.");
+        showToast("error", "Xatolik. Internetni tekshirib, qayta urinib ko‘ring.");
       }
     }
 
     // 📋 Testlar ro‘yxatini yuklash
     async function loadTests() {
-      testList.innerHTML = "<li class='text-sm text-gray-300'>⏳ Yuklanmoqda...</li>";
+      if (!testList) return;
+      testList.innerHTML = "<li class='text-sm text-slate-300'>⏳ Yuklanmoqda...</li>";
       try {
         const res = await fetch("/api/teacher/tests", { credentials: "include", cache: "no-store" });
         const tests = await res.json();
 
         if (!Array.isArray(tests) || tests.length === 0) {
-          testList.innerHTML = "<li>🟡 Hozircha testlar mavjud emas</li>";
+          testList.innerHTML = `
+            <li class="empty-state text-sm text-slate-300">
+              Hozircha testlar mavjud emas. Yuqoridagi formadan yangi test yarating.
+            </li>
+          `;
           return;
         }
 
         testList.innerHTML = "";
         tests.forEach(test => {
           const li = document.createElement("li");
-          li.className = "bg-white/20 p-4 rounded-lg shadow flex justify-between items-center";
+          const createdLabel = formatDateTime(test.created_at || test.createdAt || test.created || test.created_time || test.createdTime);
+          const link = test.link || test.testLink || "";
+
+          li.className = "card p-4 flex flex-col gap-3";
           li.innerHTML = `
-            <div>
-              <div class="font-semibold text-white">📘 ${test.title}</div>
-              <div class="text-sm text-blue-300 break-all">
-                <a href="${test.link}" target="_blank">${location.origin}${test.link}</a>
+            <div class="flex flex-col gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="badge badge-blue">Test</span>
+                <div class="font-semibold text-white">📘 ${test.title || "Test"}</div>
               </div>
+              <div class="text-sm text-blue-200 flex flex-wrap items-center gap-2">
+                <a href="${link}" target="_blank" class="underline break-all">${location.origin}${link}</a>
+                <button class="btn btn-outline btn-xs focus-ring copy-link" data-link="${location.origin}${link}">Copy</button>
+              </div>
+              <div class="text-xs text-slate-400">${createdLabel ? `Yaratilgan: ${createdLabel}` : "Yaratilgan: noma'lum"}</div>
             </div>
-            <div class="flex items-center gap-2">
-              <button data-id="${test.id}"
-                class="edit-one bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm">
-                ⚙️ Sozlash
-              </button>
-              <a href="/api/export/${test.id}"
-                 class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded shadow text-sm">
-                ⬇ Statistika (.xlsx)
-              </a>
-              <button data-id="${test.id}"
-                class="delete-one bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                🗑️ O‘chirish
-              </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <a href="${link}" target="_blank" class="btn btn-primary btn-xs focus-ring">Ko‘rish</a>
+              <button data-id="${test.id}" class="edit-one btn btn-secondary btn-xs focus-ring">Sozlamalar</button>
+              <a href="/api/export/${test.id}" class="btn btn-secondary btn-xs focus-ring">Statistika</a>
+              <button data-id="${test.id}" class="delete-one btn btn-danger btn-xs focus-ring">O‘chirish</button>
             </div>
           `;
           testList.appendChild(li);
 
-          // ⚙️ Sozlash
-          li.querySelector(".edit-one").addEventListener("click", (e) => {
+          li.querySelector(".copy-link")?.addEventListener("click", async (e) => {
+            const copyTarget = e.currentTarget.getAttribute("data-link");
+            const ok = await copyToClipboard(copyTarget);
+            showToast(ok ? "success" : "error", ok ? "Link nusxalandi" : "Nusxalashda xatolik", "Link");
+          });
+
+          li.querySelector(".edit-one")?.addEventListener("click", (e) => {
             const id = e.currentTarget.getAttribute("data-id");
             editTestSettings(id);
           });
 
-          // 🗑️ Bitta testni o‘chirish
-          li.querySelector(".delete-one").addEventListener("click", async (e) => {
+          li.querySelector(".delete-one")?.addEventListener("click", async (e) => {
             const id = e.currentTarget.getAttribute("data-id");
-            if (!confirm("Haqiqatan ham ushbu testni o‘chirmoqchimisiz?")) return;
+            const ok = await openConfirm({
+              title: "Testni o‘chirish",
+              message: "Haqiqatan ham ushbu testni o‘chirmoqchimisiz?",
+              confirmText: "O‘chirish",
+              danger: true
+            });
+            if (!ok) return;
             try {
               const resp = await fetch(`/api/tests/${id}`, {
                 method: "DELETE",
@@ -547,19 +1232,20 @@
               });
               const txt = await resp.text();
               if (!resp.ok) {
-                alert(`❌ O‘chirishda xatolik (${resp.status}): ${txt}`);
+                showToast("error", `O‘chirishda xatolik (${resp.status}): ${txt}`);
                 return;
               }
+              showToast("success", "Test o‘chirildi.");
               await loadTests();
             } catch (err) {
-              alert("❌ Tarmoq xatosi. Qayta urinib ko‘ring.");
+              showToast("error", "Tarmoq xatosi. Qayta urinib ko‘ring.");
               console.error(err);
             }
           });
         });
       } catch (err) {
         console.error("Xatolik:", err);
-        testList.innerHTML = "<li class='text-red-400'>❌ Yuklashda xatolik</li>";
+        testList.innerHTML = "<li class='text-red-300'>❌ Yuklashda xatolik</li>";
       }
     }
 
@@ -574,7 +1260,22 @@
     function setMsg(target, msg, isError = false) {
       if (!target) return;
       target.textContent = msg || "";
-      target.className = `mt-2 text-sm ${isError ? "text-red-300" : "text-gray-300"}`;
+      target.className = `text-sm ${isError ? "text-red-300" : "text-slate-300"}`;
+    }
+
+    function setInlineMsg(target, msg, isError = false) {
+      if (!target) return;
+      target.textContent = msg || "";
+      if (!msg) {
+        target.className = "text-xs text-slate-400";
+        return;
+      }
+      target.className = `text-xs ${isError ? "text-red-300" : "text-green-300"}`;
+      clearTimeout(target._timer);
+      target._timer = setTimeout(() => {
+        target.textContent = "";
+        target.className = "text-xs text-slate-400";
+      }, 3000);
     }
 
     async function fetchJson(url, opts = {}) {
@@ -596,11 +1297,13 @@
         if (examModeToggle) examModeToggle.checked = enabled;
         if (examModeStatus) {
           examModeStatus.textContent = enabled
-            ? "ON (\"/\" avtomatik /dak ga o'tadi)"
+            ? "ON (asosiy sahifa avtomatik /dak ga yo‘naltiriladi)"
             : "OFF (oddiy holat)";
         }
+        updateExamModeUI(enabled);
       } catch (e) {
         if (examModeStatus) examModeStatus.textContent = `Xatolik: ${e.message}`;
+        updateExamModeUI(false);
       }
     }
 
@@ -647,6 +1350,47 @@
 
     // === PASTE IMPORT FUNCTIONS ===
 
+    function parsePasteRows(rawText) {
+      const lines = rawText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      const rows = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const parts = line.split("\t");
+        if (parts.length < 4) {
+          rows.push({
+            line: i + 1,
+            program: parts[0] || "",
+            group: parts[1] || "",
+            date: parts[2] || "",
+            name: parts[3] || "",
+            invalid: true,
+            error: "4 ta ustun kerak"
+          });
+          continue;
+        }
+
+        const [program, group, date, ...nameParts] = parts;
+        const name = nameParts.join(" ").trim();
+        const invalid = !program.trim() || !group.trim() || !date.trim() || !name.trim();
+        rows.push({
+          line: i + 1,
+          program: program.trim(),
+          group: group.trim(),
+          date: date.trim(),
+          name,
+          invalid,
+          error: invalid ? "Bo‘sh maydon" : ""
+        });
+      }
+
+      const total = rows.length;
+      const invalid = rows.filter((row) => row.invalid).length;
+      const valid = total - invalid;
+
+      return { rows, stats: { total, valid, invalid } };
+    }
+
     async function previewPasteImport() {
       try {
         if (!dakPasteTextarea) return;
@@ -658,20 +1402,15 @@
           return;
         }
 
-        setMsg(dakPasteMsg, "Preview qilinmoqda...");
+        setMsg(dakPasteMsg, "Preview tayyorlanmoqda...");
 
-        const response = await fetchJson("/api/teacher/dak/roster/import-paste?dry_run=1", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ raw_text: rawText })
-        });
+        const { rows, stats } = parsePasteRows(rawText);
+        renderPreview(rows, stats);
 
-        if (response.ok && response.roster) {
-          renderPreview(response.roster, response.stats);
-          setMsg(dakPasteMsg, "Preview tayyor ✅");
+        if (stats.invalid > 0) {
+          setMsg(dakPasteMsg, "Xatoliklar mavjud", true);
         } else {
-          setMsg(dakPasteMsg, "Preview xatosi", true);
-          dakPastePreview.classList.add("hidden");
+          setMsg(dakPasteMsg, "Preview tayyor ✅");
         }
       } catch (e) {
         const errorMsg = e.line
@@ -682,42 +1421,39 @@
       }
     }
 
-    function renderPreview(roster, stats) {
+    function renderPreview(rows, stats) {
       if (!dakPreviewBody || !dakPastePreview) return;
 
       dakPreviewBody.innerHTML = "";
 
-      // Build rows from roster
-      const rows = [];
-      for (const program of roster.programs || []) {
-        for (const group of program.groups || []) {
-          for (const student of group.students || []) {
-            rows.push({
-              program_name: program.program_name,
-              group_name: group.group_name,
-              exam_date: group.exam_date,
-              student_fullname: student
-            });
-          }
-        }
-      }
-
-      // Render table rows
       for (const row of rows) {
         const tr = document.createElement("tr");
-        tr.className = "border-b border-white/10";
-        tr.innerHTML = `
-          <td class="border border-white/20 px-2 py-1 text-sm">${row.program_name}</td>
-          <td class="border border-white/20 px-2 py-1 text-sm">${row.group_name}</td>
-          <td class="border border-white/20 px-2 py-1 text-sm">${row.exam_date}</td>
-          <td class="border border-white/20 px-2 py-1 text-sm">${row.student_fullname}</td>
-        `;
+        tr.className = row.invalid ? "bg-red-500/10" : "border-b border-white/10";
+
+        const cells = [row.program, row.group, row.date, row.name];
+        cells.forEach((value) => {
+          const td = document.createElement("td");
+          td.className = "border border-white/20 px-2 py-1 text-sm";
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        const statusTd = document.createElement("td");
+        statusTd.className = "border border-white/20 px-2 py-1 text-xs";
+        statusTd.textContent = row.invalid ? row.error : "OK";
+        if (row.invalid) statusTd.classList.add("text-red-300");
+        else statusTd.classList.add("text-green-300");
+        tr.appendChild(statusTd);
+
         dakPreviewBody.appendChild(tr);
       }
 
-      // Show stats
+      if (dakPreviewCounters) {
+        dakPreviewCounters.textContent = `Jami: ${stats.total} • Valid: ${stats.valid} • Invalid: ${stats.invalid}`;
+      }
+
       if (dakPreviewStats && stats) {
-        dakPreviewStats.textContent = `Programlar: ${stats.programs || 0}, Guruhlar: ${stats.groups || 0}, Talabalar: ${stats.students || 0}`;
+        dakPreviewStats.textContent = `Jami talabalar: ${stats.total} (Valid: ${stats.valid}, Invalid: ${stats.invalid})`;
       }
 
       dakPastePreview.classList.remove("hidden");
@@ -733,11 +1469,16 @@
           return;
         }
 
-        if (!confirm("Roster saqlansini? Avvalgi roster ustiga yoziladi.")) {
-          return;
-        }
+        const ok = await openConfirm({
+          title: "Roster saqlash",
+          message: "Roster saqlansinmi? Avvalgi roster ustiga yoziladi.",
+          confirmText: "Saqlash",
+          danger: true
+        });
+        if (!ok) return;
 
         setMsg(dakPasteMsg, "Saqlanmoqda...");
+        setButtonLoading(dakPasteImportBtn, dakPasteImportSpinner, true);
 
         const response = await fetchJson("/api/teacher/dak/roster/import-paste", {
           method: "POST",
@@ -749,19 +1490,21 @@
           const stats = response.stats || {};
           setMsg(dakPasteMsg, `Saved ✅ (Programlar: ${stats.programs || 0}, Guruhlar: ${stats.groups || 0}, Talabalar: ${stats.students || 0})`);
 
-          // Reload roster in JSON editor too
           await loadRoster();
-
-          // Reload credential groups dropdown
           await loadCredentialGroups();
+          showToast("success", "Roster saqlandi.");
         } else {
           setMsg(dakPasteMsg, "Saqlashda xatolik", true);
+          showToast("error", "Saqlashda xatolik.");
         }
       } catch (e) {
         const errorMsg = e.line
           ? `Qator ${e.line}: ${e.error || e.message}`
           : (e.error || e.message || "Xatolik");
         setMsg(dakPasteMsg, errorMsg, true);
+        showToast("error", errorMsg);
+      } finally {
+        setButtonLoading(dakPasteImportBtn, dakPasteImportSpinner, false);
       }
     }
 
@@ -772,34 +1515,53 @@
       dakBanksList.innerHTML = "";
 
       const banks = Array.isArray(dakState.banks) ? dakState.banks : [];
-      if (banks.length === 0) {
-        dakBanksList.innerHTML = `<div class="text-sm text-gray-300">Hozircha bank yo‘q</div>`;
+      const query = (dakBankSearch?.value || "").toLowerCase();
+      const filtered = banks.filter((b) => (b.subject_name || "").toLowerCase().includes(query));
+
+      if (dakBankCount) {
+        dakBankCount.textContent = String(filtered.length);
+      }
+
+      if (filtered.length === 0) {
+        dakBanksList.innerHTML = `
+          <div class="empty-state text-sm text-slate-300">
+            ${banks.length === 0 ? "Hozircha bank yo‘q." : "Mos bank topilmadi."}
+          </div>
+        `;
         return;
       }
 
-      for (const b of banks) {
+      for (const b of filtered) {
         const row = document.createElement("div");
-        row.className = "bg-white/10 border border-white/10 rounded p-3 flex items-center justify-between gap-3";
+        row.className = "card-soft p-3 flex items-center justify-between gap-3";
         row.innerHTML = `
           <div class="min-w-0">
             <div class="font-semibold text-sm truncate">${b.subject_name || "Bank"}</div>
-            <div class="text-xs text-gray-300">ID: ${b.bank_id} • Savollar: ${b.questions_count ?? 0}</div>
+            <div class="text-xs text-slate-300">ID: ${b.bank_id} • Savollar: ${b.questions_count ?? 0}</div>
           </div>
-          <button class="delete-bank bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm" data-id="${b.bank_id}">
-            Delete
-          </button>
+          <div class="flex items-center gap-2">
+            <button class="delete-bank btn btn-danger btn-xs focus-ring" data-id="${b.bank_id}">Delete</button>
+          </div>
         `;
-        row.querySelector(".delete-bank").addEventListener("click", async (e) => {
+        row.querySelector(".delete-bank")?.addEventListener("click", async (e) => {
           const id = e.currentTarget.getAttribute("data-id");
-          if (!confirm("Bankni o‘chirasizmi?")) return;
+          const ok = await openConfirm({
+            title: "Bankni o‘chirish",
+            message: "Bankni o‘chirasizmi? Bu amal qaytarilmaydi.",
+            confirmText: "O‘chirish",
+            danger: true
+          });
+          if (!ok) return;
           try {
             setMsg(dakBanksMsg, "O‘chirilmoqda...");
             await fetchJson(`/api/teacher/dak/banks/${encodeURIComponent(id)}`, { method: "DELETE" });
             await loadBanks();
             await loadDakConfig(false);
             setMsg(dakBanksMsg, "OK");
+            showToast("success", "Bank o‘chirildi.");
           } catch (err) {
             setMsg(dakBanksMsg, err.message, true);
+            showToast("error", err.message);
           }
         });
         dakBanksList.appendChild(row);
@@ -814,7 +1576,7 @@
       const selected = new Set((dakState.config && Array.isArray(dakState.config.bank_ids)) ? dakState.config.bank_ids : []);
 
       if (banks.length === 0) {
-        dakConfigBanks.innerHTML = `<div class="text-sm text-gray-300">Avval bank yuklang.</div>`;
+        dakConfigBanks.innerHTML = `<div class="text-sm text-slate-300">Avval bank yuklang.</div>`;
         return;
       }
 
@@ -823,7 +1585,7 @@
         label.className = "flex items-center gap-2 text-sm";
         const checked = selected.has(b.bank_id) ? "checked" : "";
         label.innerHTML = `
-          <input type="checkbox" value="${b.bank_id}" ${checked}>
+          <input type="checkbox" value="${b.bank_id}" ${checked} class="focus-ring">
           <span>${b.subject_name || "Bank"} (${b.questions_count ?? 0})</span>
         `;
         dakConfigBanks.appendChild(label);
@@ -837,6 +1599,7 @@
         dakState.banks = Array.isArray(banks) ? banks : [];
         renderBanks();
         renderConfigBanks();
+        renderSessionBanks();
         setMsg(dakBanksMsg, `Jami banklar: ${dakState.banks.length}`);
       } catch (e) {
         setMsg(dakBanksMsg, e.message, true);
@@ -868,8 +1631,10 @@
         dakBankFile.value = "";
         await loadBanks();
         setMsg(dakBanksMsg, `Uploaded ✅ (savollar: ${data?.questions_count ?? "?"})`);
+        showToast("success", "Bank yuklandi.");
       } catch (e) {
         setMsg(dakBanksMsg, e.message, true);
+        showToast("error", e.message);
       }
     }
 
@@ -883,9 +1648,14 @@
         if (dakCfgTotal) dakCfgTotal.value = String(cfg?.total_questions ?? 50);
         if (dakCfgPoints) dakCfgPoints.value = String(cfg?.points_per_question ?? 2);
         if (dakQuestionsPerBank) dakQuestionsPerBank.value = String(cfg?.questions_per_bank ?? 10);
+        if (dakSessionQuestionsPerBank && !dakSessionQuestionsPerBank.value) {
+          dakSessionQuestionsPerBank.value = String(cfg?.questions_per_bank ?? 10);
+        }
         if (dakMaxAttempts) dakMaxAttempts.value = String(cfg?.max_attempts_per_student ?? 1);
 
         renderConfigBanks();
+        renderSessionBanks();
+        updateSessionSummary();
         if (showMsg) setMsg(dakConfigMsg, "OK");
       } catch (e) {
         if (showMsg) setMsg(dakConfigMsg, e.message, true);
@@ -907,6 +1677,7 @@
     async function saveDakConfigPartial(patch) {
       try {
         setMsg(dakConfigMsg, "Saqlanmoqda...");
+        setInlineMsg(configSaveMsg, "Saqlanmoqda...");
         const saved = await fetchJson("/api/teacher/dak/config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -916,17 +1687,24 @@
         dakState.config = saved;
         await loadDakConfig(false);
         setMsg(dakConfigMsg, "Saved ✅");
+        showToast("success", "Sozlamalar saqlandi.");
+        return true;
       } catch (e) {
         setMsg(dakConfigMsg, e.message, true);
+        showToast("error", e.message);
+        return false;
       }
     }
 
-    async function saveDakConfigNumberField(fieldKey, inputEl) {
+    async function saveDakConfigNumberField(fieldKey, inputEl, msgEl) {
       const value = parseInt((inputEl?.value || "").toString(), 10);
       if (!Number.isFinite(value) || value <= 0) {
+        setInlineMsg(msgEl, "Error", true);
         return setMsg(dakConfigMsg, `${fieldKey} noto‘g‘ri`, true);
       }
-      await saveDakConfigPartial({ [fieldKey]: value });
+      setInlineMsg(msgEl, "Saqlanmoqda...");
+      const ok = await saveDakConfigPartial({ [fieldKey]: value });
+      setInlineMsg(msgEl, ok ? "Saved ✅" : "Error", !ok);
     }
 
     async function saveDakConfig() {
@@ -971,8 +1749,12 @@
         dakState.config = saved;
         await loadDakConfig(false);
         setMsg(dakConfigMsg, "Saved ✅");
+        setInlineMsg(configSaveMsg, "Saved ✅");
+        showToast("success", "Sozlamalar yangilandi.");
       } catch (e) {
         setMsg(dakConfigMsg, e.message, true);
+        setInlineMsg(configSaveMsg, "Error", true);
+        showToast("error", e.message);
       }
     }
 
@@ -984,8 +1766,9 @@
         try {
           await setExamMode(!!examModeToggle.checked);
           await loadExamMode();
+          showToast("success", examModeToggle.checked ? "Exam mode yoqildi." : "Exam mode o‘chirildi.");
         } catch (e) {
-          alert(e.message || "Xatolik");
+          showToast("error", e.message || "Xatolik");
           await loadExamMode();
         } finally {
           examModeToggle.disabled = false;
@@ -1010,17 +1793,23 @@
 
       dakCfgDurationSaveBtn?.addEventListener("click", () =>
         runWithDisabledButton(dakCfgDurationSaveBtn, () =>
-          saveDakConfigNumberField("duration_minutes", dakCfgDuration)
+          saveDakConfigNumberField("duration_minutes", dakCfgDuration, durationSaveMsg)
         )
       );
       dakCfgTotalSaveBtn?.addEventListener("click", () =>
         runWithDisabledButton(dakCfgTotalSaveBtn, () =>
-          saveDakConfigNumberField("total_questions", dakCfgTotal)
+          saveDakConfigNumberField("total_questions", dakCfgTotal, totalSaveMsg)
         )
       );
       dakCfgPointsSaveBtn?.addEventListener("click", () =>
         runWithDisabledButton(dakCfgPointsSaveBtn, () =>
-          saveDakConfigNumberField("points_per_question", dakCfgPoints)
+          saveDakConfigNumberField("points_per_question", dakCfgPoints, pointsSaveMsg)
+        )
+      );
+
+      dakQuestionsPerBankSaveBtn?.addEventListener("click", () =>
+        runWithDisabledButton(dakQuestionsPerBankSaveBtn, () =>
+          saveDakConfigNumberField("questions_per_bank", dakQuestionsPerBank, qpbSaveMsg)
         )
       );
 
@@ -1028,18 +1817,26 @@
         runWithDisabledButton(dakMaxAttemptsSaveBtn, async () => {
           const value = parseInt(dakMaxAttempts?.value || "1", 10);
           if (!Number.isFinite(value) || value < 1 || value > 3) {
+            setInlineMsg(attemptsSaveMsg, "Error", true);
             return setMsg(dakConfigMsg, "urinishlar soni 1-3 orasida bo'lishi kerak", true);
           }
-          await saveDakConfigPartial({ max_attempts_per_student: value });
+          setInlineMsg(attemptsSaveMsg, "Saqlanmoqda...");
+          const ok = await saveDakConfigPartial({ max_attempts_per_student: value });
+          setInlineMsg(attemptsSaveMsg, ok ? "Saved ✅" : "Error", !ok);
         })
       );
+
+      dakSessionGroups?.addEventListener("change", () => updateSessionGroupSelection());
+      dakSessionQuestionsPerBank?.addEventListener("input", () => updateSessionSummary());
+
+      dakBankSearch?.addEventListener("input", () => renderBanks());
 
       loadExamMode();
       loadRoster();
       loadBanks().then(() => loadDakConfig());
 
-      // Initialize credentials section
       initCredentials();
+      initMonitor();
     }
 
     // =========================
@@ -1048,24 +1845,42 @@
     async function loadCredentialGroups() {
       try {
         const groups = await fetchJson("/api/teacher/dak/credentials/groups", { cache: "no-store" });
-        if (!credGroupSelect) return;
-
-        credGroupSelect.innerHTML = `<option value="">Tanlang...</option>`;
-        for (const g of groups) {
-          const opt = document.createElement("option");
-          opt.value = JSON.stringify({ group: g.group_name, exam_date: g.exam_date });
-          opt.textContent = `${g.group_name} (${g.exam_date}) - ${g.student_count} ta talaba`;
-          credGroupSelect.appendChild(opt);
+        if (credGroupSelect) {
+          credGroupSelect.innerHTML = `<option value="">Tanlang...</option>`;
         }
+        if (dakSessionGroups) {
+          dakSessionGroups.innerHTML = "";
+        }
+
+        for (const g of groups) {
+          if (credGroupSelect) {
+            const opt = document.createElement("option");
+            opt.value = JSON.stringify({ group: g.group_name, exam_date: g.exam_date });
+            opt.textContent = `${g.group_name} (${g.exam_date}) - ${g.student_count} ta talaba`;
+            credGroupSelect.appendChild(opt);
+          }
+
+          if (dakSessionGroups) {
+            const opt = document.createElement("option");
+            opt.value = `${g.group_name}||${g.exam_date}`;
+            opt.textContent = `${g.group_name} (${g.exam_date})`;
+            dakSessionGroups.appendChild(opt);
+          }
+        }
+
+        updateSessionGroupSelection();
       } catch (e) {
         if (credGroupSelect) credGroupSelect.innerHTML = `<option value="">Xatolik: ${e.message}</option>`;
+        if (dakSessionGroups) {
+          dakSessionGroups.innerHTML = `<option value="">Xatolik: ${e.message}</option>`;
+        }
       }
     }
 
     function setCredMsg(msg, isError = false) {
       if (!credMsg) return;
       credMsg.textContent = msg || "";
-      credMsg.className = `text-sm ${isError ? "text-red-300" : "text-gray-300"} mb-3`;
+      credMsg.className = `text-sm ${isError ? "text-red-300" : "text-slate-300"}`;
     }
 
     function renderCredentialsTable(credentials) {
@@ -1133,7 +1948,6 @@
           const existingCount = res.total - newCount;
           setCredMsg(`✅ Jami: ${res.total} ta. Yangi yaratildi: ${newCount} ta. Mavjud: ${existingCount} ta.`);
 
-          // Show CSV export button if we have passwords
           if (credExportCsvBtn && res.credentials.some(c => c.password)) {
             credExportCsvBtn.classList.remove("hidden");
           }
@@ -1149,7 +1963,6 @@
         return;
       }
 
-      // Build CSV content
       const headers = ["#", "F.I.Sh", "Login", "Parol", "Guruh", "Sana"];
       const rows = lastGeneratedCredentials.map((c, i) => [
         i + 1,
@@ -1165,7 +1978,6 @@
         ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
       ].join("\n");
 
-      // Download
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1185,13 +1997,24 @@
       loadCredentialGroups();
 
       credGenerateBtn?.addEventListener("click", () => generateCredentials(false));
-      credRegenerateBtn?.addEventListener("click", () => {
-        if (confirm("Barcha parollar qayta yaratiladi. Davom etasizmi?")) {
-          generateCredentials(true);
-        }
+      credRegenerateBtn?.addEventListener("click", async () => {
+        const ok = await openConfirm({
+          title: "Parollarni qayta yaratish",
+          message: "Barcha parollar qayta yaratiladi. Davom etasizmi?",
+          confirmText: "Ha, qayta yaratish",
+          danger: true
+        });
+        if (ok) generateCredentials(true);
       });
       credExportCsvBtn?.addEventListener("click", () => exportCredentialsCsv());
     }
+
+    testNameInput?.addEventListener("input", () => validateTestForm(false));
+    durationInput?.addEventListener("input", () => validateTestForm(false));
+    questionCountInput?.addEventListener("input", () => validateTestForm(false));
+    testFileInput?.addEventListener("change", () => validateTestForm(false));
+
+    initTabs();
 
     // Sahifa yuklanganda...
     loadTeacherInfo();
