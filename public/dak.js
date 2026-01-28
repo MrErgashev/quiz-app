@@ -50,6 +50,7 @@
   const timeSpentText = el("timeSpentText");
 
   const LS_ATTEMPT_ID = "dak_attempt_id";
+  const LS_PREFIX = "dak_attempt_v1:";
   let maxAttemptsConfig = 1; // o'qituvchi tomonidan belgilangan urinishlar soni
 
   let attemptId = null;
@@ -59,11 +60,137 @@
   let currentIndex = 0;
   let timerInterval = null;
   let currentUserMeta = null; // Logged in user's meta data
+  let finishPending = false;
+  let heartbeatTimer = null;
+
+  const lsKey = (suffix) => `${LS_PREFIX}${suffix}`;
+  const outboxKeyForAttempt = (id) => lsKey(`outbox:${id}`);
+  const answersKeyForAttempt = (id) => lsKey(`answers:${id}`);
+  const finishPendingKeyForAttempt = (id) => lsKey(`finish_pending:${id}`);
 
   function showError(targetEl, message) {
     if (!targetEl) return;
     targetEl.textContent = message || "";
     targetEl.classList.toggle("hidden", !message);
+  }
+
+  function clearHeartbeat() {
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+
+  function getOutbox(id) {
+    if (!id) return [];
+    try {
+      const raw = localStorage.getItem(outboxKeyForAttempt(id));
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function setOutbox(id, items) {
+    if (!id) return;
+    localStorage.setItem(outboxKeyForAttempt(id), JSON.stringify(Array.isArray(items) ? items : []));
+  }
+
+  function enqueueOutbox(id, item) {
+    if (!id) return;
+    const items = getOutbox(id);
+    items.push({ ...item, ts: Date.now() });
+    setOutbox(id, items);
+  }
+
+  function setLocalAnswers(id, nextAnswers) {
+    if (!id) return;
+    try {
+      localStorage.setItem(answersKeyForAttempt(id), JSON.stringify(nextAnswers || {}));
+    } catch {}
+  }
+
+  function getLocalAnswers(id) {
+    if (!id) return {};
+    try {
+      const raw = localStorage.getItem(answersKeyForAttempt(id));
+      const obj = raw ? JSON.parse(raw) : {};
+      return obj && typeof obj === "object" ? obj : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function setFinishPendingState(id, pending) {
+    if (!id) return;
+    finishPending = !!pending;
+    if (pending) localStorage.setItem(finishPendingKeyForAttempt(id), "1");
+    else localStorage.removeItem(finishPendingKeyForAttempt(id));
+
+    if (finishBtn) finishBtn.disabled = pending || !allAnswered();
+    if (prevBtn) prevBtn.disabled = pending || currentIndex <= 0;
+    if (nextBtn) nextBtn.disabled = pending || currentIndex >= questions.length - 1;
+  }
+
+  function isFinishPendingStored(id) {
+    if (!id) return false;
+    return localStorage.getItem(finishPendingKeyForAttempt(id)) === "1";
+  }
+
+  async function flushOutbox(id) {
+    if (!id) return;
+    const items = getOutbox(id);
+    if (!items.length) return;
+
+    let remaining = items;
+    while (remaining.length) {
+      const item = remaining[0];
+      try {
+        if (item.type === "answer") {
+          await apiJson(`/api/public/dak/attempt/${encodeURIComponent(id)}/answer`, {
+            method: "POST",
+            body: JSON.stringify({ question_index: item.question_index, chosen_option: item.chosen_option }),
+          });
+        } else if (item.type === "finish") {
+          const res = await apiJson(`/api/public/dak/attempt/${encodeURIComponent(id)}/finish`, {
+            method: "POST",
+            body: JSON.stringify({}),
+          });
+          // Finish muvaffaqiyatli bo'lsa, local state tozalaymiz
+          localStorage.removeItem(outboxKeyForAttempt(id));
+          localStorage.removeItem(answersKeyForAttempt(id));
+          localStorage.removeItem(finishPendingKeyForAttempt(id));
+          setFinishPendingState(id, false);
+          await showResult(res);
+          return;
+        }
+
+        remaining = remaining.slice(1);
+        setOutbox(id, remaining);
+      } catch (e) {
+        // Business errorlar outbox'ni "deadlock" qilmasligi kerak.
+        const status = e?.status;
+        const msg = (e?.data && (e.data.error || e.data.message)) ? (e.data.error || e.data.message) : (e?.message || "");
+
+        if (item.type === "answer") {
+          // Attempt tugagan bo'lsa, eski answer'lar endi ahamiyatsiz — skip qilamiz.
+          if (status === 409 && /finished/i.test(msg || "")) {
+            remaining = remaining.slice(1);
+            setOutbox(id, remaining);
+            continue;
+          }
+          // Noto'g'ri payload bo'lsa ham navbatni bloklamasin
+          if (status === 400) {
+            remaining = remaining.slice(1);
+            setOutbox(id, remaining);
+            continue;
+          }
+        }
+
+        // Tarmoq/Server xatoda to'xtaymiz, keyin yana urinib ko'ramiz
+        setOutbox(id, remaining);
+        return;
+      }
+    }
   }
 
   function answeredCount() {
@@ -84,7 +211,7 @@
 
   function updateFinishState() {
     if (!finishBtn) return;
-    const ok = allAnswered();
+    const ok = allAnswered() && !finishPending;
     finishBtn.disabled = !ok;
     finishBtn.title = ok ? "" : "Yakunlash faqat barcha savollarga javob berilgandan keyin ishlaydi";
   }
@@ -99,7 +226,11 @@
     const data = text ? (() => { try { return JSON.parse(text); } catch { return null; } })() : null;
     if (!res.ok) {
       const msg = (data && (data.error || data.message)) ? (data.error || data.message) : `${res.status} ${res.statusText}`;
-      throw new Error(msg);
+      const err = new Error(msg);
+      err.status = res.status;
+      err.data = data;
+      err.url = url;
+      throw err;
     }
     return data;
   }
@@ -230,16 +361,23 @@
       row.appendChild(indicator);
       row.appendChild(textDiv);
       row.addEventListener("click", async () => {
+        if (finishPending) return;
         try {
           answers[String(currentIndex)] = idx;
+          setLocalAnswers(attemptId, answers);
           renderQuestion();
           renderNav();
           progressText.textContent = `${answeredCount()}/${questions.length}`;
           updateFinishState();
-          await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/answer`, {
-            method: "POST",
-            body: JSON.stringify({ question_index: currentIndex, chosen_option: idx }),
-          });
+          try {
+            await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/answer`, {
+              method: "POST",
+              body: JSON.stringify({ question_index: currentIndex, chosen_option: idx }),
+            });
+          } catch {
+            enqueueOutbox(attemptId, { type: "answer", question_index: currentIndex, chosen_option: idx });
+            showError(examError, "Internet yo‘q: javob navbatga qo‘yildi va internet qaytganda yuboriladi.");
+          }
         } catch (e) {
           showError(examError, e.message || "Xatolik");
         }
@@ -247,8 +385,8 @@
       optionsWrap.appendChild(row);
     });
 
-    prevBtn.disabled = currentIndex <= 0;
-    nextBtn.disabled = currentIndex >= questions.length - 1;
+    prevBtn.disabled = finishPending || currentIndex <= 0;
+    nextBtn.disabled = finishPending || currentIndex >= questions.length - 1;
     progressText.textContent = `${answeredCount()}/${questions.length}`;
     updateFinishState();
   }
@@ -354,8 +492,12 @@
     const data = await apiJson(`/api/public/dak/attempt/${encodeURIComponent(id)}/questions`, { cache: "no-store" });
     attemptMeta = data;
     questions = Array.isArray(data.questions) ? data.questions : [];
-    answers = data.answers && typeof data.answers === "object" ? data.answers : {};
+    const serverAnswers = data.answers && typeof data.answers === "object" ? data.answers : {};
+    const localAnswers = getLocalAnswers(id);
+    answers = { ...serverAnswers, ...localAnswers };
+    setLocalAnswers(id, answers);
     currentIndex = 0;
+    setFinishPendingState(id, isFinishPendingStored(id));
 
     const prog = currentUserMeta?.program || attemptMeta.program_name || "";
     const grp = attemptMeta.group_name || currentUserMeta?.group || "";
@@ -372,25 +514,32 @@
     updateFinishState();
 
     setMode("exam");
+
+    // Sync pending actions if any
+    flushOutbox(id).catch(() => {});
+
+    clearHeartbeat();
+    heartbeatTimer = setInterval(async () => {
+      if (!attemptId) return;
+      try {
+        // Autosave + last_seen: javoblar serverga ham "best-effort" ketib tursin
+        await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/heartbeat`, {
+          method: "POST",
+          body: JSON.stringify({ answers: answers || {} }),
+        });
+      } catch {}
+
+      // Finish queued bo'lsa ham, navbatni qayta-qayta yuborib turamiz (deadlock bo'lmasin)
+      if (finishPending || getOutbox(attemptId).length) {
+        flushOutbox(attemptId).catch(() => {});
+      }
+    }, 15000);
   }
 
-  async function finishExam(auto = false) {
-    if (!attemptId) return;
-    if (!auto && !allAnswered()) {
-      showError(examError, `Yakunlash uchun barcha ${questions.length || 50} ta savolga javob belgilang.`);
-      updateFinishState();
-      return;
-    }
-    if (!auto) {
-      if (!confirm("Imtihonni yakunlaysizmi?")) return;
-    }
-
-    const res = await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/finish`, {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-
+  async function showResult(res) {
     clearTimer();
+    clearHeartbeat();
+
     const score = res.score_points ?? 0;
     const correct = res.correct_count ?? 0;
     const total = res.total_questions ?? questions.length ?? 0;
@@ -444,8 +593,52 @@
     setMode("result");
   }
 
+  async function finishExam(auto = false) {
+    if (!attemptId) return;
+    if (finishPending) return;
+    if (!auto && !allAnswered()) {
+      showError(examError, `Yakunlash uchun barcha ${questions.length || 50} ta savolga javob belgilang.`);
+      updateFinishState();
+      return;
+    }
+    if (!auto) {
+      if (!confirm("Imtihonni yakunlaysizmi?")) return;
+    }
+
+    // Avval pending answer'larni yuborib ko'ramiz (best-effort)
+    await flushOutbox(attemptId).catch(() => {});
+
+    try {
+      const res = await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/finish`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      localStorage.removeItem(outboxKeyForAttempt(attemptId));
+      localStorage.removeItem(answersKeyForAttempt(attemptId));
+      localStorage.removeItem(finishPendingKeyForAttempt(attemptId));
+      setFinishPendingState(attemptId, false);
+      await showResult(res);
+    } catch (e) {
+      const status = e?.status;
+      const msg = (e?.data && (e.data.error || e.data.message)) ? (e.data.error || e.data.message) : (e?.message || "");
+
+      // Auth/Business errorlarda "internet yo'q" deb navbatga qo'ymaymiz.
+      if (status && status >= 400 && status < 500) {
+        showError(examError, msg || "Yakunlashda xatolik");
+        return;
+      }
+
+      // Internet uzilib qolsa ham finish "kafolatli" bo'lsin: finish'ni outbox'ga qo'yamiz.
+      enqueueOutbox(attemptId, { type: "finish" });
+      setFinishPendingState(attemptId, true);
+      clearTimer();
+      showError(examError, "Internet yo‘q: yakunlash navbatga qo‘yildi. Internet qaytganda avtomatik yuboriladi.");
+    }
+  }
+
   function resetAll() {
     clearTimer();
+    clearHeartbeat();
     attemptId = null;
     attemptMeta = null;
     questions = [];
@@ -555,10 +748,17 @@
     if (savedAttempt) {
       try {
         await loadAttempt(savedAttempt);
-      } catch {
-        localStorage.removeItem(LS_ATTEMPT_ID);
+      } catch (e) {
+        // Agar auth yo'q bo'lsa, attempt_id ni o'chirmaymiz — login qilgandan keyin resume bo'ladi.
+        if (e?.status !== 401 && e?.status !== 403) {
+          localStorage.removeItem(LS_ATTEMPT_ID);
+        }
       }
     }
+
+    window.addEventListener("online", () => {
+      if (attemptId) flushOutbox(attemptId).catch(() => {});
+    });
 
     updateFinishState();
   }

@@ -121,6 +121,40 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
   const DAK_SESSION_COOKIE = "dak_session";
   const SESSION_EXPIRE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+  async function requireStudentAccount(req, res) {
+    const token = req.cookies?.[DAK_SESSION_COOKIE];
+    if (!token) {
+      res.status(401).json({ error: "Avval tizimga kiring (login)" });
+      return null;
+    }
+
+    const session = await store.getSessionByToken(token);
+    if (!session) {
+      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+      res.status(401).json({ error: "Sessiya muddati tugagan. Qaytadan kiring." });
+      return null;
+    }
+
+    const account = await store.getAccountById(session.accountId);
+    if (!account || account.active === false) {
+      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
+      res.status(401).json({ error: "Hisob topilmadi" });
+      return null;
+    }
+
+    return account;
+  }
+
+  function attemptBelongsToAccount(attempt, account) {
+    if (!attempt || !account) return false;
+    return (
+      attempt.program_id === account.program_id &&
+      attempt.group_name === account.group &&
+      attempt.student_fullname === account.full_name &&
+      attempt.exam_date === account.exam_date
+    );
+  }
+
   // =========================
   // Student Auth (login/password)
   // =========================
@@ -724,23 +758,8 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     const { enabled } = await store.getExamMode();
     if (!enabled) return res.status(409).json({ error: "Exam mode is OFF" });
 
-    // Check session cookie for authenticated student
-    const token = req.cookies?.[DAK_SESSION_COOKIE];
-    if (!token) {
-      return res.status(401).json({ error: "Avval tizimga kiring (login)" });
-    }
-
-    const session = await store.getSessionByToken(token);
-    if (!session) {
-      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
-      return res.status(401).json({ error: "Sessiya muddati tugagan. Qaytadan kiring." });
-    }
-
-    const account = await store.getAccountById(session.accountId);
-    if (!account || account.active === false) {
-      res.clearCookie(DAK_SESSION_COOKIE, { path: "/" });
-      return res.status(401).json({ error: "Hisob topilmadi" });
-    }
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
 
     // Use account data instead of request body
     const program_id = account.program_id;
@@ -754,10 +773,19 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     if (!program) return res.status(400).json({ error: "Program topilmadi" });
     const group = (program.groups || []).find((g) => g.group_name === group_name);
     if (!group) return res.status(400).json({ error: "Guruh topilmadi" });
+    if ((group.exam_date || "") !== (exam_date || "")) {
+      return res.status(400).json({ error: "Sessiya mos emas (exam_date)" });
+    }
     const studentOk = (group.students || []).includes(student_fullname);
     if (!studentOk) return res.status(400).json({ error: "Talaba topilmadi" });
 
     const config = await store.getDakConfig();
+
+    // Resume: agar unfinished attempt bo'lsa, yangisini yaratmaymiz
+    const active = await store.findActiveAttempt(program_id, group_name, student_fullname, exam_date);
+    if (active && !active.finished_at) {
+      return res.json({ attempt_id: active.attempt_id, resumed: true });
+    }
 
     // Urinishlar sonini tekshirish
     const maxAttempts = config.max_attempts_per_student || 1;
@@ -827,9 +855,15 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     res.set("Expires", "0");
     res.set("Surrogate-Control", "no-store");
 
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
+
     const attemptId = req.params.attempt_id;
     const attempt = await store.getAttempt(attemptId);
     if (!attempt) return res.status(404).json({ error: "Attempt topilmadi" });
+    if (!attemptBelongsToAccount(attempt, account)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
     const questions = (attempt.questions || []).map((q, idx) => ({
       index: idx,
@@ -853,9 +887,15 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
   });
 
   router.post("/public/dak/attempt/:attempt_id/answer", async (req, res) => {
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
+
     const attemptId = req.params.attempt_id;
     const attempt = await store.getAttempt(attemptId);
     if (!attempt) return res.status(404).json({ error: "Attempt topilmadi" });
+    if (!attemptBelongsToAccount(attempt, account)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
     if (attempt.finished_at) return res.status(409).json({ error: "Attempt finished" });
 
     const questionIndex = parseInt(req.body?.question_index, 10);
@@ -907,9 +947,15 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
   }
 
   router.post("/public/dak/attempt/:attempt_id/finish", async (req, res) => {
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
+
     const attemptId = req.params.attempt_id;
     const attempt = await store.getAttempt(attemptId);
     if (!attempt) return res.status(404).json({ error: "Attempt topilmadi" });
+    if (!attemptBelongsToAccount(attempt, account)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
     if (attempt.finished_at) {
       return res.json({
@@ -940,38 +986,73 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
         ? Math.max(0, Math.floor((Date.now() - startedAt) / 1000))
         : null;
 
-    attempt.correct_count = correctCount;
-    attempt.score_points = scorePoints;
-    attempt.finished_at = finishedAt;
-    await store.saveAttempt(attemptId, attempt);
+    const { attempt: savedAttempt, didFinish } = await store.finishAttempt(attemptId, {
+      finished_at: finishedAt,
+      answers: attempt.answers || {},
+      correct_count: correctCount,
+      score_points: scorePoints,
+    });
 
-    const testId = `DAK_${attempt.exam_date}_${attempt.program_id}`;
+    const finalAttempt = savedAttempt || attempt;
+    if (!finalAttempt) return res.status(500).json({ error: "Finish failed" });
+
+    if (!didFinish && finalAttempt.finished_at) {
+      return res.json({
+        score_points: finalAttempt.score_points ?? 0,
+        correct_count: finalAttempt.correct_count ?? 0,
+        total_questions: finalAttempt.total_questions ?? totalQuestions,
+      });
+    }
+
+    const testId = `DAK_${finalAttempt.exam_date}_${finalAttempt.program_id}`;
     const resultRow = {
       testId,
-      fullname: attempt.student_fullname,
-      group: attempt.group_name,
-      university: attempt.university || "Oriental Universiteti",
-      faculty: attempt.program_name,
+      fullname: finalAttempt.student_fullname,
+      group: finalAttempt.group_name,
+      university: finalAttempt.university || "Oriental Universiteti",
+      faculty: finalAttempt.program_name,
       correct: correctCount,
       total: totalQuestions,
       score: scorePoints,
-      startedAt: attempt.started_at,
+      startedAt: finalAttempt.started_at,
       finishedAt,
       timeSpent,
     };
 
-    try {
-      await saveResultRow(resultRow);
-    } catch (e) {
-      console.error("DAK save result error:", e?.message || e);
-      // Attempt saqlangan bo'ladi, lekin natija tizimiga yozilmagan bo'lishi mumkin.
-      // Clientga baribir ballni qaytaramiz.
+    if (didFinish) {
+      try {
+        await saveResultRow(resultRow);
+      } catch (e) {
+        console.error("DAK save result error:", e?.message || e);
+        // Attempt saqlangan bo'ladi, lekin natija tizimiga yozilmagan bo'lishi mumkin.
+        // Clientga baribir ballni qaytaramiz.
+      }
     }
 
     res.json({
-      score_points: scorePoints,
-      correct_count: correctCount,
-      total_questions: totalQuestions,
+      score_points: finalAttempt.score_points ?? scorePoints,
+      correct_count: finalAttempt.correct_count ?? correctCount,
+      total_questions: finalAttempt.total_questions ?? totalQuestions,
+    });
+  });
+
+  router.post("/public/dak/attempt/:attempt_id/heartbeat", async (req, res) => {
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
+
+    const attemptId = req.params.attempt_id;
+    const attempt = await store.getAttempt(attemptId);
+    if (!attempt) return res.status(404).json({ error: "Attempt topilmadi" });
+    if (!attemptBelongsToAccount(attempt, account)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const updated = await store.touchAttempt(attemptId);
+    res.json({
+      ok: true,
+      attempt_id: attemptId,
+      updated_at: updated?.updated_at || null,
+      finished_at: updated?.finished_at || attempt.finished_at || null,
     });
   });
 
@@ -993,9 +1074,15 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
 
   // Public helper: attempt meta (optional)
   router.get("/public/dak/attempt/:attempt_id/status", async (req, res) => {
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
+
     const attemptId = req.params.attempt_id;
     const attempt = await store.getAttempt(attemptId);
     if (!attempt) return res.status(404).json({ error: "Attempt topilmadi" });
+    if (!attemptBelongsToAccount(attempt, account)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
     res.json({
       attempt_id: attempt.attempt_id,
       finished_at: attempt.finished_at,

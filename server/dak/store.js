@@ -319,12 +319,84 @@ function createDakStore({ dataDir, supabase }) {
         return record;
       } catch (err) {
         console.error("createAttempt Supabase error:", err.message || err);
+
+        // Agar "single active attempt" unique index ishlasa, parallel start holatida
+        // mavjud unfinished attemptni qaytarib yuboramiz (fallback local yaratmaymiz).
+        const pgCode = err?.code || err?.details?.code;
+        if (pgCode === "23505") {
+          try {
+            const existing = await findActiveAttempt(
+              record.program_id,
+              record.group_name,
+              record.student_fullname,
+              record.exam_date
+            );
+            if (existing) return existing;
+          } catch {}
+        }
       }
     }
 
     // Fallback to local file
     atomicWriteJson(getAttemptPath(attempt_id), record);
     return record;
+  }
+
+  async function findActiveAttempt(programId, groupName, studentFullname, examDate) {
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_attempts")
+          .select("*")
+          .eq("program_id", programId)
+          .eq("group_name", groupName)
+          .eq("student_fullname", studentFullname)
+          .eq("exam_date", examDate)
+          .is("finished_at", null)
+          .order("started_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        return data || null;
+      } catch (err) {
+        console.error("findActiveAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local files
+    ensureDir(attemptsDir);
+    try {
+      const files = fs.readdirSync(attemptsDir).filter((f) => f.endsWith(".json"));
+      let best = null;
+      let bestTs = -1;
+      for (const file of files) {
+        try {
+          const attempt = safeReadJson(path.join(attemptsDir, file), null);
+          if (!attempt || typeof attempt !== "object") continue;
+          if (
+            attempt.program_id !== programId ||
+            attempt.group_name !== groupName ||
+            attempt.student_fullname !== studentFullname ||
+            attempt.exam_date !== examDate
+          ) {
+            continue;
+          }
+          if (attempt.finished_at) continue;
+          const ts = attempt.started_at ? new Date(attempt.started_at).getTime() : -1;
+          if (Number.isFinite(ts) && ts > bestTs) {
+            bestTs = ts;
+            best = attempt;
+          } else if (!best && !attempt.started_at) {
+            best = attempt;
+          }
+        } catch {}
+      }
+      return best;
+    } catch {
+      return null;
+    }
   }
 
   async function getAttempt(attemptId) {
@@ -348,6 +420,52 @@ function createDakStore({ dataDir, supabase }) {
     const p = getAttemptPath(attemptId);
     const obj = safeReadJson(p, null);
     return obj && typeof obj === "object" ? obj : null;
+  }
+
+  async function finishAttempt(attemptId, patch) {
+    const finishedAt = patch?.finished_at || new Date().toISOString();
+    const update = {
+      finished_at: finishedAt,
+      updated_at: new Date().toISOString(),
+      answers: patch?.answers || {},
+      correct_count: Number.isFinite(+patch?.correct_count) ? +patch.correct_count : null,
+      score_points: Number.isFinite(+patch?.score_points) ? +patch.score_points : null,
+    };
+
+    // Try Supabase first (best-effort atomic: only if unfinished)
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_attempts")
+          .update(update)
+          .eq("attempt_id", attemptId)
+          .is("finished_at", null)
+          .select("*")
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        if (data) return { attempt: data, didFinish: true };
+
+        const current = await getAttempt(attemptId);
+        return { attempt: current, didFinish: false };
+      } catch (err) {
+        console.error("finishAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file (not truly atomic, but prevents double-finish in the common case)
+    const current = await getAttempt(attemptId);
+    if (!current) return { attempt: null, didFinish: false };
+    if (current.finished_at) return { attempt: current, didFinish: false };
+
+    const next = {
+      ...current,
+      ...patch,
+      finished_at: finishedAt,
+      updated_at: update.updated_at,
+    };
+    atomicWriteJson(getAttemptPath(attemptId), next);
+    return { attempt: next, didFinish: true };
   }
 
   async function saveAttempt(attemptId, attempt) {
@@ -375,6 +493,35 @@ function createDakStore({ dataDir, supabase }) {
     // Fallback to local file
     atomicWriteJson(getAttemptPath(attemptId), attempt);
     return attempt;
+  }
+
+  async function touchAttempt(attemptId) {
+    if (!attemptId) return null;
+
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_attempts")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("attempt_id", attemptId)
+          .is("finished_at", null)
+          .select("*")
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        return data || null;
+      } catch (err) {
+        console.error("touchAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
+    const current = await getAttempt(attemptId);
+    if (!current || current.finished_at) return current || null;
+    const next = { ...current, updated_at: new Date().toISOString() };
+    atomicWriteJson(getAttemptPath(attemptId), next);
+    return next;
   }
 
   async function countStudentAttempts(programId, groupName, studentFullname, examDate) {
@@ -603,8 +750,11 @@ function createDakStore({ dataDir, supabase }) {
     getBanks,
     setBanks,
     createAttempt,
+    findActiveAttempt,
     getAttempt,
+    finishAttempt,
     saveAttempt,
+    touchAttempt,
     countStudentAttempts,
     // Accounts
     getAccounts,

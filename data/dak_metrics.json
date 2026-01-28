@@ -1,0 +1,12 @@
+{
+  "counters": {
+    "dak_test_metric": 2,
+    "dak_heartbeat": 1,
+    "incident_error": 2,
+    "smoke_flush": 1
+  },
+  "heartbeat_ts": [
+    1769611557487
+  ],
+  "updated_at": "2026-01-28T15:05:21.457Z"
+}
