@@ -46,6 +46,13 @@
    - Go to Table Editor
    - Check for: `dak_banks`, `dak_roster`, `dak_accounts`, `dak_attempts`
 
+### Step 1b (Recommended): Add Reliability Indexes
+
+Run this after Step 1 to prevent duplicate ACTIVE attempts per student:
+
+1. Copy the contents of [server/dak/migrations/002_dak_attempt_guards.sql](server/dak/migrations/002_dak_attempt_guards.sql)
+2. Paste and run the SQL in Supabase SQL Editor
+
 ### Step 2: Migrate Existing Data (Optional)
 
 If you have existing data in local files, migrate it:

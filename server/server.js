@@ -789,9 +789,79 @@ app.get("/api/export/:id", async (req, res) => {
   const dakMatch = /^DAK_(\d{4}-\d{2}-\d{2})_(.+)$/.exec(testId || "");
   const isDak = !!dakMatch;
   const dakExamDate = dakMatch ? dakMatch[1] : "";
+  const dakProgramId = dakMatch ? dakMatch[2] : "";
 
   try {
     if (supabase) {
+      // ✅ DAK uchun source-of-truth: dak_attempts (results yozilmay qolsa ham export ishlashi kerak)
+      if (isDak) {
+        try {
+          const { data: attempts, error: aErr } = await supabase
+            .from("dak_attempts")
+            .select("*")
+            .eq("exam_date", dakExamDate)
+            .eq("program_id", dakProgramId)
+            .not("finished_at", "is", null)
+            .order("group_name", { ascending: true })
+            .order("student_fullname", { ascending: true })
+            .order("started_at", { ascending: true });
+
+          if (aErr) throw aErr;
+          if (Array.isArray(attempts) && attempts.length > 0) {
+            const TZ_OFFSET_MIN = +(process.env.TZ_OFFSET_MINUTES || 300); // 300 = UTC+5
+            const toDate = (d) => (d ? new Date(d) : null);
+            const toTashkent = (dt) => (!dt ? null : new Date(dt.getTime() + TZ_OFFSET_MIN * 60 * 1000));
+            const fmtDate = (dt) => {
+              const t = toTashkent(dt);
+              return !t
+                ? ""
+                : `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+            };
+            const fmtTime = (dt) => {
+              const t = toTashkent(dt);
+              return !t
+                ? ""
+                : `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}:${String(t.getSeconds()).padStart(2, "0")}`;
+            };
+            const fmtDateTime = (dt) => {
+              const d = fmtDate(dt);
+              const t = fmtTime(dt);
+              if (!d && !t) return "";
+              if (d && t) return `${d} ${t}`;
+              return d || t;
+            };
+
+            const sheetRows = attempts.map((a) => {
+              const st = toDate(a.started_at);
+              const fn = toDate(a.finished_at);
+              return {
+                Universitet: a.university || "Oriental Universiteti",
+                "Ta'lim yo'nalishi": a.program_name || "",
+                Guruh: a.group_name || "",
+                "F.I.Sh.": a.student_fullname || "",
+                "Imtihon sanasi": dakExamDate,
+                "Boshlagan vaqti": fmtDateTime(st),
+                "Tugatgan vaqti": fmtDateTime(fn),
+                "To'g'ri javoblar soni": a.correct_count ?? 0,
+                "Jami savollar soni": a.total_questions ?? 0,
+                "Ball (natija)": a.score_points ?? 0,
+              };
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(sheetRows);
+            XLSX.utils.book_append_sheet(wb, ws, "Statistika");
+            const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+            res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            res.setHeader("Content-Disposition", `attachment; filename=\"stats_${testId}.xlsx\"`);
+            return res.send(buffer);
+          }
+        } catch (e) {
+          console.warn("⚠️ DAK export attempts query failed (fallback to results):", e?.message || e);
+        }
+      }
+
       const { data: rows, error } = await supabase
         .from("results")
         .select("*")
@@ -872,6 +942,74 @@ app.get("/api/export/:id", async (req, res) => {
       return res.send(buffer);
     } else {
       // LOCAL fallback — eski fayllardan yig'ish
+      if (isDak) {
+        const attemptsDir = path.join(DATA_DIR, "dak_attempts");
+        if (!fs.existsSync(attemptsDir)) return res.status(404).send("Natijalar topilmadi");
+        const files = fs.readdirSync(attemptsDir).filter((f) => f.endsWith(".json"));
+        const rows = [];
+
+        const TZ_OFFSET_MIN_LOCAL = +(process.env.TZ_OFFSET_MINUTES || 300);
+        const splitDateTime = (ts) => {
+          if (!ts) return { date: "", time: "" };
+          const base = new Date(ts);
+          const d = new Date(base.getTime() + TZ_OFFSET_MIN_LOCAL * 60 * 1000);
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const dd = String(d.getDate()).padStart(2, "0");
+          const HH = String(d.getHours()).padStart(2, "0");
+          const MM = String(d.getMinutes()).padStart(2, "0");
+          const SS = String(d.getSeconds()).padStart(2, "0");
+          return { date: `${yyyy}-${mm}-${dd}`, time: `${HH}:${MM}:${SS}` };
+        };
+        const fmtDateTimeLocal = (x) => {
+          if (!x) return "";
+          const d = x.date || "";
+          const t = x.time || "";
+          if (!d && !t) return "";
+          if (d && t) return `${d} ${t}`;
+          return d || t;
+        };
+
+        for (const f of files) {
+          try {
+            const data = JSON.parse(fs.readFileSync(path.join(attemptsDir, f), "utf-8"));
+            if (!data || typeof data !== "object") continue;
+            if (data.program_id !== dakProgramId) continue;
+            if (data.exam_date !== dakExamDate) continue;
+            if (!data.finished_at) continue;
+
+            const start = splitDateTime(data.started_at);
+            const end = splitDateTime(data.finished_at);
+
+            rows.push({
+              Universitet: data.university || "Oriental Universiteti",
+              "Ta'lim yo'nalishi": data.program_name || "",
+              Guruh: data.group_name || "",
+              "F.I.Sh.": data.student_fullname || "",
+              "Imtihon sanasi": dakExamDate,
+              "Boshlagan vaqti": fmtDateTimeLocal(start),
+              "Tugatgan vaqti": fmtDateTimeLocal(end),
+              "To'g'ri javoblar soni": data.correct_count ?? 0,
+              "Jami savollar soni": data.total_questions ?? 0,
+              "Ball (natija)": data.score_points ?? 0,
+            });
+          } catch (e) {
+            console.warn("⚠️ Attempt fayli o‘qilmadi:", f, e.message);
+          }
+        }
+
+        if (rows.length === 0) return res.status(404).send("Ushbu test uchun natijalar topilmadi.");
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, "Statistika");
+        const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", `attachment; filename=\"stats_${testId}.xlsx\"`);
+        return res.send(buffer);
+      }
+
       if (!fs.existsSync(RESULTS_DIR)) return res.status(404).send("Natijalar topilmadi");
       const files = fs.readdirSync(RESULTS_DIR).filter(f => f.endsWith(".json"));
       const rows = [];

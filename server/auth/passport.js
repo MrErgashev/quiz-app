@@ -28,38 +28,38 @@ console.log("[OAuth] BASE_URL:", BASE_URL);
 console.log("[OAuth] CALLBACK_URL:", CALLBACK_URL);
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  console.warn("⚠️  GOOGLE_CLIENT_ID yoki GOOGLE_CLIENT_SECRET topilmadi. OAuth ishlamaydi.");
+  console.warn("⚠️  GOOGLE_CLIENT_ID yoki GOOGLE_CLIENT_SECRET topilmadi. OAuth o‘chirildi (server ishlashda davom etadi).");
+} else {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: CALLBACK_URL,
+        /**
+         * proxy: true — reverse proxy (Render/Heroku/Fly) ortida bo‘lganda
+         * passport-oauth2 http -> https qayta yozilishini to‘g‘ri hisobga oladi.
+         */
+        proxy: true,
+      },
+      (accessToken, refreshToken, profile, done) => {
+        // access_token va refresh_token ni profile ga biriktiramiz
+        profile.tokens = {
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        };
+
+        // Qo‘shimcha qulay maydonlar (ixtiyoriy)
+        profile.email =
+          (profile.emails && profile.emails[0] && profile.emails[0].value) || null;
+        profile.photo =
+          (profile.photos && profile.photos[0] && profile.photos[0].value) || null;
+
+        return done(null, profile);
+      }
+    )
+  );
 }
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: CALLBACK_URL,
-      /**
-       * proxy: true — reverse proxy (Render/Heroku/Fly) ortida bo‘lganda
-       * passport-oauth2 http -> https qayta yozilishini to‘g‘ri hisobga oladi.
-       */
-      proxy: true,
-    },
-    (accessToken, refreshToken, profile, done) => {
-      // access_token va refresh_token ni profile ga biriktiramiz
-      profile.tokens = {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      };
-
-      // Qo‘shimcha qulay maydonlar (ixtiyoriy)
-      profile.email =
-        (profile.emails && profile.emails[0] && profile.emails[0].value) || null;
-      profile.photo =
-        (profile.photos && profile.photos[0] && profile.photos[0].value) || null;
-
-      return done(null, profile);
-    }
-  )
-);
 
 // 🔐 Sessionga saqlash va olish
 passport.serializeUser((user, done) => {
