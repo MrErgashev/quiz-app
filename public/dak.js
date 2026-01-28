@@ -166,7 +166,26 @@
 
         remaining = remaining.slice(1);
         setOutbox(id, remaining);
-      } catch {
+      } catch (e) {
+        // Business errorlar outbox'ni "deadlock" qilmasligi kerak.
+        const status = e?.status;
+        const msg = (e?.data && (e.data.error || e.data.message)) ? (e.data.error || e.data.message) : (e?.message || "");
+
+        if (item.type === "answer") {
+          // Attempt tugagan bo'lsa, eski answer'lar endi ahamiyatsiz — skip qilamiz.
+          if (status === 409 && /finished/i.test(msg || "")) {
+            remaining = remaining.slice(1);
+            setOutbox(id, remaining);
+            continue;
+          }
+          // Noto'g'ri payload bo'lsa ham navbatni bloklamasin
+          if (status === 400) {
+            remaining = remaining.slice(1);
+            setOutbox(id, remaining);
+            continue;
+          }
+        }
+
         // Tarmoq/Server xatoda to'xtaymiz, keyin yana urinib ko'ramiz
         setOutbox(id, remaining);
         return;
@@ -207,7 +226,11 @@
     const data = text ? (() => { try { return JSON.parse(text); } catch { return null; } })() : null;
     if (!res.ok) {
       const msg = (data && (data.error || data.message)) ? (data.error || data.message) : `${res.status} ${res.statusText}`;
-      throw new Error(msg);
+      const err = new Error(msg);
+      err.status = res.status;
+      err.data = data;
+      err.url = url;
+      throw err;
     }
     return data;
   }
@@ -498,10 +521,18 @@
     clearHeartbeat();
     heartbeatTimer = setInterval(async () => {
       if (!attemptId) return;
-      if (finishPending) return;
       try {
-        await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/heartbeat`, { method: "POST", body: "{}" });
+        // Autosave + last_seen: javoblar serverga ham "best-effort" ketib tursin
+        await apiJson(`/api/public/dak/attempt/${encodeURIComponent(attemptId)}/heartbeat`, {
+          method: "POST",
+          body: JSON.stringify({ answers: answers || {} }),
+        });
       } catch {}
+
+      // Finish queued bo'lsa ham, navbatni qayta-qayta yuborib turamiz (deadlock bo'lmasin)
+      if (finishPending || getOutbox(attemptId).length) {
+        flushOutbox(attemptId).catch(() => {});
+      }
     }, 15000);
   }
 
@@ -587,7 +618,16 @@
       localStorage.removeItem(finishPendingKeyForAttempt(attemptId));
       setFinishPendingState(attemptId, false);
       await showResult(res);
-    } catch {
+    } catch (e) {
+      const status = e?.status;
+      const msg = (e?.data && (e.data.error || e.data.message)) ? (e.data.error || e.data.message) : (e?.message || "");
+
+      // Auth/Business errorlarda "internet yo'q" deb navbatga qo'ymaymiz.
+      if (status && status >= 400 && status < 500) {
+        showError(examError, msg || "Yakunlashda xatolik");
+        return;
+      }
+
       // Internet uzilib qolsa ham finish "kafolatli" bo'lsin: finish'ni outbox'ga qo'yamiz.
       enqueueOutbox(attemptId, { type: "finish" });
       setFinishPendingState(attemptId, true);
@@ -708,8 +748,11 @@
     if (savedAttempt) {
       try {
         await loadAttempt(savedAttempt);
-      } catch {
-        localStorage.removeItem(LS_ATTEMPT_ID);
+      } catch (e) {
+        // Agar auth yo'q bo'lsa, attempt_id ni o'chirmaymiz — login qilgandan keyin resume bo'ladi.
+        if (e?.status !== 401 && e?.status !== 403) {
+          localStorage.removeItem(LS_ATTEMPT_ID);
+        }
       }
     }
 
