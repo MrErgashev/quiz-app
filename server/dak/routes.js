@@ -1036,6 +1036,26 @@ function createDakRouter({ dataDir, supabase, upload, parser, resultsDir }) {
     });
   });
 
+  router.post("/public/dak/attempt/:attempt_id/heartbeat", async (req, res) => {
+    const account = await requireStudentAccount(req, res);
+    if (!account) return;
+
+    const attemptId = req.params.attempt_id;
+    const attempt = await store.getAttempt(attemptId);
+    if (!attempt) return res.status(404).json({ error: "Attempt topilmadi" });
+    if (!attemptBelongsToAccount(attempt, account)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const updated = await store.touchAttempt(attemptId);
+    res.json({
+      ok: true,
+      attempt_id: attemptId,
+      updated_at: updated?.updated_at || null,
+      finished_at: updated?.finished_at || attempt.finished_at || null,
+    });
+  });
+
   // Teacher helper: roster'dan export id'larni chiqarish (ixtiyoriy)
   router.get("/teacher/dak/exports", requireTeacher, async (req, res) => {
     const roster = await store.getRoster();

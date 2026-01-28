@@ -495,6 +495,35 @@ function createDakStore({ dataDir, supabase }) {
     return attempt;
   }
 
+  async function touchAttempt(attemptId) {
+    if (!attemptId) return null;
+
+    // Try Supabase first
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("dak_attempts")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("attempt_id", attemptId)
+          .is("finished_at", null)
+          .select("*")
+          .maybeSingle();
+
+        if (error && error.code !== "PGRST116") throw error;
+        return data || null;
+      } catch (err) {
+        console.error("touchAttempt Supabase error:", err.message || err);
+      }
+    }
+
+    // Fallback to local file
+    const current = await getAttempt(attemptId);
+    if (!current || current.finished_at) return current || null;
+    const next = { ...current, updated_at: new Date().toISOString() };
+    atomicWriteJson(getAttemptPath(attemptId), next);
+    return next;
+  }
+
   async function countStudentAttempts(programId, groupName, studentFullname, examDate) {
     // Try Supabase first
     if (supabase) {
@@ -725,6 +754,7 @@ function createDakStore({ dataDir, supabase }) {
     getAttempt,
     finishAttempt,
     saveAttempt,
+    touchAttempt,
     countStudentAttempts,
     // Accounts
     getAccounts,
